@@ -1,0 +1,48 @@
+{
+    "name": "@whiteflag/js",
+    "version": "0.1.0-dev",
+    "description": "JavaScript implementation of the Whiteflag protocol",
+    "license": "CC0-1.0",
+    "private": true,
+    "workspaces": [
+        "dist"
+    ],
+    "keywords": [
+        "whiteflag",
+        "protocol",
+        "blockchain"
+    ],
+    "homepage": "https://github.com/WhiteflagProtocol/whiteflag-js#readme",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/WhiteflagProtocol/whiteflag-js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/WhiteflagProtocol/whiteflag-js/issues"
+    },
+    "type": "module",
+    "main": "dist/protocol/index.js",
+    "types": "dist/protocol/index.d.ts",
+    "dependencies": {
+        "@whiteflag/protocol": "file:./dist/protocol",
+        "@whiteflag/core": "file:./dist/core",
+        "@whiteflag/crypto": "file:./dist/crypto",
+        "@whiteflag/util": "file:./dist/util"
+    },
+    "devDependencies": {
+        "@types/node": "latest",
+        "typedoc": "latest",
+        "mocha": "^11.7.5",
+        "npm-run-all": "^4.1.5",
+        "rimraf": "latest"
+    },
+    "scripts": {
+        "test": "tsc && mocha --recursive",
+        "doc:src": "rm -rf docs/typedoc/* && typedoc",
+        "build:cleanup": "rimraf -g ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",
+        "build:compile": "tsc",
+        "build:test": "mocha --recursive --reporter dot",
+        "build:docs": "npm-run-all doc:*",
+        "build": "npm-run-all build:*"
+    }
+}

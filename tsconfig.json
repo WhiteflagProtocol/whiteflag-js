@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "es2022",
+        "module": "commonjs",
+        "strict": true,
+        "declaration": true,
+        "removeComments": true,
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "paths": {
+            "@my-packages/protocol": ["./dist/protocol"],
+            "@my-packages/core": ["./dist/core"],
+            "@my-packages/crypto": ["./dist/crypto"],
+            "@my-packages/util": ["./dist/util"]
+        }
+    },
+    "include": ["./src/**/*"],
+    "typedocOptions": {
+        "entryPoints": [
+            "src/**/*.ts"
+        ],
+        "out": "docs/typedoc"
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "hex": {
+        "string": "5768697465666c61673a353734362f746573742d3031"
+    },
+    "char": {
+        "string": "Whiteflag:5746/test-01"
+    },
+    "base64url": {
+        "string": "V2hpdGVmbGFnOjU3NDYvdGVzdC0wMQ"
+    },
+    "Uint8Array": {
+        "array": [ 87, 104, 105, 116, 101, 102, 108, 97, 103, 58, 53, 55, 52, 54, 47, 116, 101, 115, 116, 45, 48, 49 ]
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "name": "@whiteflag/core",
+    "version": "0.1.0-dev",
+    "description": "Whiteflag JS core protocol functionality",
+    "license": "CC0-1.0",
+    "keywords": [
+        "whiteflag",
+        "protocol",
+        "core",
+        "blockchain"
+    ],
+    "homepage": "https://github.com/WhiteflagProtocol/whiteflag-js#readme",
+    "repository": {
+        "type": "git",
+        "directory": "packages/core",
+        "url": "https://github.com/WhiteflagProtocol/whiteflag-js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/WhiteflagProtocol/whiteflag-js/issues"
+    },
+    "type": "commonjs",
+    "main": "index.js"
+}

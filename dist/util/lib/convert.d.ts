@@ -1,0 +1,17 @@
+export { isObject, isString, toBase64u, toBase64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
+declare function isObject(obj: any): boolean;
+declare function isString(charString: any): boolean;
+declare function toBase64u(base64: string): string;
+declare function toBase64(b64uString: string): string;
+declare function b64uToHex(b64uString: string): string;
+declare function b64uToString(b64uString: string): string;
+declare function b64uToU8a(b64uString: string): Uint8Array;
+declare function hexToB64u(hexString: string): string;
+declare function hexToString(hexString: string): string;
+declare function hexToU8a(hexString: string): Uint8Array;
+declare function stringToB64u(charString: string): string;
+declare function stringToHex(charString: string): string;
+declare function stringToU8a(charString: string): Uint8Array;
+declare function u8aToB64u(u8array: Uint8Array): string;
+declare function u8aToHex(u8array: Uint8Array): string;
+declare function u8aToString(u8array: Uint8Array): string;

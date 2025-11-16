@@ -1,0 +1,10 @@
+declare const BINRADIX = 2;
+declare const DECRADIX = 10;
+declare const HEXRADIX = 16;
+declare const BYTELENGTH = 8;
+declare function encodeBDX2BinStr(fieldStr: string, nBits: number): string;
+declare function encodeUTF2BinStr(fieldStr: string, nBits: number): string;
+declare function encodeDatum2BinStr(fieldStr: string): string;
+declare function encodeBinStr2Buffer(binStr: string): Uint8Array;
+declare function decodeBin2BinStr(buffer: Uint8Array): string;
+declare function decodeBinStr(binStr: string, beginBit: number, endBit: number, type: string): string;

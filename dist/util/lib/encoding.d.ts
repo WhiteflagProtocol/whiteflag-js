@@ -1,8 +1,14 @@
-export { isObject, isString, toBase64u, toBase64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
+export { isObject, isString, isBase64, isBase64u, isHex, noHexPrefix, objToB64u, b64uToObj, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
 declare function isObject(obj: any): boolean;
 declare function isString(charString: any): boolean;
-declare function toBase64u(base64: string): string;
-declare function toBase64(b64uString: string): string;
+declare function isBase64(base64: string): boolean;
+declare function isBase64u(base64u: string): boolean;
+declare function isHex(hexString: string): boolean;
+declare function noHexPrefix(hexString: string): string;
+declare function objToB64u(obj: Object): string;
+declare function b64uToObj(base64u: string): Object;
+declare function b64ToB64u(base64: string): string;
+declare function b64uToB64(base64u: string): string;
 declare function b64uToHex(b64uString: string): string;
 declare function b64uToString(b64uString: string): string;
 declare function b64uToU8a(b64uString: string): Uint8Array;

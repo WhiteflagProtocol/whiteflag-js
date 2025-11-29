@@ -3,12 +3,13 @@
  * @summary Whiteflag JS codec module
  */
 
-/* Module constants */
+/* Constants */
 const BINRADIX = 2;
 const DECRADIX = 10;
 const HEXRADIX = 16;
 const BYTELENGTH = 8;
 
+/* MODULE FUNCTIONS */
 /**
  * Converts a string with characters representing Binary, Decimal and Hexadecimal values
  * to a character string representing their the binary encoding

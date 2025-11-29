@@ -14,7 +14,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BinaryArray = void 0;
-var binary_1 = require("./lib/binary");
-Object.defineProperty(exports, "BinaryArray", { enumerable: true, get: function () { return binary_1.BinaryArray; } });
-__exportStar(require("./lib/convert"), exports);
+__exportStar(require("./lib/binary"), exports);
+__exportStar(require("./lib/encoding"), exports);
+__exportStar(require("./lib/jws"), exports);

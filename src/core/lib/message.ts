@@ -4,6 +4,7 @@
  */
 export { WfMessage };
 
+/* MODULE DECLARATIONS */
 /**
  * Whiteflag Message
  * @class WfMessage

@@ -5,8 +5,9 @@
  */
 export { WfProtocolError };
 
+/* MODULE DECLARATIONS */
 /**
- *  for Whiteflag protocol and message errors
+ * Error class for Whiteflag protocol and message errors
  * @class ProtocolError
  * @extends {DomainError}
  */

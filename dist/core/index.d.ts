@@ -1,2 +1,2 @@
-export { WfMessage } from './lib/message';
-export { WfProtocolError } from './lib/errors';
+export * from './lib/message';
+export * from './lib/errors';

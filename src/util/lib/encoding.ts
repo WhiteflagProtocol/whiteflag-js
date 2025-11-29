@@ -1,12 +1,18 @@
 /**
- * @module util/convert
- * @summary Whiteflag JS common data conversions
+ * @module util/encoding
+ * @summary Whiteflag JS common encodings and data conversions
  */
 export {
     isObject,
     isString,
-    toBase64u,
-    toBase64,
+    isBase64,
+    isBase64u,
+    isHex,
+    noHexPrefix,
+    objToB64u,
+    b64uToObj,
+    b64ToB64u,
+    b64uToB64,
     b64uToHex,
     b64uToString,
     b64uToU8a,
@@ -21,12 +27,16 @@ export {
     u8aToString,
 };
 
-/* Module constants */
+/* Constants */
 const NOSEPARATOR = '';
 const HEXBYTELENGTH = 2;
 const HEXRADIX = 16;
+const HEXPREFIX = '0x';
+const REGEX_BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+const REGEX_BASE64U = /^(?:[A-Za-z0-9_-]+)$/;
+const REGEX_HEXSTRING = /^(0x|0X)?(?:[a-fA-F0-9]{2})+$/
 
-/* MAIN MODULE FUNCTIONS */
+/* MODULE FUNCTIONS */
 /**
  * Checks if something is an object
  * @function isObject
@@ -48,11 +58,70 @@ function isString(charString: any): boolean {
 }
 
 /**
+ * Checks if a string is base64 encoded
+ * @param base64 a string that might be base64 encoded
+ * @returns true if base64 encoded, else false
+ */
+function isBase64(base64: string): boolean {
+    return REGEX_BASE64.test(base64);
+}
+
+/**
+ * Checks if a string is base64url encoded
+ * @param base64u a string that might be base64url encoded
+ * @returns true if base64url encoded, else false
+ */
+function isBase64u(base64u: string): boolean {
+    return REGEX_BASE64U.test(base64u);
+}
+
+/**
+ * Checks if a string is hexadecimal encoded
+ * @param hexString a string that might be hexadecimal encoded
+ * @returns true if hexadecimal encoded, else false
+ */
+function isHex(hexString: string): boolean {
+    return REGEX_HEXSTRING.test(hexString);
+}
+
+/**
+ * Removes the '0x' hex prefix if present
+ * @param hexString a hexadecimal encoded string
+ * @returnsthe the string without the hex prefix
+ */
+function noHexPrefix(hexString: string): string {
+    if (hexString.startsWith(HEXPREFIX)) {
+        return hexString.substring(2).toLowerCase();
+    }
+    return hexString.toLowerCase();
+}
+
+/**
+ * Creates a base64URL encoded JSON string from an object
+ * @function objToB64u
+ * @param obj the object to be encoded
+ * @returns a base64URL encoded JSON string
+ */
+function objToB64u(obj: Object): string {
+    return stringToB64u(JSON.stringify(obj));
+}
+
+/**
+ * Creates an object from a base64URL encoded JSON string
+ * @function b64uToObj
+ * @param base64u a base64URL encoded JSON string
+ * @returns an object with the data from the JSON object
+ */
+function b64uToObj(base64u: string): Object {
+    return JSON.parse(b64uToString(base64u));
+}
+
+/**
  * Convert base64 to base64url
  * @param base64 a base64 encoded string
  * @returns a base64url encoded string
  */
-function toBase64u(base64: string): string {
+function b64ToB64u(base64: string): string {
     return base64
         .replace(/=/g, '')
         .replace(/\+/g, '-')
@@ -61,11 +130,11 @@ function toBase64u(base64: string): string {
 
 /**
  * Convert base64url to base64
- * @param b64uString a base64url encoded string
+ * @param base64u a base64url encoded string
  * @returns a base64 encoded string
  */
-function toBase64(b64uString: string): string {
-    let base64: string = b64uString
+function b64uToB64(base64u: string): string {
+    let base64: string = base64u
         .replace(/\-/g, '+')
         .replace(/_/g, '/');
     switch (base64.length % 4) {
@@ -92,7 +161,7 @@ function b64uToHex(b64uString: string): string {
  * @returns a standard string
  */
 function b64uToString(b64uString: string): string {
-    return atob(toBase64(b64uString));
+    return atob(b64uToB64(b64uString));
 }
 
 /**
@@ -132,9 +201,10 @@ function hexToString(hexString: string): string {
  * @returns an array of 8-bit unsigned integers
  */
 function hexToU8a(hexString: string): Uint8Array {
-    const u8array = new Uint8Array(hexString.length / HEXBYTELENGTH);
-    for (let i = 0; i < hexString.length; i += HEXBYTELENGTH) {
-        u8array[i / HEXBYTELENGTH] = parseInt(hexString.slice(i, i + HEXBYTELENGTH), HEXRADIX);
+    const hex = noHexPrefix(hexString);
+    const u8array = new Uint8Array(hex.length / HEXBYTELENGTH);
+    for (let i = 0; i < hex.length; i += HEXBYTELENGTH) {
+        u8array[i / HEXBYTELENGTH] = parseInt(hex.slice(i, i + HEXBYTELENGTH), HEXRADIX);
     }
     return u8array;
 }
@@ -146,7 +216,7 @@ function hexToU8a(hexString: string): Uint8Array {
  * @returns a base64url encoded string
  */
 function stringToB64u(charString: string): string {
-    return toBase64u(btoa(charString));
+    return b64ToB64u(btoa(charString));
 }
 
 /**
@@ -162,7 +232,7 @@ function stringToHex(charString: string): string {
             .charCodeAt(i).toString(HEXRADIX)
             .padStart(HEXBYTELENGTH, '0');
     }
-    return hexString;
+    return hexString.toLowerCase();
 }
 
 /**
@@ -199,7 +269,7 @@ function u8aToHex(u8array: Uint8Array): string {
             .padStart(HEXBYTELENGTH, '0')
         );
     }
-    return hexArray.join(NOSEPARATOR);
+    return hexArray.join(NOSEPARATOR).toLowerCase();
 }
 
 /**

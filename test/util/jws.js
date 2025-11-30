@@ -17,13 +17,13 @@ import testVector from './jws.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Util JWS module', function() { 
-    testCase('JWS encoding and conversions i.a.w. Whiteflag Standard Annex C example', function() {
+    testCase('JWS variants i.a.w. Whiteflag Standard Annex C example', function() {
         assertion(' 3A. should correctly transform flattened JWS to compact JWS', function(done) {
             const jws = Jws.fromObject(testVector['1'].flat);
             deepStrictEqual(jws.toCompact(), testVector['1'].compact);
             return done();
         });
-        assertion(' 3. should correctly transform full JWS to compact JWS', function(done) {
+        assertion(' 3B. should correctly transform full JWS to compact JWS', function(done) {
             const jws = Jws.fromObject(testVector['1'].full);
             deepStrictEqual(jws.toCompact(), testVector['1'].compact);
             return done();
@@ -49,7 +49,7 @@ testCase('Util JWS module', function() {
             return done();
         });
     });
-    testCase('JWS class function tests', function() {
+    testCase('JWS class functions', function() {
         assertion(' 6A. should correctly get signature input from signed JWS', function(done) {
             const jws = Jws.fromObject(testVector['1'].flat);
             deepStrictEqual(jws.getSignInput(), testVector['1'].signInput);
@@ -77,7 +77,7 @@ testCase('Util JWS module', function() {
         });
         assertion(' 8B. should be not able to sign unsigned JWS with invalid signature encoding', function(done) {
             const jws = Jws.fromObject(testVector['2'].full);
-            throws(() => jws.setSignature(testVector['2'].falseSignature), Error);
+            throws(() => jws.setSignature(testVector['2'].falseSignature), TypeError);
             return done();
         });
         assertion(' 8C. should be able to sign unsigned JWS', function(done) {

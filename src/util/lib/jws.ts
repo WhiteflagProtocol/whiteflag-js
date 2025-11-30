@@ -8,11 +8,13 @@ export {
 };
 
 /* Dependencies */
-import { isObject,
-         isString,
-         isBase64u,
-         objToB64u,
-         b64uToObj } from './encoding';
+import {
+    isObject,
+    isString,
+    isBase64u,
+    objToB64u,
+    b64uToObj
+} from './encoding';
 
 /* Constants */
 /**
@@ -47,6 +49,7 @@ const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_
  * @class Jws
  */
 class Jws {
+    /* CLASS PROPERTIES */
     /**
      * @property {Object} protected the JWS protected header
      */
@@ -64,6 +67,7 @@ class Jws {
      */
     private signature: string = '';
 
+    /* CONSTRUCTOR and STATIC FACTORY METHODS */
     /**
      * Constructor for a Whiteflag message
      * @private
@@ -120,7 +124,7 @@ class Jws {
      */
     public static fromCompact(jws: string): Jws {
         if (jwsType(jws) !== JwsFormat.COMPACT) {
-            throw new Error('Invalid compact serialised JWS string');
+            throw new TypeError('Invalid compact serialised JWS string');
         }
         const jwsArray = jws.split(JWSSEPARATOR);
         let header = {};
@@ -131,6 +135,8 @@ class Jws {
         if (jwsArray.length > 2) signature = jwsArray[2];
         return new Jws(header, payload, signature);
     }
+
+    /* PUBLIC CLASS METHODS */
     /**
      * Indicates if the JWS has been signed
      * @function isSigned
@@ -146,7 +152,7 @@ class Jws {
      * @returns a string with the input to be signed by the signing algorithm
      */
     public getSignInput(): string {
-        // Add timestamp if not (yet) signed
+        /* Add timestamp if not (yet) signed */
         if (!this.isSigned()) {
             this.payload.iat = Math.floor(Date.now()/1000);
         }
@@ -172,7 +178,7 @@ class Jws {
     public setSignature(signature: string): boolean {
         if (this.isSigned()) return false;
         if (!isBase64u(signature)) {
-            throw new Error('Signature is not base64url encoded');
+            throw new TypeError('Signature is not base64url encoded');
         }
         this.signature = signature;
         return true;
@@ -230,7 +236,7 @@ class Jws {
 /* PRIVATE FUNCTIONS */
 /**
  * Return the type of the provided JWS
- * @function jwsType
+ * @private
  * @param jws a JSON Web Signature
  * @returns the JWS format
  * @throws if invalid JWS
@@ -248,5 +254,5 @@ function jwsType(jws: any): JwsFormat {
                 return JwsFormat.FLAT;
         }
     }
-    throw new Error('Invalid JWS representation or encoding');
+    throw new TypeError('Invalid JWS representation or encoding');
 }

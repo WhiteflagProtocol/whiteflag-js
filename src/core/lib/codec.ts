@@ -183,7 +183,7 @@ function decodeBinStr(binStr: string, beginBit: number, endBit: number, type: st
             break;
         }
         default: {
-            throw new Error(`Internal Coding Error: wrong decoding type provided to decodeBinStr: ${type}`);
+            throw new SyntaxError(`Internal Coding Error: wrong decoding type provided to decodeBinStr: ${type}`);
         }
     }
     // Re-insert fixed characters for certain field types i.a.w. specification

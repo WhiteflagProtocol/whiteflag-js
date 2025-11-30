@@ -1,0 +1,48 @@
+{
+    "1": {
+        "hex": "f00fff",
+        "bitLength": 14,
+        "cropping": -10,
+        "cropped": "f00c",
+        "shift": 3,
+        "leftShift": "807ff8",
+        "rightShift": "1e01ffe0"
+    },
+    "2": {
+        "hex": "57463130a6a1f7da7067d41891592131a12a60c9053b4eb0aefe6263385da9f5b789421e1d7401009841882148a800000114c1e596006f04c050eca6420084",
+        "bitLength": 504
+    },
+    "3": {
+        "hex1": "ffffff",
+        "bitLength1": 21,
+        "hex2": "5555",
+        "bitLength2": 10,
+        "hex": "fffffaaa",
+        "bitLength": 31,
+        "extract": "fea8",
+        "startBit": 14,
+        "nBits": 13
+    },
+    "4": {
+        "hex1": "afff",
+        "bitLength1": 16,
+        "hex2": "6a",
+        "bitLength2": 8,
+        "hex": "afff6a",
+        "bitLength": 24,
+        "extract": "f6",
+        "startBit": 12,
+        "nBits": 8
+    },
+    "5": {
+        "hex1": "bfff",
+        "bitLength1": 14,
+        "hex2": "6affff",
+        "bitLength2": 24,
+        "hex": "bffdabfffc",
+        "bitLength": 38,
+        "extract": "f680",
+        "startBit": 10,
+        "nBits": 10
+    }
+}

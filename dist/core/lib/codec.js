@@ -101,7 +101,7 @@ function decodeBinStr(binStr, beginBit, endBit, type) {
             break;
         }
         default: {
-            throw new Error(`Internal Coding Error: wrong decoding type provided to decodeBinStr: ${type}`);
+            throw new SyntaxError(`Internal Coding Error: wrong decoding type provided to decodeBinStr: ${type}`);
         }
     }
     switch (type) {

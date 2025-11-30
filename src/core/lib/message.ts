@@ -10,6 +10,7 @@ export { WfMessage };
  * @class WfMessage
  */
 class WfMessage {
+    /* CLASS PROPERTIES */
     /**
      * @property {Object} header The message header
      */
@@ -23,6 +24,7 @@ class WfMessage {
      */
     MessageBody: Object;
 
+    /* CONSTRUCTOR and STATIC FACTORY METHODS */
     /**
      * Constructor for a Whiteflag message
      * @param version the version of the used Whiteflag specification
@@ -32,5 +34,4 @@ class WfMessage {
         this.MessageHeader = {};
         this.MessageBody = {};
     }
-
 }

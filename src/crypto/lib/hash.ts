@@ -28,34 +28,34 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
                     info: Uint8Array,
                     keylen: number
                    ): Promise<Uint8Array> {
-    // Step 1. HKDF-Extract(salt, IKM) -> PRK
+    /* Step 1. HKDF-Extract(salt, IKM) -> PRK */
     const prk = await hmac(salt, ikm);
     zeroise(ikm);
 
-    // Step 2. HKDF-Expand(PRK, info, L) -> OKM
+    /* Step 2. HKDF-Expand(PRK, info, L) -> OKM */
     let okm = new Uint8Array(keylen);
     let t = new Uint8Array(HASHLEN);
     let offset = 0;
 
     const N = Math.ceil(keylen / HASHLEN);
     for (let i = 1; i <= N; i++) {
-        // Concatinate previous hash t, info and counter i
+        /* Concatinate previous hash t, info and counter i */
         let b = new Uint8Array(offset + info.length + 1);
         b.set(t.slice(0, b.length));
         b.set(info.slice(0, info.length), offset);
         b[offset + info.length] = i;
 
-        // Get hash and add to okm buffer
+        /* Get hash and add to okm buffer */
         let h = await hmac(prk, b);
         t.set(h.slice(0, t.length))
         offset = offset * (i - 1);
         if (offset < okm.length) {
             okm.set(h.slice(0, (okm.length-offset)), offset);
         }
-        // Block contains t after after first interation
+        /* Block contains t after after first interation */
         offset = HASHLEN;
     }
-    // Return output key material
+    /* Return output key material */
     return okm;
 }
 
@@ -71,7 +71,7 @@ async function hash(data: Uint8Array<ArrayBuffer>,
                     len = HASHLEN,
                     hashalg = HASHALG
                    ): Promise<Uint8Array<ArrayBuffer>> {
-    // Create hash
+    /* Create hash */
     const h = await crypto.subtle.digest(hashalg, data);
     return new Uint8Array(h, 0, len);
 }
@@ -88,16 +88,16 @@ async function hmac(key: Uint8Array<ArrayBuffer>,
                     msg: Uint8Array<ArrayBuffer>,
                     hashalg = HASHALG
                    ): Promise<Uint8Array<ArrayBuffer>> {
-    // Algorithm
+    /* Algorithm */
     const HMAC = 'HMAC';
 
-    // Create key
+    /* Create key */
     const k = await crypto.subtle.importKey(
                         'raw', key.buffer,
                         { name: HMAC, hash: { name: hashalg }},
                         false, ['sign']
                     );
-    // Sign message
+    /* Sign message */
     const mac = await crypto.subtle.sign(HMAC, k, msg.buffer);
     return new Uint8Array(mac);
 }

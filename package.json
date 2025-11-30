@@ -39,11 +39,14 @@
     },
     "scripts": {
         "test": "tsc && mocha --recursive",
-        "doc:src": "rm -rf docs/typedoc/* && typedoc",
+        "doc:cleacup": "rimraf -g ./docs/typedoc/**/*",
+        "doc:src": "typedoc",
+        "docs": "npm-run-all doc:*",
         "build:cleanup": "rimraf -g ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",
         "build:compile": "tsc",
+        "build:declaration": "tsc --emitDeclarationOnly --declaration true --removeComments false",
         "build:test": "mocha --recursive --reporter dot",
-        "build:docs": "npm-run-all doc:*",
+        "build:docs": "npm run docs",
         "build": "npm-run-all build:*"
     }
 }

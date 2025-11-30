@@ -39,17 +39,17 @@ import testVector from './encoding.json' with { type: 'json' };
 testCase('Util encoding module', function() {
     const testVectorU8a = Uint8Array.from(testVector['0'].Uint8Array);
     testCase('Character string encoding', function() {
-        assertion(' 1. should correctly convert to UInt8Array', function(done) {
+        assertion(' 1A. should correctly convert to UInt8Array', function(done) {
             const u8array = stringToU8a(testVector['0'].string);
             deepStrictEqual(u8array, testVectorU8a);
             return done();
         });
-        assertion(' 2. should correctly convert to base4url string', function(done) {
+        assertion(' 1B. should correctly convert to base4url string', function(done) {
             const b64uString = stringToB64u(testVector['0'].string);
             deepStrictEqual(b64uString, testVector['0'].base64url);
             return done();
         });
-        assertion(' 3. should correctly convert to hexadecimal string', function(done) {
+        assertion(' 1C. should correctly convert to hexadecimal string', function(done) {
             const hexString = stringToHex(testVector['0'].string);
             deepStrictEqual(hexString, testVector['0'].hex);
             return done();

@@ -42,7 +42,7 @@ class Jws {
     }
     static fromCompact(jws) {
         if (jwsType(jws) !== JwsFormat.COMPACT) {
-            throw new Error('Invalid compact serialised JWS string');
+            throw new TypeError('Invalid compact serialised JWS string');
         }
         const jwsArray = jws.split(JWSSEPARATOR);
         let header = {};
@@ -75,7 +75,7 @@ class Jws {
         if (this.isSigned())
             return false;
         if (!(0, encoding_1.isBase64u)(signature)) {
-            throw new Error('Signature is not base64url encoded');
+            throw new TypeError('Signature is not base64url encoded');
         }
         this.signature = signature;
         return true;
@@ -123,5 +123,5 @@ function jwsType(jws) {
             return JwsFormat.FLAT;
         }
     }
-    throw new Error('Invalid JWS representation or encoding');
+    throw new TypeError('Invalid JWS representation or encoding');
 }

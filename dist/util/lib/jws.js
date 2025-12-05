@@ -1,7 +1,6 @@
 'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Jws = void 0;
-const encoding_1 = require("./encoding");
+export { Jws };
+import { isObject, isString, isBase64u, objToB64u, b64uToObj } from "./encoding.js";
 var JwsFormat;
 (function (JwsFormat) {
     JwsFormat["COMPACT"] = "JWS_COMPACT";
@@ -33,7 +32,7 @@ class Jws {
                 return new Jws(jws?.protected, jws?.payload, jws?.signature);
             }
             case JwsFormat.FLAT: {
-                return new Jws((0, encoding_1.b64uToObj)(jws.protected), (0, encoding_1.b64uToObj)(jws.payload), jws?.signature);
+                return new Jws(b64uToObj(jws.protected), b64uToObj(jws.payload), jws?.signature);
             }
             case JwsFormat.COMPACT: {
                 return this.fromCompact(jws);
@@ -47,10 +46,10 @@ class Jws {
         const jwsArray = jws.split(JWSSEPARATOR);
         let header = {};
         if (jwsArray.length > 0)
-            header = (0, encoding_1.b64uToObj)(jwsArray[0]);
+            header = b64uToObj(jwsArray[0]);
         let payload = {};
         if (jwsArray.length > 1)
-            payload = (0, encoding_1.b64uToObj)(jwsArray[1]);
+            payload = b64uToObj(jwsArray[1]);
         let signature = '';
         if (jwsArray.length > 2)
             signature = jwsArray[2];
@@ -63,7 +62,7 @@ class Jws {
         if (!this.isSigned()) {
             this.payload.iat = Math.floor(Date.now() / 1000);
         }
-        return (0, encoding_1.objToB64u)(this.protected) + JWSSEPARATOR + (0, encoding_1.objToB64u)(this.payload);
+        return objToB64u(this.protected) + JWSSEPARATOR + objToB64u(this.payload);
     }
     setSignAlgorithm(algorithm) {
         if (this.isSigned())
@@ -74,7 +73,7 @@ class Jws {
     setSignature(signature) {
         if (this.isSigned())
             return false;
-        if (!(0, encoding_1.isBase64u)(signature)) {
+        if (!isBase64u(signature)) {
             throw new TypeError('Signature is not base64url encoded');
         }
         this.signature = signature;
@@ -92,15 +91,15 @@ class Jws {
     }
     toFlat() {
         return {
-            protected: (0, encoding_1.objToB64u)(this.protected),
-            payload: (0, encoding_1.objToB64u)(this.payload),
+            protected: objToB64u(this.protected),
+            payload: objToB64u(this.payload),
             signature: this.signature
         };
     }
     toCompact() {
-        let compactJws = (0, encoding_1.objToB64u)(this.protected)
+        let compactJws = objToB64u(this.protected)
             + JWSSEPARATOR
-            + (0, encoding_1.objToB64u)(this.payload);
+            + objToB64u(this.payload);
         if (this.isSigned()) {
             compactJws = compactJws
                 + JWSSEPARATOR
@@ -109,17 +108,16 @@ class Jws {
         return compactJws;
     }
 }
-exports.Jws = Jws;
 function jwsType(jws) {
-    if ((0, encoding_1.isString)(jws) && REGEX_COMPACT.test(jws)) {
+    if (isString(jws) && REGEX_COMPACT.test(jws)) {
         return JwsFormat.COMPACT;
     }
-    if ((0, encoding_1.isObject)(jws)) {
-        if ((0, encoding_1.isObject)(jws.protected) && (0, encoding_1.isObject)(jws.payload)) {
+    if (isObject(jws)) {
+        if (isObject(jws.protected) && isObject(jws.payload)) {
             return JwsFormat.FULL;
         }
-        if ((0, encoding_1.isString)(jws.protected) && REGEX_FLAT.test(jws.protected)
-            && (0, encoding_1.isString)(jws.payload) && REGEX_FLAT.test(jws.payload)) {
+        if (isString(jws.protected) && REGEX_FLAT.test(jws.protected)
+            && isString(jws.payload) && REGEX_FLAT.test(jws.payload)) {
             return JwsFormat.FLAT;
         }
     }

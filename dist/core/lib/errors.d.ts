@@ -3,7 +3,7 @@
  * @summary Whiteflag JS error classes
  * @document docs/md/errors.md
  */
-export { WfProtocolError };
+export { WfProtocolError, WfErrorCode };
 /**
  * Error class for Whiteflag protocol and message errors
  * @class ProtocolError

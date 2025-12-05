@@ -1,17 +1,21 @@
 {
     "compilerOptions": {
         "target": "es2022",
-        "module": "commonjs",
+        "module": "preserve",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "allowImportingTsExtensions": true,
+        "rewriteRelativeImportExtensions": true,
         "strict": true,
-        "declaration": true,
+        "declaration": false,
         "removeComments": true,
         "rootDir": "./src",
         "outDir": "./dist",
         "paths": {
-            "@my-packages/protocol": ["./dist/protocol"],
-            "@my-packages/core": ["./dist/core"],
-            "@my-packages/crypto": ["./dist/crypto"],
-            "@my-packages/util": ["./dist/util"]
+            "@whiteflag/protocol": ["./src/protocol"],
+            "@whiteflag/core": ["./src/core"],
+            "@whiteflag/crypto": ["./src/crypto"],
+            "@whiteflag/util": ["./src/util"]
         }
     },
     "include": ["./src/**/*"],

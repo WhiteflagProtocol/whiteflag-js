@@ -1,60 +1,116 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BinaryBuffer = void 0;
-exports.cropBits = cropBits;
-exports.shiftRight = shiftRight;
-exports.shiftLeft = shiftLeft;
-const encoding_1 = require("./encoding");
+export { BinaryBuffer, cropBits, shiftRight, shiftLeft };
+import { isHex, hexToU8a, u8aToHex } from "./encoding.js";
 const BYTELENGTH = 8;
 class BinaryBuffer {
     buffer;
     length;
     constructor(buffer, nBits = 0) {
-        this.length = this.bitLength(buffer.byteLength, nBits);
+        this.length = this.calcBitLength(buffer.byteLength, nBits);
         this.buffer = cropBits(buffer, this.length);
+    }
+    static from(binBuffer) {
+        return new BinaryBuffer(binBuffer.toU8a(), binBuffer.length);
+    }
+    static fromBytes(byteArray, nBits = 0) {
+        return new BinaryBuffer(new Uint8Array(byteArray), nBits);
+    }
+    static fromHex(hexString, nBits = 0) {
+        if (!isHex(hexString))
+            throw new TypeError('Invalid hexadecimal string');
+        return new BinaryBuffer(hexToU8a(hexString), nBits);
     }
     static fromU8a(u8array, nBits = 0) {
         return new BinaryBuffer(u8array, nBits);
     }
-    static fromHex(hexString, nBits = 0) {
-        if (!(0, encoding_1.isHex)(hexString))
-            throw new TypeError('Invalid hexadecimal string');
-        return new BinaryBuffer((0, encoding_1.hexToU8a)(hexString), nBits);
+    append(binBuffer) {
+        return this.appendU8a(binBuffer.toU8a(), binBuffer.length);
+    }
+    appendBytes(byteArray, nBits = 0) {
+        return this.appendU8a(new Uint8Array(byteArray), nBits);
     }
     appendHex(hexString, nBits = 0) {
-        if (!(0, encoding_1.isHex)(hexString))
+        if (!isHex(hexString))
             throw new TypeError('Invalid hexadecimal string');
-        return this.appendU8a((0, encoding_1.hexToU8a)(hexString), nBits);
+        return this.appendU8a(hexToU8a(hexString), nBits);
     }
     appendU8a(u8array, nBits = 0) {
         const bitLength = this.length;
         this.buffer = this.concatinate(this.buffer, bitLength, u8array, nBits);
-        this.length = bitLength + this.bitLength(u8array.byteLength, nBits);
+        this.length = bitLength + this.calcBitLength(u8array.byteLength, nBits);
         return this;
     }
-    extract(startBit, nBits) {
+    extract(startBit, endBit) {
+        const buffer = this.extractU8a(startBit, endBit);
+        const bitLength = endBit - startBit;
+        return new BinaryBuffer(buffer, bitLength);
+    }
+    extractHex(startBit, endBit) {
+        return u8aToHex(this.extractU8a(startBit, endBit));
+    }
+    extractU8a(startBit, endBit) {
         if (startBit < 0)
             throw RangeError('Starting bit cannot be less than 0');
         if (startBit >= this.length)
             throw RangeError('Starting bit is larger than binary buffer length');
-        let bitLength = nBits;
-        if (nBits < 0)
-            bitLength = this.length - startBit;
-        if (startBit + nBits > this.length)
+        if (startBit > endBit)
+            throw RangeError('Starting bit is larger than ending bit');
+        let bitLength = endBit - startBit;
+        if (endBit > this.length)
             bitLength = this.length - startBit;
         const startByte = Math.floor(startBit / BYTELENGTH);
-        const byteLength = this.byteLength(bitLength);
+        const byteLength = this.calcByteLength(bitLength);
         const shift = startBit % BYTELENGTH;
         const buffer = new Uint8Array(this.buffer.slice(startByte, startByte + byteLength + 1));
         return cropBits(shiftLeft(buffer, shift), bitLength);
+    }
+    insertBytes(byteArray, nBits = 0) {
+        return this.insertU8a(new Uint8Array(byteArray), nBits);
+    }
+    insertHex(hexString, nBits = 0) {
+        if (!isHex(hexString))
+            throw new TypeError('Invalid hexadecimal string');
+        return this.insertU8a(hexToU8a(hexString), nBits);
+    }
+    insertU8a(u8array, nBits = 0) {
+        const bitLength = this.length;
+        this.buffer = this.concatinate(u8array, nBits, this.buffer, bitLength);
+        this.length = bitLength + this.calcBitLength(u8array.byteLength, nBits);
+        return this;
+    }
+    shiftLeft(shift) {
+        if (shift < 0)
+            return this.shiftRight(-shift);
+        if (shift >= this.length) {
+            this.buffer = new Uint8Array(0);
+            this.length = 0;
+            return this;
+        }
+        const bitLength = this.length - shift;
+        const byteShift = Math.floor(shift / BYTELENGTH);
+        const buffer = new Uint8Array(this.calcByteLength(bitLength) + 1);
+        for (let i = 0; i < buffer.length; i++) {
+            buffer[i] = this.buffer[i + byteShift];
+        }
+        this.buffer = cropBits(shiftLeft(buffer, shift), bitLength);
+        this.length = bitLength;
+        return this;
+    }
+    shiftRight(shift) {
+        if (shift < 0)
+            return this.shiftLeft(-shift);
+        const byteShift = Math.ceil(shift / BYTELENGTH);
+        const padding = new Uint8Array(byteShift);
+        this.buffer = this.concatinate(padding, shift, this.buffer, this.length);
+        this.length = this.length + shift;
+        return this;
     }
     toU8a() {
         return new Uint8Array(this.buffer);
     }
     toHex() {
-        return (0, encoding_1.u8aToHex)(this.buffer);
+        return u8aToHex(this.buffer);
     }
-    bitLength(byteLength, nBits) {
+    calcBitLength(byteLength, nBits) {
         const bitLength = byteLength * BYTELENGTH;
         if (nBits < 1)
             return Math.max(bitLength + nBits, 0);
@@ -62,14 +118,14 @@ class BinaryBuffer {
             return bitLength;
         return nBits;
     }
-    byteLength(nBits) {
+    calcByteLength(nBits) {
         return Math.ceil(nBits / BYTELENGTH);
     }
     concatinate(u8array1, nBits1, u8array2, nBits2) {
-        const bitLength1 = this.bitLength(u8array1.byteLength, nBits1);
-        const bitLength2 = this.bitLength(u8array2.byteLength, nBits2);
+        const bitLength1 = this.calcBitLength(u8array1.byteLength, nBits1);
+        const bitLength2 = this.calcBitLength(u8array2.byteLength, nBits2);
         const bitLength = bitLength1 + bitLength2;
-        const byteLength = this.byteLength(bitLength);
+        const byteLength = this.calcByteLength(bitLength);
         const shift = bitLength1 % BYTELENGTH;
         const bArray1 = cropBits(u8array1, bitLength1);
         const bArray2 = shiftRight(cropBits(u8array2, bitLength2), shift);
@@ -89,7 +145,6 @@ class BinaryBuffer {
         return buffer;
     }
 }
-exports.BinaryBuffer = BinaryBuffer;
 function cropBits(u8array, nBits) {
     if (nBits === 0)
         return new Uint8Array(u8array);

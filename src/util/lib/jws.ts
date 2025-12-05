@@ -14,7 +14,7 @@ import {
     isBase64u,
     objToB64u,
     b64uToObj
-} from './encoding';
+} from './encoding.ts';
 
 /* Constants */
 /**
@@ -67,7 +67,7 @@ class Jws {
      */
     private signature: string = '';
 
-    /* CONSTRUCTOR and STATIC FACTORY METHODS */
+    /* CONSTRUCTOR */
     /**
      * Constructor for a Whiteflag message
      * @private
@@ -80,6 +80,8 @@ class Jws {
         this.payload = payload;
         this.signature = signature;
     }
+
+    /* STATIC FACTORY METHODS */
     /**
      * Creates a new JWS from a payload
      * @function fromPayload

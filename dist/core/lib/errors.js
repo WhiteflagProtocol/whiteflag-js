@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.WfProtocolError = void 0;
+export { WfProtocolError, WfErrorCode };
 class WfProtocolError extends Error {
     code;
     causes;
@@ -16,7 +14,6 @@ class WfProtocolError extends Error {
         }
     }
 }
-exports.WfProtocolError = WfProtocolError;
 var WfErrorCode;
 (function (WfErrorCode) {
     WfErrorCode["PROTOCOL"] = "WF_PROTOCOL_ERROR";

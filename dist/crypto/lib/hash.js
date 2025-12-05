@@ -1,8 +1,5 @@
 'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.hkdf = hkdf;
-exports.hash = hash;
-exports.hmac = hmac;
+export { hkdf, hash, hmac };
 const HASHALG = 'SHA-256';
 const HASHLEN = 32;
 async function hkdf(ikm, salt, info, keylen) {

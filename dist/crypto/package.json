@@ -12,12 +12,13 @@
     "homepage": "https://github.com/WhiteflagProtocol/whiteflag-js#readme",
     "repository": {
         "type": "git",
-        "directory": "packages/crypto",
+        "directory": "dist/crypto",
         "url": "https://github.com/WhiteflagProtocol/whiteflag-js.git"
     },
     "bugs": {
         "url": "https://github.com/WhiteflagProtocol/whiteflag-js/issues"
     },
-    "type": "commonjs",
-    "main": "index.js"
+    "type": "module",
+    "main": "index.js",
+    "types": "index.d.ts"
 }

@@ -1,217 +1,372 @@
 /**
  * @module core/codec
- * @summary Whiteflag JS codec module
+ * @summary Whiteflag JS message field encoding and decoding module
+ * @since v1.0 (Whiteflag specification v1-draft.7)
  */
+export {
+    WfFieldType,
+    encodeField,
+    decodeField
+};
+
+/* Dependencies */
+import { BinaryBuffer } from '@whiteflag/util';
+
+/* Whiteflag static field definitions */
+import v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
 
 /* Constants */
-const BINRADIX = 2;
-const DECRADIX = 10;
+const NOCHAR = '';
 const HEXRADIX = 16;
 const BYTELENGTH = 8;
+const QUADBIT = 4;
+
+/* MODULE DECLARATIONS */
+/**
+ * Defines Whiteflag field types
+ * @enum WfFieldType
+ */
+enum WfFieldType {
+    BIN = 'bin',
+    DEC = 'dec',
+    HEX = 'hex',
+    UTF8 = 'utf-8',
+    DATETIME = 'datetime',
+    DURATION = 'duration',
+    LAT = 'lat',
+    LONG = 'long'
+}
+/**
+ * Defines Whiteflag fields
+ */
+const CODEC = compileFieldCodec();
 
 /* MODULE FUNCTIONS */
 /**
- * Converts a string with characters representing Binary, Decimal and Hexadecimal values
- * to a character string representing their the binary encoding
- * @private
- * @param fieldStr unencoded/uncompressed field value
- * @param nBits size of field in compressed binary encoding in bits
- * @returns representation of the binary encoding of the field
+ * Enodes a Whiteflag message field
+ * @param fieldStr the message field value
+ * @param fieldType the message field type: 'utf-8', 'bin', 'dec', 'hex', 'datetime', 'duration', 'lat', 'long'
+ * @param wfVersion the version of the Whiteflag specification
+ * @returns a binary buffer with the compressed encoded field
  */
-function encodeBDX2BinStr(fieldStr: string, nBits: number): string {
-    const padding = Math.ceil(nBits / fieldStr.length);
-    const padbits = new Array(padding).join('0');
-    let binStr = '';
-
-    // Run through characters of the string and convert to binary one by one
-    // Treating all integers as hexadecimals always results in correct binary encoding
-    for (const bdx of fieldStr) {
-        const binCNum = parseInt(bdx, HEXRADIX).toString(BINRADIX);
-        binStr += (padbits + binCNum).slice(-padding);
+function encodeField(fieldStr: string, fieldType: WfFieldType, wfVersion: number = 1): BinaryBuffer {
+    /* Check field value */
+    if (!CODEC[fieldType][wfVersion].regex.test(fieldStr)) {
+        throw new Error(`Value of ${fieldType} field does not match ${CODEC[fieldType][wfVersion].regex.toString()} pattern`);
     }
-    return binStr;
-}
-
-/**
- * Converts a string of 1-byte UTF-8 characters to a character string
- * representing the binary encoding of 8-bit bytes
- * @private
- * @param fieldStr unencoded/uncompressed field value
- * @param nBits size of field in compressed binary encoding in bits
- * @returns representation of the binary encoding of the field
- */
-function encodeUTF2BinStr(fieldStr: string, nBits: number): string {
-    const padbits = new Array(BYTELENGTH).join('0');
-    let binStr = '';
-
-    // Run through characters of the string and convert to binary one by one
-    for (const char of fieldStr) {
-        const binChar = char.charCodeAt(0).toString(BINRADIX);
-        binStr += (padbits + binChar).slice(-BYTELENGTH);
-    }
-    // Add 0s to fill all nBits of the field with UTF-8 NULL character, unless nBits = 0
-    if (nBits === 0) return binStr;
-
-    const nullstr = new Array(nBits - binStr.length).join('0');
-    return (binStr + nullstr);
-}
-
-/**
- * Converts a string with datetime, time periode and lat long coordinates
- * to a character string representing the binary encoding
- * @private
- * @param fieldStr unencoded/uncompressed field value
- * @returns representation of the binary encoding of the field
- */
-function encodeDatum2BinStr(fieldStr: string): string {
-    let sign = '';
-
-    // Sign of lat long coordinates
-    if (fieldStr.startsWith('-')) sign = '0';
-    if (fieldStr.startsWith('+')) sign = '1';
-
-    // Prepare string by removing fixed characters
-    const fieldStrCl = fieldStr.replace(/[-+:.A-Z]/g, '');
-
-    // Run through characters of the string and convert to binary one by one
-    const padding = 4;
-    const padbits = new Array(padding).join('0');
-    let binStr = '';
-    for (const char of fieldStrCl) {
-        const binCNum = parseInt(char, DECRADIX).toString(BINRADIX);
-        binStr += (padbits + binCNum).slice(-padding);
-    }
-    return (sign + binStr);
-}
-
-/**
- * Converts a character string representing the binary encoding to a buffer
- * @private
- * @param binStr representation of the binary encoding
- * @returns binary encoding
- */
-function encodeBinStr2Buffer(binStr: string): Uint8Array {
-    // Split the string in an array of strings representing 8-bit bytes
-    const regexBytes = new RegExp('.{1,' + BYTELENGTH + '}', 'g');
-    let binStrArr = binStr.match(regexBytes) || [];
-
-    // Add trailing 0s to fill last byte
-    const lastbyte = binStrArr.length - 1;
-    const trailzero = new Array(BYTELENGTH - binStrArr[lastbyte].length + 1).join('0');
-    binStrArr[lastbyte] += trailzero;
-
-    // Convert the character string with binary representation to a binary buffer of 8-bit words
-    const buffer = new Uint8Array(binStrArr.length);
-    for (let i = 0; i < binStrArr.length; i++) {
-        buffer[i] = parseInt(binStrArr[i], BINRADIX);
-    }
-    return buffer;
-}
-
-/**
- * Converts a binary buffer/array to a character string representation
- * of the binary encoding of a message
- * @private
- * @param buffer binary encoding of a message
- * @returns representation of the binary encoding
- */
-function decodeBin2BinStr(buffer: Uint8Array): string {
-    const padbits = new Array(BYTELENGTH).join('0');
-    let binStr = '';
-
-    // Run through characters of the string and convert to binary one by one
-    for (const byte of buffer) {
-        const binChars = byte.toString(BINRADIX);
-        binStr += (padbits + binChars).slice(-BYTELENGTH);
-    }
-    return binStr;
-}
-
-/**
- * Converts a substring of the character string representation
- * of the binary encoding of a message to the uncompressed field value
- * @private
- * @param binStr representation of the binary encoding
- * @param beginBit position in string from where to convert
- * @param endBit position in string before which conversion stops
- * @param type 'utf', 'bin', 'dec', 'hex', 'datetime', 'duration', 'lat', 'long'
- * @returns decoded/uncompressed field value
- */
-function decodeBinStr(binStr: string, beginBit: number, endBit: number, type: string): string {
-    let i = 0;
-    let fieldStr = '';
-
-    // Perform conversion, depending on used binary encoding
-    switch (type) {
-        case 'utf': {
-            // Run through bytes of the substring and convert to UTF-8 one by one
-            for (i = beginBit; i < endBit; i += BYTELENGTH) {
-                fieldStr += String.fromCharCode(parseInt(binStr.substring(i, i + BYTELENGTH), BINRADIX));
-            }
-            break;
+    /* Choose encoding based on field type */
+    switch (fieldType) {
+        case WfFieldType.BIN: {
+            return encodeBin(fieldStr);
         }
-        case 'bin': {
-            // Run through 1-bit binary values and convert to characters one by one
-            for (i = beginBit; i < endBit; i++) {
-                fieldStr += parseInt(binStr.charAt(i), BINRADIX).toString(BINRADIX);
-            }
-            break;
+        case WfFieldType.DEC:
+        case WfFieldType.HEX: {
+            return encodeBDX(fieldStr);
         }
-        case 'lat':
-        case 'long': {
-            // Convert the first bit of lat long coordinates into sign
-            if (parseInt(binStr.charAt(beginBit), BINRADIX) === 0) fieldStr = '-';
-            if (parseInt(binStr.charAt(beginBit), BINRADIX) === 1) fieldStr = '+';
-            // Make sure BCD decoding below skips the sign bit; no break needed here!
-            beginBit++;
+        case WfFieldType.UTF8: {
+            return encodeUTF(fieldStr);
         }
-        // fallthrough  */
-        case 'dec':
-        case 'datetime':
-        case 'duration': {
-            // Run through 4-bit BCDs in the substring and convert to characters one by one
-            for (i = beginBit; i < endBit; i += 4) {
-                fieldStr += parseInt(binStr.substring(i, i + 4), BINRADIX).toString();
-            }
-            break;
+        case WfFieldType.DATETIME: {
+            return encodeDatum(fieldStr);
         }
-        case 'hex': {
-            // Run through 4-bit HCDs in the substring and convert to characters one by one
-            for (i = beginBit; i < endBit; i += 4) {
-                fieldStr += parseInt(binStr.substring(i, i + 4), BINRADIX).toString(HEXRADIX);
-            }
-            break;
+        case WfFieldType.DURATION: {
+            return encodeDatum(fieldStr);
+        }
+        case WfFieldType.LAT: {
+            return encodeLatLong(fieldStr);
+        }
+        case WfFieldType.LONG: {
+            return encodeLatLong(fieldStr);
         }
         default: {
-            throw new SyntaxError(`Internal Coding Error: wrong decoding type provided to decodeBinStr: ${type}`);
+            throw new Error(`Invalid message field type: ${fieldType}`);
         }
     }
-    // Re-insert fixed characters for certain field types i.a.w. specification
-    switch (type) {
-        case 'datetime':
-            fieldStr = [
+}
+/**
+ * Decodes a Whiteflag message field
+ * @param buffer a binary buffer with the encoded field
+ * @param fieldType the message field type: 'utf-8', 'bin', 'dec', 'hex', 'datetime', 'duration', 'lat', 'long'
+ * @param wfVersion the version of the Whiteflag specification
+ * @returns a string with the decoded field value
+ */
+function decodeField(buffer: BinaryBuffer, fieldType: WfFieldType, wfVersion: number = 1): string {
+    /* Check binary encoding */
+    if (CODEC[fieldType][wfVersion].length > 0
+     && buffer.length !== CODEC[fieldType][wfVersion].length) {
+        throw new Error(`Invalid ${fieldType} binary field length: ${buffer.length} bits`);
+    }
+    /* Choose decoding based on field type */
+    switch (fieldType) {
+        case WfFieldType.BIN: {
+            return decodeBin(buffer);
+        }
+        case WfFieldType.DEC:
+        case WfFieldType.HEX: {
+            return decodeBDX(buffer);
+        }
+        case WfFieldType.UTF8: {
+            return decodeUTF(buffer);
+        }
+        case WfFieldType.DATETIME: {
+            const fieldStr = decodeDatum(buffer);
+            return [
                 fieldStr.slice(0, 4), '-',
                 fieldStr.slice(4, 6), '-',
                 fieldStr.slice(6, 8), 'T',
                 fieldStr.slice(8, 10), ':',
                 fieldStr.slice(10, 12), ':',
                 fieldStr.slice(12), 'Z'
-            ].join('');
-            break;
-        case 'duration':
-            fieldStr = [
+            ].join(NOCHAR);
+        }
+        case WfFieldType.DURATION: {
+            const fieldStr = decodeDatum(buffer);
+            return [
                 'P',
                 fieldStr.slice(0, 2), 'D',
                 fieldStr.slice(2, 4), 'H',
                 fieldStr.slice(4), 'M'
-            ].join('');
-            break;
-        case 'lat':
-            fieldStr = [fieldStr.slice(0, 3), '.', fieldStr.slice(3)].join('');
-            break;
-        case 'long':
-            fieldStr = [fieldStr.slice(0, 4), '.', fieldStr.slice(4)].join('');
-            break;
+            ].join(NOCHAR);
+        }
+        case WfFieldType.LAT:
+            const fieldStr = decodeLatLong(buffer);
+            return [
+                fieldStr.slice(0, 3), '.',
+                fieldStr.slice(3)
+            ].join(NOCHAR);
+        case WfFieldType.LONG: {
+            const fieldStr = decodeLatLong(buffer);
+            return [
+                fieldStr.slice(0, 4), '.',
+                fieldStr.slice(4)
+            ].join(NOCHAR);
+        }
+        default: {
+            throw new Error(`Invalid message field type: ${fieldType}`);
+        }
     }
-    return fieldStr;
+}
+
+/* PRIVATE MODULE DECLARATIONS */
+/**
+ * Defines an object with field type definitions
+ * @private
+ * @interface WfFieldEncoding
+ */
+interface WfFieldEncoding {
+    [key: string]: {            // Field type
+        [key: number]: {        // Whiteflag version
+            length: number      // Field length, or 0 if variable
+            pattern: string;    // Regular expresssion pattern
+            regex: RegExp;      // Regular expression for field value verification
+        }
+    }
+}
+/**
+ * Compiles an object with all valid field type definitions
+ * @private
+ * @returns an object with field type definitions
+ */
+function compileFieldCodec(): WfFieldEncoding {
+    const fieldCodec: WfFieldEncoding = {};
+    for (const type of Object.values(WfFieldType)) {
+        fieldCodec[type] = {};
+
+        /* Currently, there is only one Whiteflag version */
+        fieldCodec[type][1] = v1[type] as any;
+        fieldCodec[type][1].regex = new RegExp(fieldCodec[type][1].pattern);
+    }
+    return fieldCodec;
+}
+
+/* PRIVATE MODULE FUNCTIONS */
+/**
+ * Encodes a binary field to a binary buffer
+ * @private
+ * @param binStr representation of the binary encoding
+ * @returns a binary buffer with the encoded field
+ */
+function encodeBin(binStr: string): BinaryBuffer {
+    /* Number of bytes required */
+    const bitLength = binStr.length;
+    const byteLength = Math.ceil(bitLength / BYTELENGTH);
+
+    /* Add bits one by one */
+    let buffer = new Uint8Array(byteLength);
+    for (let bitIndex = 0; bitIndex < bitLength; bitIndex++) {
+        if (binStr.substring(bitIndex, bitIndex + 1) === '1') {
+            const byteCursor = Math.floor(bitIndex / BYTELENGTH);
+            const bitPosition = bitIndex % BYTELENGTH;
+            buffer[byteCursor] |= (0x80 >>> bitPosition);
+        }
+    }
+    /* Return the resulting binary buffer */
+    return BinaryBuffer.fromU8a(buffer, bitLength);
+}
+/**
+ * Decodes a binary buffer with the compressed encoded field
+ * to a field string with the binary value
+ * @private
+ * @param buffer a binary buffer with the encoded field
+ * @return a string with the decoded binary field value
+ */
+function decodeBin(buffer: BinaryBuffer): string {
+    const bitLength = buffer.length;
+    const byteArray = buffer.toU8a();
+    let binStr: string = '';
+
+    /* Loop strough bits of binary buffer */
+    for (let bitIndex = 0; bitIndex < bitLength; bitIndex++) {
+        const byteCursor = Math.floor(bitIndex / BYTELENGTH);
+        const bitPosition = bitIndex % BYTELENGTH;
+        if ((byteArray[byteCursor] >>> (BYTELENGTH - bitPosition - 1) & 1) == 1) {
+            binStr += '1';
+        } else {
+            binStr += '0';
+        }
+    }
+    return binStr.toLowerCase();
+}
+/**
+ * Encodes a field string with a (hexa)decimal value
+ * to a binary buffer with the compressed encoded field
+ * @private
+ * @param bdxString an unencoded/uncompressed (hexa)decimal field value
+ * @returns a binary buffer with the encoded field
+ */
+function encodeBDX(bdxString: string): BinaryBuffer {
+    /* Each digit needs 4 bits */
+    const bitLength = bdxString.length * QUADBIT;
+    const buffer = new Uint8Array(Math.ceil(bitLength / BYTELENGTH));
+
+    /* Add pairs of 4-bits to the buffer */
+    for (let i = 0; i < buffer.length; i++) {
+        const ci = i * 2;
+        buffer[i] |= parseInt(bdxString.substring(ci, ci + 1) + '0', HEXRADIX);
+        buffer[i] |= parseInt('0' + bdxString.substring(ci + 1, ci + 2), HEXRADIX);
+    }
+    /* Return the resulting binary buffer */
+    return BinaryBuffer.fromU8a(buffer, bitLength);
+}
+/**
+ * Decodes a binary buffer with the compressed encoded field
+ * to a field string with the (hexa)decimal value
+ * @private
+ * @param buffer a binary buffer with the encoded field
+ * @return a string with the decoded (hexa)decimal field value
+ */
+function decodeBDX(buffer: BinaryBuffer): string {
+    const bitLength = buffer.length;
+    const byteArray = buffer.extractU8a(0, bitLength);
+    let bdxString: string = '';
+
+    /* Loop through the bits in the binary buffer */
+    for (let bitIndex = 0; bitIndex < bitLength; bitIndex += BYTELENGTH) {
+        const byteCursor = Math.floor(bitIndex / BYTELENGTH);
+
+        /* Add first 4 bits of the byte to the string */
+        const byte = (byteArray[byteCursor] >> QUADBIT) & 0xF;
+        bdxString += byte.toString(HEXRADIX);
+
+        /* Add second 4 bits of byte to the string */
+        if ((bitIndex + QUADBIT) < bitLength) {
+            const byte = byteArray[byteCursor] & 0xF;
+            bdxString += byte.toString(HEXRADIX);
+        }
+    }
+    /* Return the resulting string */
+    return bdxString.toLowerCase();
+}
+/**
+ * Encodes a field with 1-byte UTF8-8 characters
+ * to a binary buffer with the compressed encoded field
+ * @private
+ * @param utfString an unencoded/uncompressed UTF8 text field
+ * @returns a binary buffer with the encoded field
+ */
+function encodeUTF(utfString: string): BinaryBuffer {
+    /* Each character need a byte */
+    const bitLength = utfString.length * BYTELENGTH;
+    const buffer = new Uint8Array(utfString.length);
+
+    /* Add the character code per byte */
+    for (let i = 0; i < buffer.length; i++) {
+        buffer[i] = utfString.charCodeAt(i);
+    }
+    /* Return the resulting binary buffer */
+    return BinaryBuffer.fromU8a(buffer, bitLength);
+}
+/**
+ * Decodes a binary buffer with the compressed encoded field
+ * to a field string with UTF8 text
+ * @private
+ * @param buffer a binary buffer with the encoded field
+ * @return a string with the decoded UTF8 text field value
+ */
+function decodeUTF(buffer: BinaryBuffer): string {
+    return String.fromCharCode(...buffer.toU8a());
+}
+/**
+ * Encodes a field with a datetime, time periode and latlong coordinates
+ * to a binary buffer with the compressed encoded field
+ * @private
+ * @param datumStr an unencoded/uncompressed datum field
+ * @returns a binary buffer with the encoded field
+ */
+function encodeDatum(datumStr: string): BinaryBuffer {
+    /* Encode field as BDX without fixed characters */
+    return encodeBDX(datumStr.replace(/[-+:.A-Z]/g, NOCHAR));
+}
+/**
+ * Decodes a binary buffer with the compressed encoded field
+ * to a field string with a datetime, time periode and latlong values
+ * without the fixed characters
+ * @private
+ * @param buffer a binary buffer with the encoded datum field
+ * @returns a string with the decoded datum field value
+ */
+function decodeDatum(buffer: BinaryBuffer): string {
+    /* Decode field as BDX without fixed characters */
+    return decodeBDX(buffer);
+}
+/**
+ * Encodes a field with latlong coordinates
+ * to a binary buffer with the compressed encoded field
+ * @private
+ * @param latlongStr an unencoded/uncompressed latlong field
+ * @returns a binary buffer with the encoded field
+ */
+function encodeLatLong(latlongStr: string): BinaryBuffer {
+    /* Encode field as BDX without fixed characters */
+    let buffer = encodeDatum(latlongStr);
+
+    /* Sign of latlong coordinates */
+    if (latlongStr.startsWith('-')) {
+        buffer.insertBytes([0x00], 1);
+    };
+    if (latlongStr.startsWith('+')) {
+       buffer.insertBytes([0x80], 1);
+    }
+    /* Return the resulting binary buffer */
+    return buffer;
+}
+/**
+ * Decodes a binary buffer with the compressed encoded field
+ * to a field string with a latlong value without the fixed characters
+ * @private
+ * @param buffer a binary buffer with the encoded latlong field
+ * @returns a string with the decoded latlong value
+ */
+function decodeLatLong(buffer: BinaryBuffer): string {
+    /* Decode field as BDX without first bit */
+    const latlongStr = decodeDatum(buffer.extract(1, buffer.length));
+
+    /* Sign of latlong coordinates */
+    if (buffer.extractU8a(0,1)[0] === 0x80) {
+        return '+' + latlongStr;
+    }
+    if (buffer.extractU8a(0,1)[0] === 0x00) {
+        return '-' + latlongStr;
+    }
+    throw new Error('Invalid latlong encoding');
 }

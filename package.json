@@ -21,8 +21,6 @@
         "url": "https://github.com/WhiteflagProtocol/whiteflag-js/issues"
     },
     "type": "module",
-    "main": "dist/protocol/index.js",
-    "types": "dist/protocol/index.d.ts",
     "dependencies": {
         "@whiteflag/core": "file:./dist/core",
         "@whiteflag/crypto": "file:./dist/crypto",
@@ -43,7 +41,7 @@
         "doc:src": "typedoc",
         "docs": "npm-run-all doc:*",
         "build:cleanup": "rimraf -g ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",
-        "build:compile": "tsc",
+        "build:compile": "tsc --declaration false",
         "build:declaration": "tsc --emitDeclarationOnly --declaration true --removeComments false",
         "build:test": "mocha --recursive --reporter dot",
         "build:docs": "npm run docs",

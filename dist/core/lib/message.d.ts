@@ -1,86 +1,201 @@
 /**
  * @module core/message
  * @summary Whiteflag JS message class
- * @since v1.0 (Whiteflag specification v1-draft.7)
  */
-export { WfMessage };
-/**
- * Defines Whiteflag message types
- * @enum WfFieldType
- */
-declare enum WfMsgType {
-    A = "A",
-    K = "K",
-    T = "T",
-    P = "P",
-    D = "D",
-    S = "S",
-    E = "E",
-    I = "I",
-    M = "M",
-    Q = "Q",
-    R = "R",
-    F = "F"
-}
+export { WfCoreMessage, isValidMessage, validateMessage };
+import { BinaryBuffer } from '@whiteflag/util';
+import { WfVersion, WfMsgType } from './specs.ts';
 /**
  * Whiteflag Message
- * @class WfMessage
+ * @class WfCoreMessage
+ * @wfver v1-draft.7
+ * @todo Add a proper description of the functionality
  */
-declare class WfMessage {
+declare class WfCoreMessage {
     /**
-     * @property {Object} MetaHeader The meta header
+     * @property the message type
      */
-    MetaHeader: WfMetaHeader;
+    private type;
     /**
-     * @property {Object} MessageHeader The message header
+     * @property the Whiteflag version
      */
-    MessageHeader: WfMsgHeader;
+    private version;
     /**
-     * @property {Object} MessageBody The message body
+     * @property header The message header
      */
-    MessageBody: WfMsgBody;
+    protected header: WfMsgHeader;
+    /**
+     * @property body The message body
+     */
+    protected body: WfMsgBody;
+    /**
+     * @property binary the binary encoded message
+     */
+    private binary;
+    /**
+     * @property final true if content cannot be altered anymore, else false
+     */
+    private final;
     /**
      * Constructor for a Whiteflag message
-     * @param wfVersion the version of the used Whiteflag specification
+     * @param type the Whiteflag message type
+     * @param version the Whiteflag protocol version
      */
-    constructor(wfMsgType: WfMsgType, wfVersion?: number);
-    static fromObject(wfMessage: any): WfMessage;
-    isValid(): void;
-    encode(): void;
-    get(): void;
-    set(): void;
-    toObject(): void;
-    toHex(): void;
-    toU8a(): void;
+    constructor(type: WfMsgType, version?: WfVersion);
+    /**
+     * Creates new Whiteflag message from a binary buffer
+     * @function fromBinary
+     * @param message a binary buffer with the encoded message
+     * @returns a new Whiteflag message object with the decoded message
+     */
+    static fromBinary(message: BinaryBuffer): WfCoreMessage;
+    /**
+     * Creates new Whiteflag message from a plain object
+     * @function fromObject
+     * @param message a plain JavaScript object with message header and body
+     * @returns a new Whiteflag message object
+     */
+    static fromObject(message: any): WfCoreMessage;
+    /**
+     * Creates new Whiteflag message from a hexadecimal encoded string
+     * @param message  atring with the hexadecimal encoded message
+     * @returns a new Whiteflag message object with the decoded message
+     */
+    static fromHex(message: string): WfCoreMessage;
+    /**
+     * Creates new Whiteflag message from a binary encoded message
+     * @param message a Uint8Array with the binary encoded message
+     * @returns a new Whiteflag message object with the decoded message
+     */
+    static fronU8a(message: Uint8Array): WfCoreMessage;
+    /**
+     * Indicates if the message has already been encoded
+     * @function isEncoded
+     * @returns true if message has been encoded, else false
+     */
+    isEncoded(): boolean;
+    /**
+     * Indicates if the message is valid, i.e. if all fields contain valid values
+     * @function isValid
+     * @returns true if message is valid, else false
+     */
+    isValid(): boolean;
+    /**
+     * Returns message validation errors
+     * @function validate
+     * @returns an array of validation errors
+     */
+    validate(): string[];
+    /**
+     * Decodes a binary encoded message
+     * @param message a bianry encoded message
+     * @returns a new Whiteflag message object
+     * @todo fix decoding
+     */
+    decode(message: BinaryBuffer): WfCoreMessage;
+    /**
+     * Encodes the message, making the contents final
+     * @function encode
+     * @returns
+     */
+    encode(): WfCoreMessage;
+    /**
+     * Returns the value of the specified message field
+     * @function get
+     * @param fieldName the name of the message field
+     * @returns the value of the message field
+     */
+    get(fieldName: string): string | null;
+    /**
+     * Sets the value of the specified message field, if the message has not been encoded
+     * @function set
+     * @param fieldName the name of the message field
+     * @param value the value to set
+     * @return true if succesful, else false
+     */
+    set(fieldName: string, value: string): boolean;
+    /**
+     * Returns the Whiteflag message as a plain object
+     * @function toObject
+     * @returns the message as a plain object
+     */
+    toObject(): Object;
+    /**
+     * Returns the Whiteflag message as a string
+     * @function toString
+     * @returns a concatinated string of field values
+     */
+    toString(): string;
+    /**
+     * Returns the Whiteflag message encoded as a hexadecimal string
+     * @function toHex
+     * @returns a hexadecimal string with the encoded message
+     */
+    toHex(): string;
+    /**
+     * Returns the encoded Whiteflag message as a UInt8array
+     * @function toU8a
+     * @returns a UInt8array with the encoded message
+     */
+    toU8a(): Uint8Array<ArrayBufferLike>;
+    /**
+     * Check if mesage type is valid
+     * @param type the message type to check
+     * @returns the message type, if valid
+     * @throws if message type is not valid
+     */
+    static checkType(type: WfMsgType): WfMsgType;
+    /**
+     * Check if protocol version is valid
+     * @param version the protocol version to check
+     * @returns the protocol version, if valid
+     * @throws if message type is not valid
+     */
+    static checkVersion(version: WfVersion): WfVersion;
+    /**
+     * Generates message header
+     * @private
+     * @returns a Whiteflag message header object
+     */
+    private generateHeader;
+    /**
+     * Decodes a field from a binary encoded message header
+     * @param field the header field to decode
+     * @param message the binary encoded message
+     * @returns the field value
+     */
+    private decodeHeaderField;
+    /**
+     * Generates message body
+     * @private
+     * @@param type the message type to override if test message body
+     * @returns a Whiteflag message body object
+     */
+    private generateBody;
+    /**
+     * Decodes a field from a binary encoded message body
+     * @param field the body field to decode
+     * @param message the binary encoded message
+     * @param type the message type to override, e.g. for pseudo message body
+     * @param bitOffset the bit offset for dynamic fields
+     * @returns the field value
+     */
+    private decodeBodyField;
 }
 /**
- * Defines a Whiteflag message header object
- * @private
- * @interface WfMsgHeader
+ * Checks if a plain object is a valid Whiteflag message
+ * @function isValidMessage
+ * @param message the message object to validate
+ * @returns true if message is valid, else false
  */
-interface WfMetaHeader {
-    [key: string]: any;
-    autoGenerated?: string;
-    blockchain?: string;
-    transceiveDirection?: string;
-    transmissionSuccess?: boolean;
-    transactionHash?: string;
-    transactionTime?: string;
-    transactionIndex?: number;
-    blockNumber?: number;
-    blockDepth?: number;
-    confirmed?: boolean;
-    recipientAddress?: string;
-    originatorAddress?: string;
-    originatorPubKey?: string;
-    originatorValid?: boolean;
-    referenceValid?: boolean;
-    formatValid?: boolean;
-    validationErrors?: string[];
-    encodedMessage?: string;
-    encryptionInitVector?: string;
-    encryptionKeyInput?: string;
-}
+declare function isValidMessage(message: any): boolean;
+/**
+ * Checks a plain message object for validation errors
+ * @function validateMessage
+ * @param message the message object to validate
+ * @returns an array of validation errors
+ */
+declare function validateMessage(message: any): string[];
 /**
  * Defines a Whiteflag message header object
  * @private
@@ -107,6 +222,7 @@ interface WfMsgBody {
     VerificationData?: string;
     CryptoDataType?: string;
     CryptoData?: string;
+    PseudoMessageCode?: string;
     SubjectCode?: string;
     DateTime?: string;
     Duration?: string;
@@ -116,7 +232,7 @@ interface WfMsgBody {
     ObjectSizeDim1?: string;
     ObjectSizeDim2?: string;
     ObjectOrientation?: string;
-    ResourceMethod?: string;
-    ResourceData?: string;
+    ReferenceMethod?: string;
+    ReferenceData?: string;
     Text?: string;
 }

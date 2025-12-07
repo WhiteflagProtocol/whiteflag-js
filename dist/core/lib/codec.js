@@ -1,116 +1,88 @@
-export { WfFieldType, encodeField, decodeField };
+export { encodeField, decodeField, isValidValue };
 import { BinaryBuffer } from '@whiteflag/util';
+import { WfVersion, WfCodec } from "./specs.js";
 import v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
 const NOCHAR = '';
 const HEXRADIX = 16;
 const BYTELENGTH = 8;
 const QUADBIT = 4;
-var WfFieldType;
-(function (WfFieldType) {
-    WfFieldType["BIN"] = "bin";
-    WfFieldType["DEC"] = "dec";
-    WfFieldType["HEX"] = "hex";
-    WfFieldType["UTF8"] = "utf-8";
-    WfFieldType["DATETIME"] = "datetime";
-    WfFieldType["DURATION"] = "duration";
-    WfFieldType["LAT"] = "lat";
-    WfFieldType["LONG"] = "long";
-})(WfFieldType || (WfFieldType = {}));
-const CODEC = compileFieldCodec();
-function encodeField(fieldStr, fieldType, wfVersion = 1) {
-    if (!CODEC[fieldType][wfVersion].regex.test(fieldStr)) {
-        throw new Error(`Value of ${fieldType} field does not match ${CODEC[fieldType][wfVersion].regex.toString()} pattern`);
+const FIELDS = compileFieldCodecs();
+function encodeField(value, codec, version = WfVersion.v1) {
+    if (!isValidValue(value, codec, version)) {
+        throw new Error(`Value of ${codec} field does not match ${FIELDS[codec][version].pattern} pattern`);
     }
-    switch (fieldType) {
-        case WfFieldType.BIN: {
-            return encodeBin(fieldStr);
+    switch (codec) {
+        case WfCodec.BIN: {
+            return encodeBin(value);
         }
-        case WfFieldType.DEC:
-        case WfFieldType.HEX: {
-            return encodeBDX(fieldStr);
+        case WfCodec.DEC:
+        case WfCodec.HEX: {
+            return encodeBDX(value);
         }
-        case WfFieldType.UTF8: {
-            return encodeUTF(fieldStr);
+        case WfCodec.UTF8: {
+            return encodeUTF(value);
         }
-        case WfFieldType.DATETIME: {
-            return encodeDatum(fieldStr);
+        case WfCodec.DATETIME: {
+            return encodeDatum(value);
         }
-        case WfFieldType.DURATION: {
-            return encodeDatum(fieldStr);
+        case WfCodec.DURATION: {
+            return encodeDatum(value);
         }
-        case WfFieldType.LAT: {
-            return encodeLatLong(fieldStr);
+        case WfCodec.LAT: {
+            return encodeLatLong(value);
         }
-        case WfFieldType.LONG: {
-            return encodeLatLong(fieldStr);
+        case WfCodec.LONG: {
+            return encodeLatLong(value);
         }
         default: {
-            throw new Error(`Invalid message field type: ${fieldType}`);
+            throw new Error(`Invalid message field encoding: ${codec}`);
         }
     }
 }
-function decodeField(buffer, fieldType, wfVersion = 1) {
-    if (CODEC[fieldType][wfVersion].length > 0
-        && buffer.length !== CODEC[fieldType][wfVersion].length) {
-        throw new Error(`Invalid ${fieldType} binary field length: ${buffer.length} bits`);
+function decodeField(buffer, codec, version = WfVersion.v1) {
+    if (FIELDS[codec][version].length > 0
+        && buffer.length !== FIELDS[codec][version].length) {
+        throw new Error(`Invalid ${codec} binary field length: ${buffer.length} bits`);
     }
-    switch (fieldType) {
-        case WfFieldType.BIN: {
+    switch (codec) {
+        case WfCodec.BIN: {
             return decodeBin(buffer);
         }
-        case WfFieldType.DEC:
-        case WfFieldType.HEX: {
+        case WfCodec.DEC:
+        case WfCodec.HEX: {
             return decodeBDX(buffer);
         }
-        case WfFieldType.UTF8: {
+        case WfCodec.UTF8: {
             return decodeUTF(buffer);
         }
-        case WfFieldType.DATETIME: {
-            const fieldStr = decodeDatum(buffer);
-            return [
-                fieldStr.slice(0, 4), '-',
-                fieldStr.slice(4, 6), '-',
-                fieldStr.slice(6, 8), 'T',
-                fieldStr.slice(8, 10), ':',
-                fieldStr.slice(10, 12), ':',
-                fieldStr.slice(12), 'Z'
-            ].join(NOCHAR);
+        case WfCodec.DATETIME: {
+            return decodeDatetime(buffer);
         }
-        case WfFieldType.DURATION: {
-            const fieldStr = decodeDatum(buffer);
-            return [
-                'P',
-                fieldStr.slice(0, 2), 'D',
-                fieldStr.slice(2, 4), 'H',
-                fieldStr.slice(4), 'M'
-            ].join(NOCHAR);
+        case WfCodec.DURATION: {
+            return decodeDuration(buffer);
         }
-        case WfFieldType.LAT:
-            const fieldStr = decodeLatLong(buffer);
-            return [
-                fieldStr.slice(0, 3), '.',
-                fieldStr.slice(3)
-            ].join(NOCHAR);
-        case WfFieldType.LONG: {
-            const fieldStr = decodeLatLong(buffer);
-            return [
-                fieldStr.slice(0, 4), '.',
-                fieldStr.slice(4)
-            ].join(NOCHAR);
+        case WfCodec.LAT: {
+            return decodeLat(buffer);
+        }
+        case WfCodec.LONG: {
+            return decodeLong(buffer);
         }
         default: {
-            throw new Error(`Invalid message field type: ${fieldType}`);
+            throw new Error(`Invalid message field encoding: ${codec}`);
         }
     }
 }
-function compileFieldCodec() {
-    const fieldCodec = {};
-    for (const type of Object.values(WfFieldType)) {
-        fieldCodec[type] = {};
-        fieldCodec[type][1] = v1[type];
-        fieldCodec[type][1].regex = new RegExp(fieldCodec[type][1].pattern);
+function isValidValue(value, codec, version = WfVersion.v1) {
+    return FIELDS[codec][version].regex.test(value);
+}
+function compileFieldCodecs() {
+    const codec = {};
+    for (const type of Object.values(WfCodec)) {
+        codec[type] = {};
+        codec[type]['1'] = v1[type];
+        codec[type]['1'].regex = new RegExp(codec[type]['1'].pattern);
     }
-    return fieldCodec;
+    return codec;
 }
 function encodeBin(binStr) {
     const bitLength = binStr.length;
@@ -145,14 +117,14 @@ function encodeBDX(bdxString) {
     const bitLength = bdxString.length * QUADBIT;
     const buffer = new Uint8Array(Math.ceil(bitLength / BYTELENGTH));
     for (let i = 0; i < buffer.length; i++) {
-        const ci = i * 2;
-        buffer[i] |= parseInt(bdxString.substring(ci, ci + 1) + '0', HEXRADIX);
-        buffer[i] |= parseInt('0' + bdxString.substring(ci + 1, ci + 2), HEXRADIX);
+        const d = i * 2;
+        buffer[i] |= parseInt(bdxString.substring(d, d + 1) + '0', HEXRADIX);
+        buffer[i] |= parseInt('0' + bdxString.substring(d + 1, d + 2), HEXRADIX);
     }
     return BinaryBuffer.fromU8a(buffer, bitLength);
 }
 function decodeBDX(buffer) {
-    const bitLength = buffer.length;
+    const bitLength = buffer.length - (buffer.length % QUADBIT);
     const byteArray = buffer.extractU8a(0, bitLength);
     let bdxString = '';
     for (let bitIndex = 0; bitIndex < bitLength; bitIndex += BYTELENGTH) {
@@ -175,13 +147,34 @@ function encodeUTF(utfString) {
     return BinaryBuffer.fromU8a(buffer, bitLength);
 }
 function decodeUTF(buffer) {
-    return String.fromCharCode(...buffer.toU8a());
+    const bitLength = buffer.length - (buffer.length % BYTELENGTH);
+    return String.fromCharCode(...buffer.extractU8a(0, bitLength));
 }
 function encodeDatum(datumStr) {
     return encodeBDX(datumStr.replace(/[-+:.A-Z]/g, NOCHAR));
 }
 function decodeDatum(buffer) {
     return decodeBDX(buffer);
+}
+function decodeDatetime(buffer) {
+    const value = decodeDatum(buffer);
+    return [
+        value.slice(0, 4), '-',
+        value.slice(4, 6), '-',
+        value.slice(6, 8), 'T',
+        value.slice(8, 10), ':',
+        value.slice(10, 12), ':',
+        value.slice(12), 'Z'
+    ].join(NOCHAR);
+}
+function decodeDuration(buffer) {
+    const value = decodeDatum(buffer);
+    return [
+        'P',
+        value.slice(0, 2), 'D',
+        value.slice(2, 4), 'H',
+        value.slice(4), 'M'
+    ].join(NOCHAR);
 }
 function encodeLatLong(latlongStr) {
     let buffer = encodeDatum(latlongStr);
@@ -202,5 +195,19 @@ function decodeLatLong(buffer) {
     if (buffer.extractU8a(0, 1)[0] === 0x00) {
         return '-' + latlongStr;
     }
-    throw new Error('Invalid latlong encoding');
+    throw new SyntaxError('Invalid latlong encoding');
+}
+function decodeLat(buffer) {
+    const value = decodeLatLong(buffer);
+    return [
+        value.slice(0, 3), '.',
+        value.slice(3)
+    ].join(NOCHAR);
+}
+function decodeLong(buffer) {
+    const value = decodeLatLong(buffer);
+    return [
+        value.slice(0, 4), '.',
+        value.slice(4)
+    ].join(NOCHAR);
 }

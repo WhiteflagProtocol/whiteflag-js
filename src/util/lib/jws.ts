@@ -1,4 +1,3 @@
-'use strict';
 /**
  * @module util/jws
  * @description Whiteflag JS JSON Web Signature class and functions
@@ -7,7 +6,7 @@ export {
     Jws
 };
 
-/* Dependencies */
+/* Module imports */
 import {
     isObject,
     isString,
@@ -51,19 +50,19 @@ const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_
 class Jws {
     /* CLASS PROPERTIES */
     /**
-     * @property {Object} protected the JWS protected header
+     * @property protected the JWS protected header
      */
     private protected = {
         alg: ''
     }
     /**
-     * @property {Object} header the JWS payload
+     * @property header the JWS payload
      */
     private payload = {
         iat: 0
     }
     /**
-     * @property {string} signature the JWS signature
+     * @property signature the JWS signature
      */
     private signature: string = '';
 

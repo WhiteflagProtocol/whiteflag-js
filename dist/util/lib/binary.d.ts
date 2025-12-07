@@ -28,6 +28,13 @@ declare class BinaryBuffer {
      * @param binBuffer a binary buffer
      * @returns a new binary buffer
      */
+    static empty(): BinaryBuffer;
+    /**
+     * Creates a binary buffer from another binary buffer
+     * @function from
+     * @param binBuffer a binary buffer
+     * @returns a new binary buffer
+     */
     static from(binBuffer: BinaryBuffer): BinaryBuffer;
     /**
      * Creates a binary buffer from bytes from a number array
@@ -87,25 +94,25 @@ declare class BinaryBuffer {
     /**
      * Extracts the specified bits from the binary buffer
      * @param startBit the first bit to extract (inclusive)
-     * @param endBit  the final bit of the extraction (exclusive)
+     * @param endBit the final bit of the extraction (exclusive), negative means until end of buffer
      * @returns a new binary buffer with the extracted bits
      */
-    extract(startBit: number, endBit: number): BinaryBuffer;
+    extract(startBit: number, endBit?: number): BinaryBuffer;
     /**
      * Extracts the specified bits from the binary buffer to a hexadecimal string
      * @param startBit the first bit to extract (inclusive)
-     * @param endBit  the final bit of the extraction (exclusive)
+     * @param endBit the final bit of the extraction (exclusive), negative means until end of buffer
      * @returns a hexadecimal string with the extracted data
      */
-    extractHex(startBit: number, endBit: number): string;
+    extractHex(startBit: number, endBit?: number): string;
     /**
      * Extracts the specified bits from the binary buffer to a Uint8Array
      * @function extractU8a
      * @param startBit the first bit to extract (inclusive)
-     * @param endBit the final bit of the extraction (exclusive)
+     * @param endBit the final bit of the extraction (exclusive), negative means until end of buffer
      * @returns an array of 8-bit unsigned integers with the extracted data
      */
-    extractU8a(startBit: number, endBit: number): Uint8Array;
+    extractU8a(startBit: number, endBit?: number): Uint8Array;
     /**
      * Inserts bytes from a number array at the start of the binary buffer
      * @function insertBytes

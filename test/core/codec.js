@@ -14,6 +14,9 @@ import {
     encodeField,
     decodeField
 } from '@whiteflag/core';
+import {
+    BinaryBuffer
+} from '@whiteflag/util';
 
 /* Test data */
 import testVector from './codec.json' with { type: 'json' };
@@ -22,7 +25,7 @@ import testVector from './codec.json' with { type: 'json' };
 testCase('Core codec module', function() {
     testCase('Field encoding', function() {
         assertion(' 1. should correctly encode (hexa)decimal fields', function(done) {
-            const BDX = encodeField(testVector['bdx'].string, 'hex');
+            const BDX = encodeField(testVector['bdx'].string, 'hexadecimal');
             deepStrictEqual(BDX.toU8a(), new Uint8Array(testVector['bdx'].buffer));
             return done();
         });
@@ -36,24 +39,24 @@ testCase('Core codec module', function() {
             deepStrictEqual(DATETIME.toHex(), testVector['datetime'].hex);
             const PERIOD = encodeField(testVector['duration'].string, 'duration');
             deepStrictEqual(PERIOD.toHex(), testVector['duration'].hex);
-            const LAT = encodeField(testVector['lat'].string, 'lat');
-            deepStrictEqual(LAT.toHex(), testVector['lat'].hex);
-            const LONG = encodeField(testVector['long'].string, 'long');
-            deepStrictEqual(LONG.toHex(), testVector['long'].hex);
+            const LAT = encodeField(testVector['latitude'].string, 'latitude');
+            deepStrictEqual(LAT.toHex(), testVector['latitude'].hex);
+            const LONG = encodeField(testVector['longitude'].string, 'longitude');
+            deepStrictEqual(LONG.toHex(), testVector['longitude'].hex);
             return done();
         });
         assertion(' 4. should correctly encode binary fields', function(done) {
-            const B1 = encodeField(testVector['bin'].string1, 'bin');
-            deepStrictEqual(B1.toHex(), testVector['bin'].hex1);
-            const B2 = encodeField(testVector['bin'].string2, 'bin');
-            deepStrictEqual(B2.toHex(), testVector['bin'].hex2);
+            const B1 = encodeField(testVector['binary'].string1, 'binary');
+            deepStrictEqual(B1.toHex(), testVector['binary'].hex1);
+            const B2 = encodeField(testVector['binary'].string2, 'binary');
+            deepStrictEqual(B2.toHex(), testVector['binary'].hex2);
             return done();
         });
     });
     testCase('Field decoding', function() {
         assertion(' 1. should correctly decode (hexa)decimal fields', function(done) {
-            const BDX = encodeField(testVector['bdx'].string, 'hex');
-            const bdxString = decodeField(BDX, 'hex');
+            const BDX = encodeField(testVector['bdx'].string, 'hexadecimal');
+            const bdxString = decodeField(BDX, 'hexadecimal');
             deepStrictEqual(bdxString, testVector['bdx'].string);
             return done();
         });
@@ -70,21 +73,27 @@ testCase('Core codec module', function() {
             const PERIOD = encodeField(testVector['duration'].string, 'duration');
             const pString = decodeField(PERIOD, 'duration');
             deepStrictEqual(pString, testVector['duration'].string);
-            const LAT = encodeField(testVector['lat'].string, 'lat');
-            const latString = decodeField(LAT, 'lat');
-            deepStrictEqual(latString, testVector['lat'].string);
-            const LONG = encodeField(testVector['long'].string, 'long');
-            const longString = decodeField(LONG, 'long');
-            deepStrictEqual(longString, testVector['long'].string);
+            const LAT = encodeField(testVector['latitude'].string, 'latitude');
+            const latString = decodeField(LAT, 'latitude');
+            deepStrictEqual(latString, testVector['latitude'].string);
+            const LONG = encodeField(testVector['longitude'].string, 'longitude');
+            const longString = decodeField(LONG, 'longitude');
+            deepStrictEqual(longString, testVector['longitude'].string);
             return done();
         });
         assertion(' 4. should correctly decode binary fields', function(done) {
-            const B1 = encodeField(testVector['bin'].string1, 'bin');
-            const binString1 = decodeField(B1, 'bin');
-            deepStrictEqual(binString1, testVector['bin'].string1);
-            const B2 = encodeField(testVector['bin'].string2, 'bin');
-            const binString2 = decodeField(B2, 'bin');
-            deepStrictEqual(binString2, testVector['bin'].string2);
+            const B1 = encodeField(testVector['binary'].string1, 'binary');
+            const binString1 = decodeField(B1, 'binary');
+            deepStrictEqual(binString1, testVector['binary'].string1);
+            const B2 = encodeField(testVector['binary'].string2, 'binary');
+            const binString2 = decodeField(B2, 'binary');
+            deepStrictEqual(binString2, testVector['binary'].string2);
+            return done();
+        });
+        assertion(' 5. should correctly decode exctracted text fields', function(done) {
+            const buf = BinaryBuffer.fromBytes([ 0b00010101, 0b11010001, 0b10000000 ]);
+            const str = decodeField(buf.extract(2, 18), 'utf-8');
+            deepStrictEqual(str, 'WF');
             return done();
         });
     });

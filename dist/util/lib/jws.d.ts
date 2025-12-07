@@ -9,15 +9,15 @@ export { Jws };
  */
 declare class Jws {
     /**
-     * @property {Object} protected the JWS protected header
+     * @property protected the JWS protected header
      */
     private protected;
     /**
-     * @property {Object} header the JWS payload
+     * @property header the JWS payload
      */
     private payload;
     /**
-     * @property {string} signature the JWS signature
+     * @property signature the JWS signature
      */
     private signature;
     /**

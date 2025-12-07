@@ -16,33 +16,33 @@ export {
  */
 class WfProtocolError extends Error {
     /**
-     * @property {string} code The Whiteflag protocol error code
+     * @property code The Whiteflag protocol error code
      */
-    code: string;
+    public code: string;
 
     /**
-     * @property {Array} causes Underlying causes of the error
+     * @property causes Underlying causes of the error
      */
-    causes: string[];
+    public causes: string[];
 
     /**
      * Constructor for protocol errors
-     * @param {string} message a human readable error message
-     * @param {Array} causes underlying errors causing this error
-     * @param {WfErrorCode} code constant identifying the error
+     * @param message a human readable error message
+     * @param causes underlying errors causing this error
+     * @param code constant identifying the error
      */
-    constructor(message: string, causes: string[], code: WfErrorCode = WfErrorCode.PROTOCOL) {
+    constructor(message: string, causes: any, code: WfErrorCode = WfErrorCode.PROTOCOL) {
         super(message);
-        this.name = 'ProtocolError';
+        this.name = 'WfProtocolError';
         this.code = code;
-        if (Array.isArray(causes)) {
-            this.causes = causes;
-        } else {
-            this.causes = [ causes ];
-        }
+
+        /* Process causes */
+        this.causes = [];
+        if (Array.isArray(causes)) this.causes = causes;
+        if (causes instanceof Error) this.causes = [ causes.message ];
+        if (typeof causes === 'string') this.causes = [ causes ];
     }
 }
-
 /**
  * Defines Whiteflag protocol errors
  * @enum WfErrorCode

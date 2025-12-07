@@ -15,15 +15,15 @@
         "string": "P24D11H30M",
         "hex": "241130"
     },
-    "lat": {
+    "latitude": {
         "string": "+23.34244",
         "hex": "919a1220"
     },
-    "long": {
+    "longitude": {
         "string": "-163.34245",
         "hex": "0b19a12280"
     },
-    "bin": {
+    "binary": {
         "string1": "1",
         "hex1": "80",
         "string2": "10011",

@@ -4,14 +4,15 @@ class WfProtocolError extends Error {
     causes;
     constructor(message, causes, code = WfErrorCode.PROTOCOL) {
         super(message);
-        this.name = 'ProtocolError';
+        this.name = 'WfProtocolError';
         this.code = code;
-        if (Array.isArray(causes)) {
+        this.causes = [];
+        if (Array.isArray(causes))
             this.causes = causes;
-        }
-        else {
+        if (causes instanceof Error)
+            this.causes = [causes.message];
+        if (typeof causes === 'string')
             this.causes = [causes];
-        }
     }
 }
 var WfErrorCode;

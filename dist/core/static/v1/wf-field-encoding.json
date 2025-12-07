@@ -1,13 +1,13 @@
 {
-    "bin": {
+    "binary": {
         "pattern": "^[0-1]*$",
         "length": 0
     },
-    "dec": {
+    "decimal": {
         "pattern": "^[0-9]*$",
         "length": 0
     },
-    "hex": {
+    "hexadecimal": {
         "pattern": "^[a-fA-F0-9]*$",
         "length": 0
     },
@@ -23,11 +23,11 @@
         "pattern": "^P[0-9]{2}D[0-9]{2}H[0-9]{2}M$",
         "length": 24
     },
-    "lat": {
+    "latitude": {
         "pattern": "^[+-][0-9]{2}.[0-9]{5}$",
         "length": 29
     },
-    "long": {
+    "longitude": {
         "pattern": "^[+-][0-9]{3}.[0-9]{5}$",
         "length": 33
     }

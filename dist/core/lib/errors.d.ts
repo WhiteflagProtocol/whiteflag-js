@@ -11,20 +11,20 @@ export { WfProtocolError, WfErrorCode };
  */
 declare class WfProtocolError extends Error {
     /**
-     * @property {string} code The Whiteflag protocol error code
+     * @property code The Whiteflag protocol error code
      */
     code: string;
     /**
-     * @property {Array} causes Underlying causes of the error
+     * @property causes Underlying causes of the error
      */
     causes: string[];
     /**
      * Constructor for protocol errors
-     * @param {string} message a human readable error message
-     * @param {Array} causes underlying errors causing this error
-     * @param {WfErrorCode} code constant identifying the error
+     * @param message a human readable error message
+     * @param causes underlying errors causing this error
+     * @param code constant identifying the error
      */
-    constructor(message: string, causes: string[], code?: WfErrorCode);
+    constructor(message: string, causes: any, code?: WfErrorCode);
 }
 /**
  * Defines Whiteflag protocol errors

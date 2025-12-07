@@ -16,13 +16,18 @@
             "@whiteflag/core": ["./src/core"],
             "@whiteflag/crypto": ["./src/crypto"],
             "@whiteflag/util": ["./src/util"]
-        }
+        },
+        "noImplicitThis": true,
     },
     "include": ["./src/**/*"],
     "typedocOptions": {
         "entryPoints": [
             "src/**/*.ts"
         ],
-        "out": "docs/typedoc"
+        "out": "docs/typedoc",
+            "tagDefinitions": [
+                { "tagName": "@wfref", "syntaxKind": "block" },
+                { "tagName": "@wfver", "syntaxKind": "block" }
+            ]
     }
 }

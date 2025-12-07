@@ -2,36 +2,43 @@
     "header": {
         "Prefix": {
             "encoding": "utf-8",
+            "pattern": "^WF$",
             "startBit": 0,
             "endBit": 16
         },
         "Version": {
             "encoding": "utf-8",
+            "pattern": "^[A-Z0-9]{1}$",
             "startBit": 16,
             "endBit": 24
         },
         "EncryptionIndicator": {
             "encoding": "utf-8",
+            "pattern": "^[A-Z0-9]{1}$",
             "startBit": 24,
             "endBit": 32
         },
         "DuressIndicator": {
-            "encoding": "bin",
+            "encoding": "binary",
+            "pattern": "^[0-1]{1}$",
             "startBit": 32,
             "endBit": 33
         },
         "MessageCode": {
             "encoding": "utf-8",
+            "pattern": "^[A-Z]{1}$",
             "startBit": 33,
             "endBit": 41
         },
         "ReferenceIndicator": {
-            "encoding": "hex",
+            "encoding": "hexadecimal",
+            "pattern": "^[a-fA-F0-9]{1}$",
             "startBit": 41,
             "endBit": 45
         },
         "ReferencedMessage": {
-            "encoding": "hex",
+            "encoding": "hexadecimal",
+            "pattern": "^[a-fA-F0-9]{64}$",
             "startBit": 45,
             "endBit": 301
         }
@@ -39,55 +46,50 @@
     "body": {
         "A": {
             "VerificationMethod": {
-                "encoding": "hex",
+                "encoding": "hexadecimal",
                 "startBit": 301,
                 "endBit": 305
             },
             "VerificationData": {
-                "encoding": "hex",
+                "encoding": "utf-8",
                 "startBit": 305,
                 "endBit": -1
             }
         },
         "K": {
             "CryptoDataType": {
-                "encoding": "hex",
+                "encoding": "hexadecimal",
                 "startBit": 301,
                 "endBit": 305
             },
             "CryptoData": {
-                "encoding": "hex",
+                "encoding": "hexadecimal",
                 "startBit": 305,
                 "endBit": -1
             }
         },
         "T": {
             "PseudoMessageCode": {
-                "encoding": "hex",
+                "encoding": "utf-8",
                 "startBit": 301,
-                "endBit": 305
-            },
-            "PseudoMessageBody": {
-                "encoding": "hex",
-                "startBit": 305,
-                "endBit": -1
+                "endBit": 309
             }
         },
         "R": {
-            "ResourceMethod": {
-                "encoding": "hex",
+            "ReferenceMethod": {
+                "encoding": "hexadecimal",
                 "startBit": 301,
                 "endBit": 305
             },
-            "ResourceData": {
-                "encoding": "hex",
+            "ReferenceData": {
+                "encoding": "utf-8",
                 "startBit": 305,
                 "endBit": -1
             }
         },
         "F": {
-            "text": {
-                "encoding": "hex",
+            "Text": {
+                "encoding": "utf-8",
                 "startBit": 301,
                 "endBit": -1
             }
@@ -101,49 +103,49 @@
         "Q": { "$signsignal": true },
         "$signsignal": {
             "SubjectCode": {
-                "encoding": "hex",
+                "encoding": "hexadecimal",
                 "startBit": 301,
-                "endBit": 305
+                "endBit": 309
             },
             "DateTime": {
-                "encoding": "hex",
-                "startBit": 305,
-                "endBit": 361
+                "encoding": "datetime",
+                "startBit": 309,
+                "endBit": 365
             },
             "Duration": {
-                "encoding": "hex",
-                "startBit": 361,
-                "endBit": 385
+                "encoding": "duration",
+                "startBit": 365,
+                "endBit": 389
             },
             "ObjectType": {
-                "encoding": "hex",
-                "startBit": 385,
-                "endBit": 393
+                "encoding": "hexadecimal",
+                "startBit": 389,
+                "endBit": 397
             },
             "ObjectLatitude": {
-                "encoding": "hex",
-                "startBit": 393,
-                "endBit": 317
+                "encoding": "latitude",
+                "startBit": 397,
+                "endBit": 426
             },
             "ObjectLongitude": {
-                "encoding": "hex",
-                "startBit": 317,
-                "endBit": 350
+                "encoding": "longitude",
+                "startBit": 426,
+                "endBit": 459
             },
             "ObjectSizeDim1": {
-                "encoding": "hex",
-                "startBit": 350,
-                "endBit": 366
+                "encoding": "decimal",
+                "startBit": 459,
+                "endBit": 475
             },
             "ObjectSizeDim2": {
-                "encoding": "hex",
-                "startBit": 366,
-                "endBit": 382
+                "encoding": "decimal",
+                "startBit": 475,
+                "endBit": 491
             },
             "ObjectOrientation": {
-                "encoding": "hex",
-                "startBit": 382,
-                "endBit": 394
+                "encoding": "decimal",
+                "startBit": 491,
+                "endBit": 503
             }
         }
     }

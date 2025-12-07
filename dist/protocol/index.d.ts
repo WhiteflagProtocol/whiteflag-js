@@ -4,3 +4,4 @@
  * @document docs/md/modules.md
  * @primaryExport
  */
+export * from './lib/message.ts';

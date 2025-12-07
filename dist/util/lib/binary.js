@@ -4,9 +4,18 @@ const BYTELENGTH = 8;
 class BinaryBuffer {
     buffer;
     length;
-    constructor(buffer, nBits = 0) {
-        this.length = this.calcBitLength(buffer.byteLength, nBits);
-        this.buffer = cropBits(buffer, this.length);
+    constructor(buffer = new Uint8Array(0), nBits = 0) {
+        if (buffer.length > 0) {
+            this.length = this.calcBitLength(buffer.byteLength, nBits);
+            this.buffer = cropBits(buffer, this.length);
+        }
+        else {
+            this.length = 0;
+            this.buffer = buffer;
+        }
+    }
+    static empty() {
+        return new BinaryBuffer();
     }
     static from(binBuffer) {
         return new BinaryBuffer(binBuffer.toU8a(), binBuffer.length);
@@ -39,28 +48,30 @@ class BinaryBuffer {
         this.length = bitLength + this.calcBitLength(u8array.byteLength, nBits);
         return this;
     }
-    extract(startBit, endBit) {
-        const buffer = this.extractU8a(startBit, endBit);
-        const bitLength = endBit - startBit;
+    extract(startBit, endBit = -1) {
+        const lastBit = endBit < 0 ? this.length : endBit;
+        const buffer = this.extractU8a(startBit, lastBit);
+        const bitLength = lastBit - startBit;
         return new BinaryBuffer(buffer, bitLength);
     }
-    extractHex(startBit, endBit) {
+    extractHex(startBit, endBit = -1) {
         return u8aToHex(this.extractU8a(startBit, endBit));
     }
-    extractU8a(startBit, endBit) {
+    extractU8a(startBit, endBit = -1) {
+        const lastBit = endBit < 0 ? this.length : endBit;
         if (startBit < 0)
             throw RangeError('Starting bit cannot be less than 0');
         if (startBit >= this.length)
             throw RangeError('Starting bit is larger than binary buffer length');
-        if (startBit > endBit)
+        if (startBit > lastBit)
             throw RangeError('Starting bit is larger than ending bit');
-        let bitLength = endBit - startBit;
-        if (endBit > this.length)
+        let bitLength = lastBit - startBit;
+        if (lastBit > this.length)
             bitLength = this.length - startBit;
         const startByte = Math.floor(startBit / BYTELENGTH);
         const byteLength = this.calcByteLength(bitLength);
         const shift = startBit % BYTELENGTH;
-        const buffer = new Uint8Array(this.buffer.slice(startByte, startByte + byteLength + 1));
+        const buffer = new Uint8Array(this.buffer.slice(startByte, startByte + byteLength + (shift > 0 ? 1 : 0)));
         return cropBits(shiftLeft(buffer, shift), bitLength);
     }
     insertBytes(byteArray, nBits = 0) {

@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module util/binary
  * @summary Whiteflag JS binary buffer class
@@ -144,6 +145,26 @@ class BinaryBuffer {
         const bitLength = this.length;
         this.buffer = this.concatinate(this.buffer, bitLength, u8array, nBits);
         this.length = bitLength + this.calcBitLength(u8array.byteLength, nBits);
+        return this;
+    }
+    /**
+     * Shortens the binary buffer to the length of the specified bits
+     * @function crop
+     * @param nBits the number of used bits, or, if negative, the number of bits to remove
+     * @return the updated binary buffer
+     */
+    public crop(nBits: number) {
+        if (nBits === 0) return this;
+
+        /* Determine resulting buffer length */
+        let length = nBits;
+        if (nBits > this.length) length = this.length;
+        if (nBits < 0) length = this.length + nBits;
+        if (length < 0) length = 0;
+
+        /* Crop buffer and set new length */
+        this.buffer = cropBits(this.buffer, nBits);
+        this.length = length;
         return this;
     }
     /**

@@ -1,5 +1,8 @@
 'use strict';
 export { hkdf, hash, hmac };
+import { zeroise } from "./common.js";
+import { createHmacKey } from "./keys.js";
+const HMAC = 'HMAC';
 const HASHALG = 'SHA-256';
 const HASHLEN = 32;
 async function hkdf(ikm, salt, info, keylen) {
@@ -10,30 +13,26 @@ async function hkdf(ikm, salt, info, keylen) {
     let offset = 0;
     const N = Math.ceil(keylen / HASHLEN);
     for (let i = 1; i <= N; i++) {
-        let b = new Uint8Array(offset + info.length + 1);
-        b.set(t.slice(0, b.length));
-        b.set(info.slice(0, info.length), offset);
-        b[offset + info.length] = i;
-        let h = await hmac(prk, b);
-        t.set(h.slice(0, t.length));
+        let block = new Uint8Array(offset + info.length + 1);
+        block.set(t.slice(0, block.length));
+        block.set(info.slice(0, info.length), offset);
+        block[offset + info.length] = i;
+        let hash = await hmac(prk, block);
+        t.set(hash.slice(0, t.length));
         offset = offset * (i - 1);
         if (offset < okm.length) {
-            okm.set(h.slice(0, (okm.length - offset)), offset);
+            okm.set(hash.slice(0, (okm.length - offset)), offset);
         }
         offset = HASHLEN;
     }
     return okm;
 }
-async function hash(data, len = HASHLEN, hashalg = HASHALG) {
-    const h = await crypto.subtle.digest(hashalg, data);
-    return new Uint8Array(h, 0, len);
+async function hash(data, length = HASHLEN, algorithm = HASHALG) {
+    const hash = await crypto.subtle.digest(algorithm, data);
+    return new Uint8Array(hash, 0, length);
 }
-async function hmac(key, msg, hashalg = HASHALG) {
-    const HMAC = 'HMAC';
-    const k = await crypto.subtle.importKey('raw', key.buffer, { name: HMAC, hash: { name: hashalg } }, false, ['sign']);
-    const mac = await crypto.subtle.sign(HMAC, k, msg.buffer);
+async function hmac(rawKey, message, algorithm = HASHALG) {
+    const key = await createHmacKey(rawKey, algorithm);
+    const mac = await crypto.subtle.sign(HMAC, key, message.buffer);
     return new Uint8Array(mac);
-}
-function zeroise(u8array) {
-    return u8array.fill(0);
 }

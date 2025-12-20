@@ -27,7 +27,7 @@ declare class WfMessage extends WfCoreMessage {
      * @returns a new Whiteflag message
      * @throws {WfProtocolError} if message could not be created
      */
-    static fromJSON(message: string): WfMessage;
+    static fromJSON(message: string): Promise<WfMessage>;
     /**
      * Returns the value of the metaheader field
      * @function getMeta

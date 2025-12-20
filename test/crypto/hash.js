@@ -10,24 +10,17 @@ import { it as assertion } from 'mocha';
 import { strictEqual, rejects } from 'assert';
 
 /* Functions required for test */
-import {
-    hexToU8a,
-    u8aToHex
- } from '@whiteflag/util';
+import { hexToU8a, u8aToHex } from '@whiteflag/util';
 
 /* Functions to test */
-import {
-    hkdf,
-    hmac,
-    hash
-} from '@whiteflag/crypto';
+import { hkdf, hmac, hash } from '@whiteflag/crypto';
 
 /* Test data */
 import testVector from './hash.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Crypto hash functions module', function() {
-    testCase('Basic hash function', function() {
+testCase('Crypto hashing module', function() {
+    testCase('Basic hash function using SHA-256', function() {
         assertion(' 1. should pass FIPS 180-4 SHA-256 32 bit message test', async function() {
             const msg = hexToU8a(testVector['1'].Msg);
             const digest = u8aToHex(await hash(msg));
@@ -81,12 +74,11 @@ testCase('Crypto hash functions module', function() {
             const info = hexToU8a(testVector['8'].info);
             const keylen = testVector['8'].L;
 
-            /* Test should result in zeo-length key error for empty salt */
+            /* Test should result in zero-length key error for empty salt */
             await rejects(async () => {
                 const okm = u8aToHex(await hkdf(ikm, salt, info, keylen));
                 return strictEqual(okm, testVector['6'].OKM);
             }, DOMException);
         });
     });
-
 });

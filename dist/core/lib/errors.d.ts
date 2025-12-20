@@ -3,7 +3,7 @@
  * @summary Whiteflag JS error classes
  * @document docs/md/errors.md
  */
-export { WfProtocolError, WfErrorCode };
+export { WfProtocolError, WfErrorCode, catchedError };
 /**
  * Error class for Whiteflag protocol and message errors
  * @class ProtocolError
@@ -60,3 +60,10 @@ declare enum WfErrorCode {
      */
     ENCRYPTION = "WF_ENCRYPTION_ERROR"
 }
+/**
+ * Processes a catched error in a type safe manner
+ * @param msg a generic message to use if no specific error message
+ * @param err the error to handle
+ * @returns a new error object
+ */
+declare function catchedError(msg?: string, err?: any): WfProtocolError;

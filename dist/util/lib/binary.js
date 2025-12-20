@@ -1,3 +1,4 @@
+'use strict';
 export { BinaryBuffer, cropBits, shiftRight, shiftLeft };
 import { isHex, hexToU8a, u8aToHex } from "./encoding.js";
 const BYTELENGTH = 8;
@@ -46,6 +47,20 @@ class BinaryBuffer {
         const bitLength = this.length;
         this.buffer = this.concatinate(this.buffer, bitLength, u8array, nBits);
         this.length = bitLength + this.calcBitLength(u8array.byteLength, nBits);
+        return this;
+    }
+    crop(nBits) {
+        if (nBits === 0)
+            return this;
+        let length = nBits;
+        if (nBits > this.length)
+            length = this.length;
+        if (nBits < 0)
+            length = this.length + nBits;
+        if (length < 0)
+            length = 0;
+        this.buffer = cropBits(this.buffer, nBits);
+        this.length = length;
         return this;
     }
     extract(startBit, endBit = -1) {

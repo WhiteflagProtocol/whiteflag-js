@@ -1,11 +1,23 @@
-export { encodeField, decodeField, isValidValue };
+'use strict';
+export { WfCodec, encodeField, decodeField, isValidValue };
 import { BinaryBuffer } from '@whiteflag/util';
-import { WfVersion, WfCodec } from "./specs.js";
-import v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
+import { WfVersion } from "./versions.js";
+import fieldSpec_v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
 const NOCHAR = '';
 const HEXRADIX = 16;
 const BYTELENGTH = 8;
 const QUADBIT = 4;
+var WfCodec;
+(function (WfCodec) {
+    WfCodec["BIN"] = "binary";
+    WfCodec["DEC"] = "decimal";
+    WfCodec["HEX"] = "hexadecimal";
+    WfCodec["UTF8"] = "utf-8";
+    WfCodec["DATETIME"] = "datetime";
+    WfCodec["DURATION"] = "duration";
+    WfCodec["LAT"] = "latitude";
+    WfCodec["LONG"] = "longitude";
+})(WfCodec || (WfCodec = {}));
 const FIELDS = compileFieldCodecs();
 function encodeField(value, codec, version = WfVersion.v1) {
     if (!isValidValue(value, codec, version)) {
@@ -79,8 +91,11 @@ function compileFieldCodecs() {
     const codec = {};
     for (const type of Object.values(WfCodec)) {
         codec[type] = {};
-        codec[type]['1'] = v1[type];
-        codec[type]['1'].regex = new RegExp(codec[type]['1'].pattern);
+        {
+            const version = WfVersion.v1;
+            codec[type][version] = fieldSpec_v1[type];
+            codec[type][version].regex = new RegExp(codec[type][version].pattern);
+        }
     }
     return codec;
 }

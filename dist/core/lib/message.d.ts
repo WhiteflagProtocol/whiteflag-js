@@ -2,13 +2,34 @@
  * @module core/message
  * @summary Whiteflag JS message class
  */
-export { WfCoreMessage, isValidMessage, validateMessage };
+export { WfMsgType, WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
+import { WfCryptoMethod } from '@whiteflag/crypto';
 import { BinaryBuffer } from '@whiteflag/util';
-import { WfVersion, WfMsgType } from './specs.ts';
+import { WfVersion } from './versions.ts';
+/**
+ * Whiteflag message types
+ * @enum WfFieldType
+ * @wfver v1-draft.7
+ */
+declare enum WfMsgType {
+    A = "A",
+    K = "K",
+    T = "T",
+    P = "P",
+    D = "D",
+    S = "S",
+    E = "E",
+    I = "I",
+    M = "M",
+    Q = "Q",
+    R = "R",
+    F = "F"
+}
 /**
  * Whiteflag Message
  * @class WfCoreMessage
  * @wfver v1-draft.7
+ * @todo Finish and test encryption and decryption
  * @todo Add a proper description of the functionality
  */
 declare class WfCoreMessage {
@@ -17,7 +38,7 @@ declare class WfCoreMessage {
      */
     private type;
     /**
-     * @property the Whiteflag version
+     * @property the Whiteflag protocol version
      */
     private version;
     /**
@@ -40,34 +61,44 @@ declare class WfCoreMessage {
      * Constructor for a Whiteflag message
      * @param type the Whiteflag message type
      * @param version the Whiteflag protocol version
+     * @param binary the binary encoded message, if available at creation
      */
-    constructor(type: WfMsgType, version?: WfVersion);
+    constructor(type: WfMsgType, version?: WfVersion, binary?: BinaryBuffer);
     /**
      * Creates new Whiteflag message from a binary buffer
      * @function fromBinary
      * @param message a binary buffer with the encoded message
+     * @param ikm the input key material to derive the encryption key, if the message is encrypted
+     * @param address the binary encoded originator address, if the message is encrypted
+     * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    static fromBinary(message: BinaryBuffer): WfCoreMessage;
+    static fromBinary(message: BinaryBuffer, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
     /**
      * Creates new Whiteflag message from a plain object
      * @function fromObject
      * @param message a plain JavaScript object with message header and body
      * @returns a new Whiteflag message object
      */
-    static fromObject(message: any): WfCoreMessage;
+    static fromObject(message: any): Promise<WfCoreMessage>;
     /**
      * Creates new Whiteflag message from a hexadecimal encoded string
      * @param message  atring with the hexadecimal encoded message
+     * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
+     * @param address the hexadecimal encoded originator address, if the message is encrypted
+     * @param iv the hexadecimal initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    static fromHex(message: string): WfCoreMessage;
+    static fromHex(message: string, ikm?: string, address?: string, iv?: string): Promise<WfCoreMessage>;
     /**
      * Creates new Whiteflag message from a binary encoded message
      * @param message a Uint8Array with the binary encoded message
+     * @param ikm the input key material to derive the encryption key, if the message is encrypted
+     * @param address the binary encoded originator address, if the message is encrypted
+     * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    static fronU8a(message: Uint8Array): WfCoreMessage;
+    static fromU8a(message: Uint8Array, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
     /**
      * Indicates if the message has already been encoded
      * @function isEncoded
@@ -87,18 +118,20 @@ declare class WfCoreMessage {
      */
     validate(): string[];
     /**
-     * Decodes a binary encoded message
-     * @param message a bianry encoded message
+     * Decodes an unencrypted binary encoded message
+     * @param message a binary encoded message
      * @returns a new Whiteflag message object
-     * @todo fix decoding
      */
-    decode(message: BinaryBuffer): WfCoreMessage;
+    decode(message: BinaryBuffer): Promise<WfCoreMessage>;
     /**
      * Encodes the message, making the contents final
      * @function encode
-     * @returns
+     * @param ikm the input key material to derive the encryption key, if the message is to be encrypted
+     * @param address the binary encoded originator address, if the message is to be encrypted
+     * @param iv the initialisation vector, if required for the encryption method
+     * @returns this Whitedlag message object with the encoded message
      */
-    encode(): WfCoreMessage;
+    encode(ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
     /**
      * Returns the value of the specified message field
      * @function get
@@ -137,45 +170,31 @@ declare class WfCoreMessage {
      * @function toU8a
      * @returns a UInt8array with the encoded message
      */
-    toU8a(): Uint8Array<ArrayBufferLike>;
+    toU8a(): Uint8Array;
     /**
-     * Check if mesage type is valid
-     * @param type the message type to check
-     * @returns the message type, if valid
-     * @throws if message type is not valid
-     */
-    static checkType(type: WfMsgType): WfMsgType;
-    /**
-     * Check if protocol version is valid
-     * @param version the protocol version to check
-     * @returns the protocol version, if valid
-     * @throws if message type is not valid
-     */
-    static checkVersion(version: WfVersion): WfVersion;
-    /**
-     * Generates message header
+     * Generates message header and sets known values
      * @private
      * @returns a Whiteflag message header object
      */
     private generateHeader;
     /**
      * Decodes a field from a binary encoded message header
-     * @param field the header field to decode
      * @param message the binary encoded message
+     * @param field the header field to decode
      * @returns the field value
      */
     private decodeHeaderField;
     /**
-     * Generates message body
+     * Generates message body, or if specifed pseudo message body
      * @private
-     * @@param type the message type to override if test message body
+     * @@param type the pseudo message type, if test message body
      * @returns a Whiteflag message body object
      */
     private generateBody;
     /**
      * Decodes a field from a binary encoded message body
-     * @param field the body field to decode
      * @param message the binary encoded message
+     * @param field the body field to decode
      * @param type the message type to override, e.g. for pseudo message body
      * @param bitOffset the bit offset for dynamic fields
      * @returns the field value
@@ -196,6 +215,30 @@ declare function isValidMessage(message: any): boolean;
  * @returns an array of validation errors
  */
 declare function validateMessage(message: any): string[];
+/**
+ * Encrypts a binary encoded message
+ * @function encryptMessage
+ * @param message a binary buffer with the binary encoded message
+ * @param method the Whiteflag encryption method
+ * @param ikm the input key material to derive the encryption key
+ * @param address the binary encoded originator address
+ * @param iv the initialisation vector, if required for the encryption method
+ * @param version the Whiteflag protocol version
+ * @returns the encrypted message
+ */
+declare function encryptMessage(message: BinaryBuffer, method: WfCryptoMethod, ikm: Uint8Array, address: Uint8Array, iv?: Uint8Array, version?: WfVersion): Promise<BinaryBuffer>;
+/**
+ * Decrypts an encrypted binary message
+ * @function decryptMessage
+ * @param message a binary buffer with the encrypted message
+ * @param method the Whiteflag encryption method
+ * @param ikm the input key material to derive the encryption key
+ * @param address the binary encoded originator address
+ * @param iv the initialisation vector, if required for the encryption method
+ * @param version the Whiteflag protocol version
+ * @returns the decrypted binary encoded message
+ */
+declare function decryptMessage(message: BinaryBuffer, method: WfCryptoMethod, ikm: Uint8Array, address: Uint8Array, iv?: Uint8Array, version?: WfVersion): Promise<BinaryBuffer>;
 /**
  * Defines a Whiteflag message header object
  * @private

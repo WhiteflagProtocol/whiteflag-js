@@ -1,4 +1,5 @@
-export { WfProtocolError, WfErrorCode };
+'use strict';
+export { WfProtocolError, WfErrorCode, catchedError };
 class WfProtocolError extends Error {
     code;
     causes;
@@ -25,3 +26,16 @@ var WfErrorCode;
     WfErrorCode["SIGNATURE"] = "WF_SIGN_ERROR";
     WfErrorCode["ENCRYPTION"] = "WF_ENCRYPTION_ERROR";
 })(WfErrorCode || (WfErrorCode = {}));
+function catchedError(msg = 'Unspecified error', err = new Error('Unspecified error')) {
+    let code = WfErrorCode.PROTOCOL;
+    let message = msg;
+    let causes = [];
+    if (err instanceof Error)
+        causes = [err.message];
+    if (err instanceof WfProtocolError) {
+        msg = err.message;
+        causes = err.causes;
+        code = err.code;
+    }
+    return new WfProtocolError(message, causes, code);
+}

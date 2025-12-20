@@ -1,0 +1,19 @@
+{
+    "$description": "Whiteflag protocol version 1 encryption methods",
+    "1": {
+        "$description": "Whiteflag encryption method 1: AES-256 in counter mode (CTR) with ECDH negotiated secret key",
+        "algorithm": "AES-CTR",
+        "keyLength": 32,
+        "ivLength": 16,
+        "ctrLength": 8,
+        "salt": "8ddb03085a2c15e69c35c224bce2952dca7878770724741cbce5a135328be0c0"
+    },
+    "2": {
+        "$description": "Whiteflag encryption method 2: AES-256 in counter mode (CTR) with pre-shared secret key",
+        "algorithm": "AES-CTR",
+        "keyLength": 32,
+        "ivLength": 16,
+        "ctrLength": 8,
+        "salt": "c4d028bd45c876135e80ef7889835822a6f19a31835557d5854d1334e8497b56"
+    }
+}

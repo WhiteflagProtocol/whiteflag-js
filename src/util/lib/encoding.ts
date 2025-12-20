@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module util/encoding
  * @summary Whiteflag JS common encodings and data conversions
@@ -200,7 +201,7 @@ function hexToString(hexString: string): string {
  * @param hexString a hexadecimal string
  * @returns an array of 8-bit unsigned integers
  */
-function hexToU8a(hexString: string): Uint8Array {
+function hexToU8a(hexString: string): Uint8Array<ArrayBuffer> {
     const hex = noHexPrefix(hexString);
     const u8array = new Uint8Array(hex.length / HEXBYTELENGTH);
     for (let i = 0; i < hex.length; i += HEXBYTELENGTH) {
@@ -241,7 +242,7 @@ function stringToHex(charString: string): string {
  * @param charString a regular character string
  * @returns an array of 8-bit unsigned integers
  */
-function stringToU8a(charString: string): Uint8Array {
+function stringToU8a(charString: string): Uint8Array<ArrayBuffer> {
     return Uint8Array.from(charString, char => char.charCodeAt(0));
 }
 

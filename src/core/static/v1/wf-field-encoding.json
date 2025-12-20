@@ -1,19 +1,20 @@
 {
+    "$description": "Whiteflag protocol version 1 field encoding",
     "binary": {
         "pattern": "^[0-1]*$",
-        "length": 0
+        "length": -1
     },
     "decimal": {
         "pattern": "^[0-9]*$",
-        "length": 0
+        "length": -1
     },
     "hexadecimal": {
         "pattern": "^[a-fA-F0-9]*$",
-        "length": 0
+        "length": -1
     },
     "utf-8": {
         "pattern": "^[\\u0000-\\u007F]*$",
-        "length": 0
+        "length": -1
     },
     "datetime": {
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",

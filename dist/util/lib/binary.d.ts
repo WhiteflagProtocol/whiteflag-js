@@ -92,6 +92,13 @@ declare class BinaryBuffer {
      */
     appendU8a(u8array: Uint8Array, nBits?: number): BinaryBuffer;
     /**
+     * Shortens the binary buffer to the length of the specified bits
+     * @function crop
+     * @param nBits the number of used bits, or, if negative, the number of bits to remove
+     * @return the updated binary buffer
+     */
+    crop(nBits: number): this;
+    /**
      * Extracts the specified bits from the binary buffer
      * @param startBit the first bit to extract (inclusive)
      * @param endBit the final bit of the extraction (exclusive), negative means until end of buffer

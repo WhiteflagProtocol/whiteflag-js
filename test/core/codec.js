@@ -9,14 +9,11 @@ import { describe as testCase } from 'mocha';
 import { it as assertion } from 'mocha';
 import { deepStrictEqual } from 'assert';
 
+/* Functions required for test */
+import { BinaryBuffer } from '@whiteflag/util';
+
 /* Functions to test */
-import {
-    encodeField,
-    decodeField
-} from '@whiteflag/core';
-import {
-    BinaryBuffer
-} from '@whiteflag/util';
+import { encodeField, decodeField } from '@whiteflag/core';
 
 /* Test data */
 import testVector from './codec.json' with { type: 'json' };

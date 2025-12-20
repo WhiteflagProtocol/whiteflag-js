@@ -7,6 +7,7 @@
         "allowImportingTsExtensions": true,
         "rewriteRelativeImportExtensions": true,
         "strict": true,
+        "noImplicitUseStrict": false,
         "declaration": false,
         "removeComments": true,
         "rootDir": "./src",

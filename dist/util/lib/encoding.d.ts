@@ -108,7 +108,7 @@ declare function hexToString(hexString: string): string;
  * @param hexString a hexadecimal string
  * @returns an array of 8-bit unsigned integers
  */
-declare function hexToU8a(hexString: string): Uint8Array;
+declare function hexToU8a(hexString: string): Uint8Array<ArrayBuffer>;
 /**
  * Creates a base64url encoded string from a regular string
  * @function stringToB64u
@@ -129,7 +129,7 @@ declare function stringToHex(charString: string): string;
  * @param charString a regular character string
  * @returns an array of 8-bit unsigned integers
  */
-declare function stringToU8a(charString: string): Uint8Array;
+declare function stringToU8a(charString: string): Uint8Array<ArrayBuffer>;
 /**
  * Creates a base64url encoded string from a UInt8 typed array
  * @function u8aToB64u

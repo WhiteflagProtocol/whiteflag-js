@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module protocol/message
  * @summary Whiteflag JS message class
@@ -42,8 +43,8 @@ class WfMessage extends WfCoreMessage {
      * @returns a new Whiteflag message
      * @throws {WfProtocolError} if message could not be created
      */
-    public static fromJSON(message: string): WfMessage {
-        const wfMessage = WfMessage.fromObject(JSON.parse(message));
+    public static async fromJSON(message: string): Promise<WfMessage> {
+        const wfMessage = await this.fromObject(JSON.parse(message));
         return wfMessage as WfMessage;
     }
 

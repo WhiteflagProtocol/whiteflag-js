@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module core/errors
  * @summary Whiteflag JS error classes
@@ -5,7 +6,8 @@
  */
 export {
     WfProtocolError,
-    WfErrorCode
+    WfErrorCode,
+    catchedError
 };
 
 /* MODULE DECLARATIONS */
@@ -19,7 +21,6 @@ class WfProtocolError extends Error {
      * @property code The Whiteflag protocol error code
      */
     public code: string;
-
     /**
      * @property causes Underlying causes of the error
      */
@@ -76,4 +77,24 @@ enum WfErrorCode {
      * Whiteflag encryption error
      */
     ENCRYPTION = 'WF_ENCRYPTION_ERROR'
+}
+
+/* MODULE FUNCTIONS */
+/**
+ * Processes a catched error in a type safe manner
+ * @param msg a generic message to use if no specific error message
+ * @param err the error to handle
+ * @returns a new error object
+ */
+function catchedError(msg: string = 'Unspecified error', err: any = new Error('Unspecified error')) {
+    let code: WfErrorCode = WfErrorCode.PROTOCOL;
+    let message: string = msg;
+    let causes: string[] = [];
+    if (err instanceof Error) causes = [ err.message ];
+    if (err instanceof WfProtocolError) {
+        msg = err.message;
+        causes = err.causes;
+        code = err.code as WfErrorCode;
+    }
+    return new WfProtocolError(message, causes, code);
 }

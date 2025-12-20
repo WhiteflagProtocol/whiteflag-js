@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module util/jws
  * @description Whiteflag JS JSON Web Signature class and functions
@@ -18,7 +19,7 @@ import {
 /* Constants */
 /**
  * Defines JWS formats
- * @enum WfErrorCode
+ * @enum JwsFormat
  */
 enum JwsFormat {
     /**

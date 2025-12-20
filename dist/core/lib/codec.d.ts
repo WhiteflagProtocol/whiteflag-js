@@ -2,9 +2,24 @@
  * @module core/codec
  * @summary Whiteflag JS message field encoding and decoding module
  */
-export { encodeField, decodeField, isValidValue };
+export { WfCodec, encodeField, decodeField, isValidValue };
 import { BinaryBuffer } from '@whiteflag/util';
-import { WfVersion, WfCodec } from './specs.ts';
+import { WfVersion } from './versions.ts';
+/**
+ * Whiteflag field encodings
+ * @enum WfCodec
+ * @wfver v1-draft.7
+ */
+declare enum WfCodec {
+    BIN = "binary",
+    DEC = "decimal",
+    HEX = "hexadecimal",
+    UTF8 = "utf-8",
+    DATETIME = "datetime",
+    DURATION = "duration",
+    LAT = "latitude",
+    LONG = "longitude"
+}
 /**
  * Enodes a Whiteflag message field
  * @function encodeField

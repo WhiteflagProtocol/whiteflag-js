@@ -10,10 +10,7 @@ import { it as assertion } from 'mocha';
 import { deepStrictEqual } from 'assert';
 
 /* Functions required for test */
-import {
-    hexToU8a,
-    u8aToHex
-} from '@whiteflag/util';
+import { hexToU8a, u8aToHex } from '@whiteflag/util';
 
 /* Functions to test */
 import {
@@ -85,7 +82,7 @@ testCase('Util binary buffer module', function() {
 
             return done();
         });
-        assertion(' 3b. should correctly append and insert data', function(done) {
+        assertion(' 3b. should correctly append and insert data (test vector 4)', function(done) {
             const A = BinaryBuffer.fromHex(testVector['4'].hex1);
             deepStrictEqual(A.length, testVector['4'].bitLength1);
             A.appendHex(testVector['4'].hex2);
@@ -93,7 +90,7 @@ testCase('Util binary buffer module', function() {
             deepStrictEqual(A.length, testVector['4'].append.bitLength);
             return done();
         });
-        assertion(' 3c. should correctly append and insert data', function(done) {
+        assertion(' 3c. should correctly append and insert data (test vector 5)', function(done) {
             const A = BinaryBuffer.fromHex(testVector['5'].hex1, testVector['5'].bitLength1);
             deepStrictEqual(A.length, testVector['5'].bitLength1);
             A.appendHex(testVector['5'].hex2);
@@ -101,21 +98,21 @@ testCase('Util binary buffer module', function() {
             deepStrictEqual(A.length, testVector['5'].append.bitLength);
             return done();
         });
-        assertion(' 4a. should correctly extract bits', function(done) {
+        assertion(' 4a. should correctly extract bits (test vector 3)', function(done) {
             const E = BinaryBuffer.fromU8a(hexToU8a(testVector['3'].hex1), testVector['3'].bitLength1);
             E.appendU8a(hexToU8a(testVector['3'].hex2), testVector['3'].bitLength2);
             const extract = E.extractHex(testVector['3'].extract.startBit, testVector['3'].extract.endBit);
             deepStrictEqual(extract, testVector['3'].extract.hex);
             return done();
         });
-        assertion(' 4b. should correctly extract bits', function(done) {
+        assertion(' 4b. should correctly extract bits (test vector 4)', function(done) {
             const E = BinaryBuffer.fromHex(testVector['4'].hex1);
             E.appendHex(testVector['4'].hex2);
             const extract = E.extractHex(testVector['4'].extract.startBit, testVector['4'].extract.endBit);
             deepStrictEqual(extract, testVector['4'].extract.hex);
             return done();
         });
-        assertion(' 4c. should correctly extract bits', function(done) {
+        assertion(' 4c. should correctly extract bits (test vector 5)', function(done) {
             const E = BinaryBuffer.fromHex(testVector['5'].hex1, testVector['5'].bitLength1);
             E.appendHex(testVector['5'].hex2);
             const extract = E.extractHex(testVector['5'].extract.startBit, testVector['5'].extract.endBit);

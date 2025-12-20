@@ -1,3 +1,4 @@
+'use strict';
 export { WfMessage };
 import { WfCoreMessage } from '@whiteflag/core';
 class WfMessage extends WfCoreMessage {
@@ -5,8 +6,8 @@ class WfMessage extends WfCoreMessage {
     constructor(type, version = '1') {
         super(type, version);
     }
-    static fromJSON(message) {
-        const wfMessage = WfMessage.fromObject(JSON.parse(message));
+    static async fromJSON(message) {
+        const wfMessage = await this.fromObject(JSON.parse(message));
         return wfMessage;
     }
     getMeta(fieldName) {

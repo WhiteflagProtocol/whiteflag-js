@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module protocol
  * @summary Whiteflag JS main package

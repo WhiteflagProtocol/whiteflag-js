@@ -1,4 +1,5 @@
 {
+    "$description": "Whiteflag protocol version 1 message structure",
     "header": {
         "Prefix": {
             "encoding": "utf-8",

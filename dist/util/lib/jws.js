@@ -1,3 +1,4 @@
+'use strict';
 export { Jws };
 import { isObject, isString, isBase64u, objToB64u, b64uToObj } from "./encoding.js";
 var JwsFormat;

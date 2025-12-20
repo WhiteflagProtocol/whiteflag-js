@@ -1,3 +1,4 @@
+'use strict';
 export { isObject, isString, isBase64, isBase64u, isHex, noHexPrefix, objToB64u, b64uToObj, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
 const NOSEPARATOR = '';
 const HEXBYTELENGTH = 2;

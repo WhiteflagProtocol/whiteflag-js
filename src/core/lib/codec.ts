@@ -1,8 +1,10 @@
+'use strict';
 /**
  * @module core/codec
  * @summary Whiteflag JS message field encoding and decoding module
  */
 export {
+    WfCodec,
     encodeField,
     decodeField,
     isValidValue
@@ -12,10 +14,10 @@ export {
 import { BinaryBuffer } from '@whiteflag/util';
 
 /* Module imports */
-import { WfVersion, WfCodec } from './specs.ts';
+import { WfVersion } from './versions.ts';
 
 /* Whiteflag specification */
-import v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
+import fieldSpec_v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
 
 /* Constants */
 const NOCHAR = '';
@@ -25,7 +27,22 @@ const QUADBIT = 4;
 
 /* MODULE DECLARATIONS */
 /**
- * Defines Whiteflag fields
+ * Whiteflag field encodings
+ * @enum WfCodec
+ * @wfver v1-draft.7
+ */
+enum WfCodec {
+    BIN = 'binary',
+    DEC = 'decimal',
+    HEX = 'hexadecimal',
+    UTF8 = 'utf-8',
+    DATETIME = 'datetime',
+    DURATION = 'duration',
+    LAT = 'latitude',
+    LONG = 'longitude'
+}
+/**
+ * Whiteflag field specification
  */
 const FIELDS = compileFieldCodecs();
 
@@ -138,9 +155,9 @@ function isValidValue(value: string, codec: WfCodec, version = WfVersion.v1): bo
 interface WfFieldEncoding {
     [key: string]: {            // Field type
         [key: string]: {        // Whiteflag version
-            length: number      // Field length, or 0 if variable
-            pattern: string;    // Regular expresssion pattern
-            regex: RegExp;      // Regular expression for field value verification
+            length: number,     // Field length, or 0 if variable
+            pattern: string,    // Regular expresssion pattern
+            regex: RegExp       // Regular expression for field value verification
         }
     }
 }
@@ -156,9 +173,11 @@ function compileFieldCodecs(): WfFieldEncoding {
     for (const type of Object.values(WfCodec)) {
         codec[type] = {};
 
-        /* Currently, there is only one Whiteflag version */
-        codec[type]['1'] = v1[type] as any;
-        codec[type]['1'].regex = new RegExp(codec[type]['1'].pattern);
+        /* Whiteflag version 1 */ {
+            const version = WfVersion.v1;
+            codec[type][version] = fieldSpec_v1[type] as any;
+            codec[type][version].regex = new RegExp(codec[type][version].pattern);
+        }
     }
     return codec;
 }

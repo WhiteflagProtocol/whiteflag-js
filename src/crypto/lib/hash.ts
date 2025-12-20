@@ -9,7 +9,12 @@ export {
     hmac
 };
 
+/* Module imports */
+import { zeroise } from './common.ts';
+import { createHmacKey } from './keys.ts';
+
 /* Constants */
+const HMAC = 'HMAC';
 const HASHALG = 'SHA-256';
 const HASHLEN = 32;
 
@@ -25,9 +30,9 @@ const HASHLEN = 32;
  */
 async function hkdf(ikm: Uint8Array<ArrayBuffer>,
                     salt: Uint8Array<ArrayBuffer>,
-                    info: Uint8Array,
+                    info: Uint8Array<ArrayBuffer>,
                     keylen: number
-                   ): Promise<Uint8Array> {
+                ): Promise<Uint8Array<ArrayBuffer>> {
     /* Step 1. HKDF-Extract(salt, IKM) -> PRK */
     const prk = await hmac(salt, ikm);
     zeroise(ikm);
@@ -40,17 +45,17 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
     const N = Math.ceil(keylen / HASHLEN);
     for (let i = 1; i <= N; i++) {
         /* Concatinate previous hash t, info and counter i */
-        let b = new Uint8Array(offset + info.length + 1);
-        b.set(t.slice(0, b.length));
-        b.set(info.slice(0, info.length), offset);
-        b[offset + info.length] = i;
+        let block = new Uint8Array(offset + info.length + 1);
+        block.set(t.slice(0, block.length));
+        block.set(info.slice(0, info.length), offset);
+        block[offset + info.length] = i;
 
         /* Get hash and add to okm buffer */
-        let h = await hmac(prk, b);
-        t.set(h.slice(0, t.length))
+        let hash = await hmac(prk, block);
+        t.set(hash.slice(0, t.length))
         offset = offset * (i - 1);
         if (offset < okm.length) {
-            okm.set(h.slice(0, (okm.length-offset)), offset);
+            okm.set(hash.slice(0, (okm.length-offset)), offset);
         }
         /* Block contains t after after first interation */
         offset = HASHLEN;
@@ -58,56 +63,35 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
     /* Return output key material */
     return okm;
 }
-
 /**
  * Basic hashing function
  * @function hash
  * @param data data to hash
- * @param len the required output length in octets; default is 32
- * @param alg the hash algorithm to be used; default is SHA-256
+ * @param length the required output length in octets; default is 32
+ * @param algorithm the hash algorithm to be used; default is SHA-256
  * @returns the hash value
  */
 async function hash(data: Uint8Array<ArrayBuffer>,
-                    len = HASHLEN,
-                    hashalg = HASHALG
-                   ): Promise<Uint8Array<ArrayBuffer>> {
+                    length = HASHLEN,
+                    algorithm = HASHALG
+                ): Promise<Uint8Array<ArrayBuffer>> {
     /* Create hash */
-    const h = await crypto.subtle.digest(hashalg, data);
-    return new Uint8Array(h, 0, len);
+    const hash = await crypto.subtle.digest(algorithm, data);
+    return new Uint8Array(hash, 0, length);
 }
-
 /**
  * Hash-Based Message Authentication Code function
  * @function hmac
- * @param key the HMAC key
- * @param msg the message to authenticate
- * @param alg the hash algorithm to be used; default is SHA-256
+ * @param rawKey the raw HMAC key
+ * @param message the message to authenticate
+ * @param algorithm the hash algorithm to be used; default is SHA-256
  * @returns the message authentication code
  */
-async function hmac(key: Uint8Array<ArrayBuffer>,
-                    msg: Uint8Array<ArrayBuffer>,
-                    hashalg = HASHALG
-                   ): Promise<Uint8Array<ArrayBuffer>> {
-    /* Algorithm */
-    const HMAC = 'HMAC';
-
-    /* Create key */
-    const k = await crypto.subtle.importKey(
-                        'raw', key.buffer,
-                        { name: HMAC, hash: { name: hashalg }},
-                        false, ['sign']
-                    );
-    /* Sign message */
-    const mac = await crypto.subtle.sign(HMAC, k, msg.buffer);
+async function hmac(rawKey: Uint8Array<ArrayBuffer>,
+                    message: Uint8Array<ArrayBuffer>,
+                    algorithm = HASHALG
+                ): Promise<Uint8Array<ArrayBuffer>> {
+    const key = await createHmacKey(rawKey, algorithm);
+    const mac = await crypto.subtle.sign(HMAC, key, message.buffer);
     return new Uint8Array(mac);
-}
-
-/**
- * Basic zeroisation function
- * @function zeroise
- * @param u8array typed array to zeroise
- * @returns the zeroised typed array
- */
-function zeroise(u8array: Uint8Array): Uint8Array {
-    return u8array.fill(0);
 }

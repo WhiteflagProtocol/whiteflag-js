@@ -7,4 +7,4 @@
 export * from './lib/codec.ts';
 export * from './lib/errors.ts';
 export * from './lib/message.ts';
-export * from './lib/specs.ts';
+export * from './lib/versions.ts';

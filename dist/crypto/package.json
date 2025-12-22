@@ -1,6 +1,6 @@
 {
     "name": "@whiteflag/crypto",
-    "version": "0.1.0-dev",
+    "version": "0.8.0",
     "description": "Whiteflag JS cryptographic classes and functions",
     "license": "CC0-1.0",
     "keywords": [
@@ -9,6 +9,9 @@
         "cryptography",
         "blockchain"
     ],
+    "directories": {
+        "lib": "lib"
+    },
     "homepage": "https://github.com/WhiteflagProtocol/whiteflag-js#readme",
     "repository": {
         "type": "git",

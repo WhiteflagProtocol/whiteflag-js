@@ -5,6 +5,18 @@
  * @document docs/md/modules.md
  * @primaryExport
  */
-export * from './lib/cipher.ts';
-export * from './lib/hash.ts';
-export * from './lib/keys.ts';
+export {
+    WfCryptoMethod,
+    encrypt,
+    decrypt,
+    deriveKey
+} from './lib/cipher.ts';
+export {
+    hkdf,
+    hash,
+    hmac
+} from './lib/hash.ts';
+export {
+    createAesKey,
+    createHmacKey
+} from './lib/keys.ts';

@@ -1,4 +1,4 @@
 'use strict';
-export * from "./lib/cipher.js";
-export * from "./lib/hash.js";
-export * from "./lib/keys.js";
+export { WfCryptoMethod, encrypt, decrypt, deriveKey } from "./lib/cipher.js";
+export { hkdf, hash, hmac } from "./lib/hash.js";
+export { createAesKey, createHmacKey } from "./lib/keys.js";

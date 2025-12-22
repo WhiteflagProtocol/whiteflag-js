@@ -10,7 +10,7 @@ The [Whiteflag Protocol specification](https://standard.whiteflagprotocol.org)
 is an open standard.
 
 The Whiteflag JavaScript Library (WFJSL) will be the reference implementation
-of the Whiteflag Protocol in [TypeScript](https://www.typescriptlang.org/),
+of the Whiteflag Protocol written in [TypeScript](https://www.typescriptlang.org/),
 and compiled to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript),
 to support the development of Whiteflag-enabled applications in JavaScript.
 
@@ -31,9 +31,19 @@ functionality and corresponding `1.x` subversions are defined as
 
 ## Documentation
 
-All detailed documentation of the WFJSL programming interface will become
-available at [js.whiteflagprotocol.org](https://js.whiteflagprotocol.org/).
+Detailed documentation of the WFJSL programming interface is available
+at [js.whiteflagprotocol.org](https://js.whiteflagprotocol.org/).
 The documentation is also found in this repository in the `docs/` directory.
+
+## Testing
+
+Testing of the sofwtare is doen with the [Mocha](https://mochajs.org/)
+test framework. To do a full test and run all the test scripts, use the
+following NPM command in the project root:
+
+```{shell}
+npm test
+```
 
 ## License and Third Party Software
 
@@ -42,7 +52,4 @@ The WFJSL software is dedicated to the public domain under the
 statement. See `LICENSE.md` for details.
 
 The library may require third party software packages, which are not part of
-this distribution and may be licenced differently. The third party software
-dependencies of the WFJSL are:
-
-* the [Mocha](https://mochajs.org/) for testing the software
+this distribution and may be licenced differently.

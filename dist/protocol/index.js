@@ -1,2 +1,2 @@
 'use strict';
-export * from "./lib/message.js";
+export { WfMessage } from "./lib/message.js";

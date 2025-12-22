@@ -27,18 +27,28 @@ const QUADBIT = 4;
 
 /* MODULE DECLARATIONS */
 /**
- * Whiteflag field encodings
+ * Whiteflag field encodings, defining the encoding of Whiteflag
+ * message fields as defined by the Whiteflag specification
  * @enum WfCodec
- * @wfver v1-draft.7
+ * @wfversion v1-draft.7
+ * @wfreference 4.1.2 Message Encoding
  */
 enum WfCodec {
+    /** Binary field */
     BIN = 'binary',
+    /** Decimal field */
     DEC = 'decimal',
+    /** HExadecimal field */
     HEX = 'hexadecimal',
+    /** UTF-8 / ASCII text field */
     UTF8 = 'utf-8',
+    /** Datetime field */
     DATETIME = 'datetime',
+    /** Duration field */
     DURATION = 'duration',
+    /** Latitude field */
     LAT = 'latitude',
+    /** Longitude field */
     LONG = 'longitude'
 }
 /**
@@ -48,13 +58,14 @@ const FIELDS = compileFieldCodecs();
 
 /* MODULE FUNCTIONS */
 /**
- * Enodes a Whiteflag message field
+ * Encodes a Whiteflag message field
  * @function encodeField
+ * @wfversion v1-draft.7
+ * @wfreference 4.1.2 Message Encoding, 4.1.3 Message Compression
  * @param value the message field value
  * @param codec the message field encoding: 'utf-8', 'bin', 'dec', 'hex', 'datetime', 'duration', 'lat', 'long'
  * @param version the version of the Whiteflag specification
  * @returns a binary buffer with the compressed encoded field
- * @wfver v1-draft.7
  */
 function encodeField(value: string, codec: WfCodec, version = WfVersion.v1): BinaryBuffer {
     /* Check field value */
@@ -93,11 +104,12 @@ function encodeField(value: string, codec: WfCodec, version = WfVersion.v1): Bin
 /**
  * Decodes a Whiteflag message field
  * @function decodeField
+ * @wfversion v1-draft.7
+ * @wfreference 4.1.2 Message Encoding, 4.1.3 Message Compression
  * @param buffer a binary buffer with the encoded field
  * @param codec the message field encoding: 'utf-8', 'bin', 'dec', 'hex', 'datetime', 'duration', 'lat', 'long'
  * @param version the version of the Whiteflag specification
  * @returns a string with the decoded field value
- * @wfver v1-draft.7
  */
 function decodeField(buffer: BinaryBuffer, codec: WfCodec, version = WfVersion.v1): string {
     /* Check binary encoding */
@@ -135,7 +147,7 @@ function decodeField(buffer: BinaryBuffer, codec: WfCodec, version = WfVersion.v
     }
 }
 /**
- * Check if the field value is valid
+ * Checks if the field value is valid
  * @function isValidValue
  * @param value the field value
  * @param codec the field encoding

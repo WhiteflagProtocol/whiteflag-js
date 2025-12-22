@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/keys
- * @summary Whiteflag JS crypto key functions
+ * @summary Whiteflag JS cryptographic key generation functions
  */
 export {
     createAesKey,
@@ -17,7 +17,7 @@ const DEFAULT_ENCRYPTALG = 'AES-CTR';
 
 /* MODULE FUNCTIONS */
 /**
- * Generates an AES encryption and decryption key
+ * Creates an AES encryption and decryption key
  * @function createAesKey
  * @param rawKey the raw key
  * @param algorithm the AES mode to use the key for, default is CTR mode
@@ -39,7 +39,7 @@ async function createAesKey(rawKey: Uint8Array<ArrayBuffer>,
     );
 }
 /**
- * Generates an HMAC signing key
+ * Creates an HMAC signing key
  * @function createHmacKey
  * @param rawKey the raw key
  * @param algorithm the hashing algorithm, default is SHA-256

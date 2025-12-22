@@ -1,7 +1,11 @@
-# Whiteflag API Error Handling
+# WFJSL Error Handling
+
+| [WFJSL Documentation Home](../index.md) | [WFJSL TypeDoc Reference](../typedoc) | [Whiteflag Specification](https://standard.whiteflagprotocol.org) |
+
+## Overview
 
 In addition to the standard JavaScript `Error` class, WFJSL provides an
-additional error class for Whiteflag protocol errors: the `ProtocolError`
+additional error class for Whiteflag protocol errors: the `WfProtocolError`
 class for the handling of Whiteflag message format and protocol errors.
 
 ## Usage of error classes
@@ -24,7 +28,7 @@ with the following arguments:
 * `causes` is an additional property in the form of an array that may contain a human readable stack of underlying causes
 * `code` is a property of type string, identifying the type of error as described below for both classes
 
-### `ProtocolError` class error codes
+## `ProtocolError` class error codes
 
 * `WF_PROTOCOL_ERROR`: generic Whiteflag protocol error (default)
 * `WF_METAHEADER_ERROR`: incorrect Whiteflag message metaheader

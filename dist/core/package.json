@@ -1,6 +1,6 @@
 {
     "name": "@whiteflag/core",
-    "version": "0.1.0-dev",
+    "version": "0.8.0",
     "description": "Whiteflag JS core protocol functionality",
     "license": "CC0-1.0",
     "keywords": [
@@ -9,6 +9,9 @@
         "core",
         "blockchain"
     ],
+    "directories": {
+        "lib": "lib"
+    },
     "dependencies": {
         "@whiteflag/util": "latest"
     },

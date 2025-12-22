@@ -1,4 +1,8 @@
-# Whiteflag API JavaScript Modules
+# WFJSL Package Structure
+
+| [WFJSL Documentation Home](../index.md) | [WFJSL TypeDoc Reference](../typedoc) | [Whiteflag Specification](https://standard.whiteflagprotocol.org) |
+
+## Overview
 
 The Whiteflag Javascript Library is written in TypeScript. The source code
 module files are organised in the following packages:
@@ -9,6 +13,9 @@ module files are organised in the following packages:
 | `core`     | Core Whiteflag protocol modules |
 | `crypto`   | Cryptographic modules           |
 | `util`     | Utility modules                 |
+
+Please refer to the [TypeDoc documentation](../typedoc) for a detailed
+description of all classes and functions.
 
 See also `README.md` for a general overview of the project, and
 `CONTRIBUTING.md` for a description of the repository structure and

@@ -7,55 +7,65 @@ import { WfCryptoMethod } from '@whiteflag/crypto';
 import { BinaryBuffer } from '@whiteflag/util';
 import { WfVersion } from './versions.ts';
 /**
- * Whiteflag message types
+ * Whiteflag message types, defining the types of Whiteflag message
+ * as specified by the Whiteflag standard
  * @enum WfFieldType
- * @wfver v1-draft.7
+ * @wfversion v1-draft.7
+ * @wfreference 2.4.2.1 Functional Messages, 2.4.2.2 Management Messages
+ *
  */
 declare enum WfMsgType {
+    /** Authentication message */
     A = "A",
+    /** Cryptographic support message */
     K = "K",
+    /** Test message */
     T = "T",
+    /** Protection sign */
     P = "P",
+    /** Protection sign */
     D = "D",
+    /** Status signal */
     S = "S",
+    /** Emergency signal */
     E = "E",
+    /** Infrstructure sign */
     I = "I",
+    /** Mission signal */
     M = "M",
+    /** Request signal */
     Q = "Q",
+    /** Reference message */
     R = "R",
+    /** Free text message */
     F = "F"
 }
 /**
- * Whiteflag Message
+ * A core Whiteflag message as defined by the Whiteflag specification
  * @class WfCoreMessage
- * @wfver v1-draft.7
- * @todo Finish and test encryption and decryption
- * @todo Add a proper description of the functionality
+ * @wfversion v1-draft.7
+ * @wfreference 4 Message Format
+ * @remarks Ths class represents a core Whiteflag message as
+ * defined by the Whiteflag specification. It has a message header and
+ * a message body which contain the message fields as specified for the
+ * message type. It performs the encoding/encryption and decoding/decryption
+ * to and from binary messages. Since the processing of Whiteflag messges
+ * in accordance with the protocol requires additional metadata, the extrended
+ * `WfMessage` class of the `@whitelag/protol` package should normallly be
+ * used instead of this class.
  */
 declare class WfCoreMessage {
-    /**
-     * @property the message type
-     */
+    /** The message type */
     private type;
-    /**
-     * @property the Whiteflag protocol version
-     */
+    /** The Whiteflag protocol version */
     private version;
-    /**
-     * @property header The message header
-     */
-    protected header: WfMsgHeader;
-    /**
-     * @property body The message body
-     */
-    protected body: WfMsgBody;
-    /**
-     * @property binary the binary encoded message
-     */
+    /** The message header containing the generic header fields */
+    private header;
+    /** The message body containing the message type specific body fields */
+    private body;
+    /** The binary encoded message */
     private binary;
-    /**
-     * @property final true if content cannot be altered anymore, else false
-     */
+    /** Indicates if message is final and cannot be altered */
     private final;
     /**
      * Constructor for a Whiteflag message
@@ -202,14 +212,14 @@ declare class WfCoreMessage {
     private decodeBodyField;
 }
 /**
- * Checks if a plain object is a valid Whiteflag message
+ * Checks if an object is a valid Whiteflag message
  * @function isValidMessage
  * @param message the message object to validate
  * @returns true if message is valid, else false
  */
 declare function isValidMessage(message: any): boolean;
 /**
- * Checks a plain message object for validation errors
+ * Checks a message object for validation errors
  * @function validateMessage
  * @param message the message object to validate
  * @returns an array of validation errors
@@ -239,43 +249,3 @@ declare function encryptMessage(message: BinaryBuffer, method: WfCryptoMethod, i
  * @returns the decrypted binary encoded message
  */
 declare function decryptMessage(message: BinaryBuffer, method: WfCryptoMethod, ikm: Uint8Array, address: Uint8Array, iv?: Uint8Array, version?: WfVersion): Promise<BinaryBuffer>;
-/**
- * Defines a Whiteflag message header object
- * @private
- * @interface WfMsgHeader
- */
-interface WfMsgHeader {
-    [key: string]: any;
-    Prefix?: string;
-    Version?: string;
-    EncryptionIndicator?: string;
-    DuressIndicator?: string;
-    MessageCode?: string;
-    ReferenceIndicator?: string;
-    ReferencedMessage?: string;
-}
-/**
- * Defines a Whiteflag message header object
- * @private
- * @interface WfMsgHeader
- */
-interface WfMsgBody {
-    [key: string]: any;
-    VerificationMethod?: string;
-    VerificationData?: string;
-    CryptoDataType?: string;
-    CryptoData?: string;
-    PseudoMessageCode?: string;
-    SubjectCode?: string;
-    DateTime?: string;
-    Duration?: string;
-    ObjectType?: string;
-    ObjectLatitude?: string;
-    ObjectLongitude?: string;
-    ObjectSizeDim1?: string;
-    ObjectSizeDim2?: string;
-    ObjectOrientation?: string;
-    ReferenceMethod?: string;
-    ReferenceData?: string;
-    Text?: string;
-}

@@ -5,18 +5,14 @@ var JwsFormat;
 (function (JwsFormat) {
     JwsFormat["COMPACT"] = "JWS_COMPACT";
     JwsFormat["FLAT"] = "JWS_FLATTENED";
-    JwsFormat["FULL"] = "JWS_ULL";
+    JwsFormat["FULL"] = "JWS_FULL";
 })(JwsFormat || (JwsFormat = {}));
 const JWSSEPARATOR = '.';
 const REGEX_FLAT = /e[yw][A-Za-z0-9-_]+/;
 const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
 class Jws {
-    protected = {
-        alg: ''
-    };
-    payload = {
-        iat: 0
-    };
+    protected = { alg: '' };
+    payload = { iat: 0 };
     signature = '';
     constructor(header, payload, signature = '') {
         this.protected = header;

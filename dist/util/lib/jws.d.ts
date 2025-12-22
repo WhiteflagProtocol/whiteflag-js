@@ -1,24 +1,22 @@
 /**
  * @module util/jws
- * @description Whiteflag JS JSON Web Signature class and functions
+ * @summary Whiteflag JS JSON Web Signature class and functions
  */
 export { Jws };
 /**
- * A class representing a JSON Web Token (JWS) structure
+ * A class representing a JSON Web Token (JWS)
  * @class Jws
+ * @remarks Whiteflag uses JSON Web Signatures (JWS) for one of its
+ * authentication methods. This class provides the basic (not Whiteflag-
+ * specific) functionality to create, sign and convert JWSs for other
+ * Whiteflag packages.
  */
 declare class Jws {
-    /**
-     * @property protected the JWS protected header
-     */
+    /** The protected the JWS protected header */
     private protected;
-    /**
-     * @property header the JWS payload
-     */
+    /** The JWS payload */
     private payload;
-    /**
-     * @property signature the JWS signature
-     */
+    /** The JWS signature */
     private signature;
     /**
      * Constructor for a Whiteflag message
@@ -58,7 +56,6 @@ declare class Jws {
     /**
      * Returns the JWS signature input
      * @function getSignInput
-     * @param algorithm the identifier of the algorithm used to sign the payload
      * @returns a string with the input to be signed by the signing algorithm
      */
     getSignInput(): string;

@@ -13,5 +13,6 @@ export {
  * @enum WfVersion
  */
 enum WfVersion {
+    /** Whiteflag version 1 */
     v1 = '1'
 }

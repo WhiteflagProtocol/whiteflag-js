@@ -1,0 +1,9 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "extends": [ "typedoc/tsdoc.json" ],
+    "noStandardTags": false,
+    "tagDefinitions": [
+        { "tagName": "@wfreference", "syntaxKind": "block" },
+        { "tagName": "@wfversion", "syntaxKind": "block" }
+    ]
+}

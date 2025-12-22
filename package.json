@@ -1,17 +1,26 @@
 {
     "name": "@whiteflag/js",
-    "version": "0.1.0-dev",
+    "version": "0.8.0",
     "description": "JavaScript implementation of the Whiteflag protocol",
     "license": "CC0-1.0",
     "private": true,
-    "workspaces": [
-        "dist"
-    ],
     "keywords": [
         "whiteflag",
         "protocol",
         "blockchain"
     ],
+    "workspaces": [
+        "./dist/core",
+        "./dist/crypto",
+        "./dist/protocol",
+        "./dist/util"
+    ],
+     "directories": {
+        "dist": "dist",
+        "dos": "docs",
+        "src": "src",
+        "test": "test"
+    },
     "homepage": "https://github.com/WhiteflagProtocol/whiteflag-js#readme",
     "repository": {
         "type": "git",
@@ -37,7 +46,7 @@
     },
     "scripts": {
         "test": "tsc && mocha --recursive",
-        "doc:cleacup": "rimraf -g ./docs/typedoc/**/*",
+        "doc:cleanup": "rimraf -g ./docs/typedoc/**/*",
         "doc:src": "typedoc",
         "docs": "npm-run-all doc:*",
         "build:cleanup": "rimraf -g ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",

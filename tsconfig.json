@@ -25,10 +25,6 @@
         "entryPoints": [
             "src/**/*.ts"
         ],
-        "out": "docs/typedoc",
-            "tagDefinitions": [
-                { "tagName": "@wfref", "syntaxKind": "block" },
-                { "tagName": "@wfver", "syntaxKind": "block" }
-            ]
+        "out": "docs/typedoc"
     }
 }

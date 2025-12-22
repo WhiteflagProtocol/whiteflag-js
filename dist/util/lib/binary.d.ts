@@ -6,15 +6,15 @@ export { BinaryBuffer, cropBits, shiftRight, shiftLeft };
 /**
  * A class representing a binary buffer
  * @class BinaryBuffer
+ * @remarks Objects of this class represent a binary encoded piece of data,
+ * e.g. a Whiteflag message, that can be manipulated at bit level. This class
+ * provides the basic (not Whiteflag-specific) functionality for other
+ * Whiteflag packages to encode and decode binary Whiteflag messages.
  */
 declare class BinaryBuffer {
-    /**
-     * @property the Uint8Array that holds the binary content
-     */
+    /** The Uint8Array that holds the binary content */
     private buffer;
-    /**
-     * @property the number of used bits in the buffer
-     */
+    /** The number of used bits in the buffer */
     length: number;
     /**
      * Constructor for a binary buffer
@@ -23,9 +23,8 @@ declare class BinaryBuffer {
      */
     private constructor();
     /**
-     * Creates a binary buffer from another binary buffer
+     * Creates an empty binary buffer
      * @function from
-     * @param binBuffer a binary buffer
      * @returns a new binary buffer
      */
     static empty(): BinaryBuffer;
@@ -37,7 +36,7 @@ declare class BinaryBuffer {
      */
     static from(binBuffer: BinaryBuffer): BinaryBuffer;
     /**
-     * Creates a binary buffer from bytes from a number array
+     * Creates a binary buffer from bytes in a number array
      * @function fromBytes
      * @param byteArray an array of numbers representing bytes
      * @param nBits the number of used bits

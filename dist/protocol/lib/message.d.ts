@@ -2,17 +2,21 @@
  * @module protocol/message
  * @summary Whiteflag JS message class
  */
-export { WfMessage };
+export { WfMessage, WfMetaHeader };
 import { WfCoreMessage } from '@whiteflag/core';
 /**
- * Whiteflag Message
+ * A Whiteflag message as defined by the Whiteflag specification
  * @class WfMessage
- * @todo Add a proper description of the class
+ * @wfversion v1-draft.7
+ * @wfreference 4 Message Format
+ * @remarks This class extends the core Whiteflag message class by
+ * adding metadata to the message, additional data convertions (such as to and
+ * from JSON), and specific Whiteflag protocol features. This allows the class
+ * to be used and integrated in larger functional applications in accordance
+ * with the Whiteflag specification.
  */
 declare class WfMessage extends WfCoreMessage {
-    /**
-     * @property meta The meta header
-     */
+    /** The message metadata required for processing the message */
     protected meta: WfMetaHeader;
     /**
      * Constructor for a Whiteflag message
@@ -58,8 +62,7 @@ declare class WfMessage extends WfCoreMessage {
 }
 /**
  * Defines a Whiteflag message header object
- * @private
- * @interface WfMsgHeader
+ * @interface WfMetaHeader
  */
 interface WfMetaHeader {
     [key: string]: any;

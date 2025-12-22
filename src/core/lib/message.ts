@@ -31,22 +31,37 @@ const MSG_NOENCRYPT = '0';
 
 /* MODULE DECLARATIONS */
 /**
- * Whiteflag message types
+ * Whiteflag message types, defining the types of Whiteflag message
+ * as specified by the Whiteflag standard
  * @enum WfFieldType
- * @wfver v1-draft.7
+ * @wfversion v1-draft.7
+ * @wfreference 2.4.2.1 Functional Messages, 2.4.2.2 Management Messages
+ * 
  */
 enum WfMsgType {
+    /** Authentication message */
     A = 'A',
+    /** Cryptographic support message */
     K = 'K',
+    /** Test message */
     T = 'T',
+    /** Protection sign */
     P = 'P',
+    /** Protection sign */
     D = 'D',
+    /** Status signal */
     S = 'S',
+    /** Emergency signal */
     E = 'E',
+    /** Infrstructure sign */
     I = 'I',
+    /** Mission signal */
     M = 'M',
+    /** Request signal */
     Q = 'Q',
+    /** Reference message */
     R = 'R',
+    /** Free text message */
     F = 'F'
 }
 /**
@@ -55,37 +70,33 @@ enum WfMsgType {
 const MSGSPEC = compileMsgSpec();
 
 /**
- * Whiteflag Message
+ * A core Whiteflag message as defined by the Whiteflag specification
  * @class WfCoreMessage
- * @wfver v1-draft.7
- * @todo Finish and test encryption and decryption
- * @todo Add a proper description of the functionality
+ * @wfversion v1-draft.7
+ * @wfreference 4 Message Format
+ * @remarks Ths class represents a core Whiteflag message as
+ * defined by the Whiteflag specification. It has a message header and
+ * a message body which contain the message fields as specified for the
+ * message type. It performs the encoding/encryption and decoding/decryption
+ * to and from binary messages. Since the processing of Whiteflag messges
+ * in accordance with the protocol requires additional metadata, the extrended
+ * `WfMessage` class of the `@whitelag/protol` package should normallly be
+ * used instead of this class.
  */
 class WfCoreMessage {
     /* CLASS PROPERTIES */
-    /** 
-     * @property the message type
-     */
+
+    /** The message type */
     private type: WfMsgType;
-    /** 
-     * @property the Whiteflag protocol version
-     */
+    /** The Whiteflag protocol version */
     private version: WfVersion = WfVersion.v1;
-    /**
-     * @property header The message header
-     */
-    protected header: WfMsgHeader = {};
-    /**
-     * @property body The message body
-     */
-    protected body: WfMsgBody = {};
-    /**
-     * @property binary the binary encoded message
-     */
+    /** The message header containing the generic header fields */
+    private header: WfMsgHeader = {};
+    /** The message body containing the message type specific body fields */
+    private body: WfMsgBody = {};
+    /** The binary encoded message */
     private binary: BinaryBuffer = BinaryBuffer.empty();
-    /** 
-     * @property final true if content cannot be altered anymore, else false
-     */
+    /** Indicates if message is final and cannot be altered */
     private final: boolean = false;
 
     /* CONSTRUCTOR */
@@ -501,7 +512,7 @@ class WfCoreMessage {
 
 /* MODULE FUNCTIONS */
 /**
- * Checks if a plain object is a valid Whiteflag message
+ * Checks if an object is a valid Whiteflag message
  * @function isValidMessage
  * @param message the message object to validate
  * @returns true if message is valid, else false
@@ -511,7 +522,7 @@ function isValidMessage(message: any): boolean {
     return true;
 }
 /**
- * Checks a plain message object for validation errors
+ * Checks a message object for validation errors
  * @function validateMessage
  * @param message the message object to validate
  * @returns an array of validation errors

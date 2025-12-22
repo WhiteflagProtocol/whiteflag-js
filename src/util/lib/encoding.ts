@@ -88,7 +88,7 @@ function isHex(hexString: string): boolean {
 /**
  * Removes the '0x' hex prefix if present
  * @param hexString a hexadecimal encoded string
- * @returnsthe the string without the hex prefix
+ * @returns the the string without the hex prefix
  */
 function noHexPrefix(hexString: string): string {
     if (hexString.startsWith(HEXPREFIX)) {

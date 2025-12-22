@@ -4,4 +4,4 @@
  * @document docs/md/modules.md
  * @primaryExport
  */
-export * from './lib/message.ts';
+export { WfMessage, WfMetaHeader } from './lib/message.ts';

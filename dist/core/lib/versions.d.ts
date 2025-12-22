@@ -8,5 +8,6 @@ export { WfVersion };
  * @enum WfVersion
  */
 declare enum WfVersion {
+    /** Whiteflag version 1 */
     v1 = "1"
 }

@@ -24,16 +24,17 @@ const BYTELENGTH = 8;
 /**
  * A class representing a binary buffer
  * @class BinaryBuffer
+ * @remarks Objects of this class represent a binary encoded piece of data,
+ * e.g. a Whiteflag message, that can be manipulated at bit level. This class
+ * provides the basic (not Whiteflag-specific) functionality for other
+ * Whiteflag packages to encode and decode binary Whiteflag messages.
  */
 class BinaryBuffer {
     /* CLASS PROPERTIES */
-    /**
-     * @property the Uint8Array that holds the binary content
-     */
+
+    /** The Uint8Array that holds the binary content */
     private buffer: Uint8Array;
-    /**
-     * @property the number of used bits in the buffer
-     */
+    /** The number of used bits in the buffer */
     public length: number;
 
     /* CONSTRUCTOR */
@@ -54,9 +55,8 @@ class BinaryBuffer {
 
     /* STATIC FACTORY METHODS */
     /**
-     * Creates a binary buffer from another binary buffer
+     * Creates an empty binary buffer
      * @function from
-     * @param binBuffer a binary buffer
      * @returns a new binary buffer
      */
     public static empty(): BinaryBuffer {
@@ -72,7 +72,7 @@ class BinaryBuffer {
         return new BinaryBuffer(binBuffer.toU8a(), binBuffer.length);
     }
     /**
-     * Creates a binary buffer from bytes from a number array
+     * Creates a binary buffer from bytes in a number array
      * @function fromBytes
      * @param byteArray an array of numbers representing bytes
      * @param nBits the number of used bits

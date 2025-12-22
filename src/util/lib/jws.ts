@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module util/jws
- * @description Whiteflag JS JSON Web Signature class and functions
+ * @summary Whiteflag JS JSON Web Signature class and functions
  */
 export {
     Jws
@@ -18,22 +18,16 @@ import {
 
 /* Constants */
 /**
- * Defines JWS formats
+ * Defines JWS formats i.a.w. RFC 7515
  * @enum JwsFormat
  */
 enum JwsFormat {
-    /**
-     * Generic Whiteflag protocol error
-     */
+    /** JWS Compact Serialization */
     COMPACT = 'JWS_COMPACT',
-    /**
-     * Incorrect or missingWhiteflag message meta data
-     */
+    /** flattened JWS JSON Serialization */
     FLAT = 'JWS_FLATTENED',
-    /**
-     * Whiteflag message format error
-     */
-    FULL = 'JWS_ULL',
+    /** full JWS JSON object */
+    FULL = 'JWS_FULL',
 }
 /**
  * Seperator in compact serialised JWS
@@ -45,26 +39,21 @@ const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_
 
 /* MODULE DECLARATIONS */
 /**
- * A class representing a JSON Web Token (JWS) structure
+ * A class representing a JSON Web Token (JWS)
  * @class Jws
+ * @remarks Whiteflag uses JSON Web Signatures (JWS) for one of its
+ * authentication methods. This class provides the basic (not Whiteflag-
+ * specific) functionality to create, sign and convert JWSs for other
+ * Whiteflag packages.
  */
 class Jws {
     /* CLASS PROPERTIES */
-    /**
-     * @property protected the JWS protected header
-     */
-    private protected = {
-        alg: ''
-    }
-    /**
-     * @property header the JWS payload
-     */
-    private payload = {
-        iat: 0
-    }
-    /**
-     * @property signature the JWS signature
-     */
+
+    /** The protected the JWS protected header */
+    private protected = { alg: '' }
+    /** The JWS payload */
+    private payload = { iat: 0 }
+    /** The JWS signature */
     private signature: string = '';
 
     /* CONSTRUCTOR */
@@ -150,7 +139,6 @@ class Jws {
     /**
      * Returns the JWS signature input
      * @function getSignInput
-     * @param algorithm the identifier of the algorithm used to sign the payload
      * @returns a string with the input to be signed by the signing algorithm
      */
     public getSignInput(): string {

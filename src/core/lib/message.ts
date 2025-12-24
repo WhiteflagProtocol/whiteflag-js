@@ -13,8 +13,8 @@ export {
 };
 
 /* Dependencies */
-import { WfCryptoMethod, encrypt, decrypt, deriveKey } from '@whiteflag/crypto';
-import { BinaryBuffer, hexToU8a, isString } from '@whiteflag/util';
+import { WfCryptoMethod, encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
+import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { WfVersion } from './versions.ts';

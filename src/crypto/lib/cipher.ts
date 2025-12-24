@@ -11,8 +11,8 @@ export {
 };
 
 /* Dependencies */
-import { WfVersion } from '@whiteflag/core';
-import { hexToU8a } from '@whiteflag/util';
+import { WfVersion } from '@whiteflagprotocol/core';
+import { hexToU8a } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { zeroise } from './common.ts';
@@ -46,7 +46,7 @@ const PARAMS = compileCryptoParams();
 
 /* MODULE FUNCTIONS */
 /**
- * Encrypts a message based on the specified encyrption method
+ * Encrypts a message based on the specified encryption method
  * @function encrypt
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption
@@ -75,7 +75,7 @@ async function encrypt(message: Uint8Array<ArrayBuffer>,
     }
 }
 /**
- * Decrypts a message based on the specified encyrption method
+ * Decrypts a message based on the specified encryption method
  * @function decrypt
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption

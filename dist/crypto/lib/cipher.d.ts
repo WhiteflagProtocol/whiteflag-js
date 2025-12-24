@@ -3,7 +3,7 @@
  * @summary Whiteflag JS encryption and decryption functions
  */
 export { WfCryptoMethod, encrypt, decrypt, deriveKey };
-import { WfVersion } from '@whiteflag/core';
+import { WfVersion } from '@whiteflagprotocol/core';
 /**
  * Whiteflag encryption methods, defining the encryption methods
  * for Whiteflag messages as specified by the Whiteflag standard
@@ -18,7 +18,7 @@ declare enum WfCryptoMethod {
     PSK = "2"
 }
 /**
- * Encrypts a message based on the specified encyrption method
+ * Encrypts a message based on the specified encryption method
  * @function encrypt
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption
@@ -30,7 +30,7 @@ declare enum WfCryptoMethod {
  */
 declare function encrypt(message: Uint8Array<ArrayBuffer>, method: WfCryptoMethod, key: CryptoKey, iv?: Uint8Array<ArrayBuffer>, version?: WfVersion): Promise<Uint8Array>;
 /**
- * Decrypts a message based on the specified encyrption method
+ * Decrypts a message based on the specified encryption method
  * @function decrypt
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption

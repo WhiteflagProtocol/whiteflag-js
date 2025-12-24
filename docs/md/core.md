@@ -4,16 +4,16 @@
 
 ## Overview
 
-The `@whiteflag/core` package provides the modules that define Whiteflag
-core protocol features as specified in the Whiteflag standard. As such,
-this package is not a fully functional implementation of the protocol, but
-seperates core protocol functions from implementation-specific design
-decisions. Therefore, this package is not intented to be used directly
-by implementations of Whiteflag; instead, the `@whiteflag/protocol` should
+The `@whiteflagprotocol/core` package provides the modules that define
+Whiteflag core protocol features as specified in the Whiteflag standard.
+As such, this package is not a fully functional implementation of the
+protocol, but separates core protocol functions from implementation-specific
+design decisions. Therefore, this package is not intended to be used directly
+by implementations of Whiteflag; instead, the `@whiteflagprotocol/main` should
 be used.
 
 This description provides a generic overview of the Whiteflag core package.
-Please refer to the [TypeDoc documentation](../typedoc) for a detailed
+Please refer to the [WFJSL TypeDoc documentation](../typedoc) for a detailed
 description of all classes and functions.
 
 ## Whiteflag message class
@@ -22,13 +22,13 @@ The Whiteflag message class `WfCoreMessage` defined in the `message` module
 represents a Whiteflag message. The class contains the methods to create,
 set field values, encode and encrypt a Whiteflag message. Please note that
 there normally is no need to use the `WfCoreMessage` directly. Instead, the
-`WfMessage` child class of the `@whiteflag/protocol` package is the main class
-to use for Whiteflag message, as this extended class provides methods to
+`WfMessage` child class of the `@whiteflagprotocol/main` package is the main
+class to use for Whiteflag message, as this extended class provides methods to
 process the metadata required for full protocol functionality.
 
 A new message may be created using the constructor, or by using a static
 factory method. For example, creating a new FreeText message (message
-code `F`) and set the `Text` field, may be doen as follows:
+code `F`) and set the `Text` field, may be done as follows:
 
 ```{javascript}
 let wfMessage = new WfCoreMessage('F');
@@ -36,7 +36,7 @@ WfCoreMessage.set('Text', 'Example text to be sent with the FreeText message');
 ```
 
 The `encode()` method encodes the message. The `WfCoreMessage` class
-autmatically verifies the fields and values when encoding and decoding.
+automatically verifies the fields and values when encoding and decoding.
 Encoding and decoding are asynchronous, meaning the functions return
 [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
 Once encoded, the methods `toHex()` and `toU8a()` may be used to obtain the
@@ -73,10 +73,9 @@ processing of Whiteflag messages.
 | `encryptMessage`  | Encrypts a binary encoded message                |
 | `decryptMessage`  | Decrypts an encrypted binary message             |
 
-Both validation functions may be used for both plain JavaScript objects as
-well as for objects of the `WfCoreMessage` class. The encryption and
-decryption functions work only on binary encoded messages provided as a
-`BinaryBuffer`.
+Both validation functions may be used for both plain JavaScript objects and
+objects of the `WfCoreMessage` class. The encryption and decryption functions
+work only on binary encoded messages provided as a `BinaryBuffer`.
 
 ## Whiteflag encoding
 

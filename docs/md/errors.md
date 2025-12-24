@@ -10,7 +10,7 @@ class for the handling of Whiteflag message format and protocol errors.
 
 ## Usage of error classes
 
-To use the ProtocolError class, import it with an object destructor:
+To use the `WfProtocolError` class, import it with an object destructor:
 
 ```javascript
 const { WfProtocolError } = require('whiteflag-js');
@@ -24,14 +24,14 @@ err = new WfProtocolError(message, causes, code);
 
 with the following arguments:
 
-* `message` is similar to the property of the generic Error class, i.e. a string with a human readable description of the error
-* `causes` is an additional property in the form of an array that may contain a human readable stack of underlying causes
+* `message` is similar to the property of the generic Error class, i.e. a string with a human-readable description of the error
+* `causes` is an additional property in the form of an array that may contain a human-readable stack of underlying causes
 * `code` is a property of type string, identifying the type of error as described below for both classes
 
 ## `ProtocolError` class error codes
 
 * `WF_PROTOCOL_ERROR`: generic Whiteflag protocol error (default)
-* `WF_METAHEADER_ERROR`: incorrect Whiteflag message metaheader
+* `WF_METAHEADER_ERROR`: incorrect Whiteflag message metadata
 * `WF_FORMAT_ERROR`: Whiteflag message format error
 * `WF_REFERENCE_ERROR`: Whiteflag message reference error
 * `WF_AUTH_ERROR`: Whiteflag message authentication error

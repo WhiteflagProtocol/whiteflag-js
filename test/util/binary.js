@@ -10,7 +10,7 @@ import { it as assertion } from 'mocha';
 import { deepStrictEqual } from 'assert';
 
 /* Functions required for test */
-import { hexToU8a, u8aToHex } from '@whiteflag/util';
+import { hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 
 /* Functions to test */
 import {
@@ -18,7 +18,7 @@ import {
     cropBits,
     shiftRight,
     shiftLeft
-} from '@whiteflag/util';
+} from '@whiteflagprotocol/util';
 
 /* Test data */
 import testVector from './binary.json' with { type: 'json' };

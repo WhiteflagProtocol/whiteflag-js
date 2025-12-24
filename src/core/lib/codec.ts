@@ -11,7 +11,7 @@ export {
 };
 
 /* Dependencies */
-import { BinaryBuffer } from '@whiteflag/util';
+import { BinaryBuffer } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { WfVersion } from './versions.ts';

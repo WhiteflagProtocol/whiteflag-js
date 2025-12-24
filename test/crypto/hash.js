@@ -10,10 +10,10 @@ import { it as assertion } from 'mocha';
 import { strictEqual, rejects } from 'assert';
 
 /* Functions required for test */
-import { hexToU8a, u8aToHex } from '@whiteflag/util';
+import { hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 
 /* Functions to test */
-import { hkdf, hmac, hash } from '@whiteflag/crypto';
+import { hkdf, hmac, hash } from '@whiteflagprotocol/crypto';
 
 /* Test data */
 import testVector from './hash.json' with { type: 'json' };

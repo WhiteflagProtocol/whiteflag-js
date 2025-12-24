@@ -4,10 +4,10 @@
 
 ## Overview
 
-The `@whiteflag/util` package provides common utilities for other Whiteflag
-packages. These utilities include common data conversions, generic helper
-functions, etc. for other Whiteflag packages. It should normally not be
-necessary to add this package as a dependency, but its functionality might
+The `@whiteflagprotocol/util` package provides common utilities for other
+Whiteflag packages. These utilities include common data conversions, generic
+helper functions, etc. for other Whiteflag packages. It should normally not be
+necessary to add this package as a dependency, but its functionality might be
 useful for other purposes.
 
 This description provides a generic overview of the Whiteflag utility package.
@@ -26,9 +26,9 @@ Static methods to create a binary buffer:
 * `BinaryBuffer.from(...)`: creates a binary buffer from another binary buffer
 * `BinaryBuffer.fromBytes(...)`: creates a binary buffer from bytes in a number array
 * `BinaryBuffer.fromHex(...)`: creates a binary buffer from a hexadecimal string
-* `BinaryBuffer.fromU8a(...)`:  creates a binary buffer from a Uint8Array
+* `BinaryBuffer.fromU8a(...)`: creates a binary buffer from a Uint8Array
 
-Pulic methods to manipulate a binary buffer:
+Public methods to manipulate a binary buffer:
 
 * `BinaryBuffer.append(...)`: appends another binary buffer to the end of the binary buffer
 * `BinaryBuffer.crop(...)`: shortens the binary buffer to the length of the specified bits
@@ -40,7 +40,7 @@ Pulic methods to manipulate a binary buffer:
 Some of these functions have an equivalent that allow to use a different
 binary representation, e.g. `appendHex(...)` or `insertU8a(...)`.
 
-## Data convertions
+## Data conversions
 
 The `encoding` module provides generic functions to convert data
 from one encoding to another.
@@ -49,13 +49,13 @@ from one encoding to another.
 |-------------|---------------------------------------------------------------|-----------------------------------------|
 | Base64      | a string with a 64-character binary-to-text encoding          | Base64url                               |
 | Base64url   | a string with a URL-safe 64-character binary-to-text encoding | Base64, Hexadecimal, String, UInt8Array |
-| Hexadecimal | a string with a hexadecimal respresentation of a binary       | Base64url, String, UInt8Array           |
+| Hexadecimal | a string with a hexadecimal representation of a binary        | Base64url, String, UInt8Array           |
 | Object      | a plain JavaScript object                                     | Base64url                               |
 | Text        | a string with UTF-8 characters                                | Base64url, Hexadecimal, UInt8Array      |
 | UInt8Array  | an array of bytes representing a binary encoding              | Base64url, Hexadecimal, String          |
 
 For example `hexToB64u(...)` creates a base64url encoded string from a
-hexadecimal string. The module also provides some addtional helper functions
+hexadecimal string. The module also provides some additional helper functions
 for different data encodings:
 
 * `isObject(...)` checks if something is an object

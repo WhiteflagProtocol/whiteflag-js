@@ -3,8 +3,8 @@
  * @summary Whiteflag JS message class
  */
 export { WfMsgType, WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
-import { WfCryptoMethod } from '@whiteflag/crypto';
-import { BinaryBuffer } from '@whiteflag/util';
+import { WfCryptoMethod } from '@whiteflagprotocol/crypto';
+import { BinaryBuffer } from '@whiteflagprotocol/util';
 import { WfVersion } from './versions.ts';
 /**
  * Whiteflag message types, defining the types of Whiteflag message

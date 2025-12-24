@@ -13,10 +13,10 @@
         "rootDir": "./src",
         "outDir": "./dist",
         "paths": {
-            "@whiteflag/protocol": ["./src/protocol"],
-            "@whiteflag/core": ["./src/core"],
-            "@whiteflag/crypto": ["./src/crypto"],
-            "@whiteflag/util": ["./src/util"]
+            "@whiteflagprotocol/main": ["./src/main"],
+            "@whiteflagprotocol/core": ["./src/core"],
+            "@whiteflagprotocol/crypto": ["./src/crypto"],
+            "@whiteflagprotocol/util": ["./src/util"]
         },
         "noImplicitThis": true,
     },

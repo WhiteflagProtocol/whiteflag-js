@@ -10,10 +10,10 @@ import { it as assertion } from 'mocha';
 import { deepStrictEqual } from 'assert';
 
 /* Functions required for test */
-import { BinaryBuffer } from '@whiteflag/util';
+import { BinaryBuffer } from '@whiteflagprotocol/util';
 
 /* Functions to test */
-import { encodeField, decodeField } from '@whiteflag/core';
+import { encodeField, decodeField } from '@whiteflagprotocol/core';
 
 /* Test data */
 import testVector from './codec.json' with { type: 'json' };

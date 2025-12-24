@@ -10,7 +10,7 @@ import { it as assertion } from 'mocha';
 import { strictEqual, deepStrictEqual, throws } from 'assert';
 
 /* Functions to test */
-import { Jws } from '@whiteflag/util';
+import { Jws } from '@whiteflagprotocol/util';
 
 /* Test data */
 import testVector from './jws.json' with { type: 'json' };

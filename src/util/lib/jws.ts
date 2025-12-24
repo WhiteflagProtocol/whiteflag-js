@@ -30,7 +30,7 @@ enum JwsFormat {
     FULL = 'JWS_FULL',
 }
 /**
- * Seperator in compact serialised JWS
+ * Separator in compact serialised JWS
  * @Constant
  */
 const JWSSEPARATOR = '.';

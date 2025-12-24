@@ -1,7 +1,7 @@
 'use strict';
 export { WfMsgType, WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
-import { WfCryptoMethod, encrypt, decrypt, deriveKey } from '@whiteflag/crypto';
-import { BinaryBuffer, hexToU8a, isString } from '@whiteflag/util';
+import { WfCryptoMethod, encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
+import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
 import { WfVersion } from "./versions.js";
 import { WfProtocolError, WfErrorCode } from "./errors.js";
 import { decodeField, encodeField, isValidValue } from "./codec.js";

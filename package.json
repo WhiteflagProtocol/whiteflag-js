@@ -1,6 +1,6 @@
 {
-    "name": "@whiteflag/js",
-    "version": "0.8.0",
+    "name": "whiteflag-js",
+    "version": "1.0.0-dev",
     "description": "JavaScript implementation of the Whiteflag protocol",
     "license": "CC0-1.0",
     "private": true,
@@ -12,7 +12,7 @@
     "workspaces": [
         "./dist/core",
         "./dist/crypto",
-        "./dist/protocol",
+        "./dist/main",
         "./dist/util"
     ],
      "directories": {
@@ -31,27 +31,29 @@
     },
     "type": "module",
     "dependencies": {
-        "@whiteflag/core": "file:./dist/core",
-        "@whiteflag/crypto": "file:./dist/crypto",
-        "@whiteflag/protocol": "file:./dist/protocol",
-        "@whiteflag/util": "file:./dist/util"
+        "@whiteflagprotocol/core": "file:./dist/core",
+        "@whiteflagprotocol/crypto": "file:./dist/crypto",
+        "@whiteflagprotocol/main": "file:./dist/main",
+        "@whiteflagprotocol/util": "file:./dist/util"
     },
     "devDependencies": {
         "@types/node": "latest",
+        "copyfiles": "^2.4.1",
         "mocha": "^11.7.5",
         "npm-run-all": "^4.1.5",
-        "rimraf": "latest",
+        "rimraf": "^6.1.2",
         "typedoc": "latest",
         "typescript": "^5.9.3"
     },
     "scripts": {
         "test": "tsc && mocha --recursive",
-        "doc:cleanup": "rimraf -g ./docs/typedoc/**/*",
-        "doc:src": "typedoc",
-        "docs": "npm-run-all doc:*",
-        "build:cleanup": "rimraf -g ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",
+        "docs:cleanup": "rimraf -g ./docs/typedoc/**/*",
+        "docs:src": "typedoc --groupReferencesByType --router structure",
+        "docs": "npm-run-all docs:*",
+        "build:cleanup": "rimraf -g ./dist/**/*.md ./dist/**/*.json ./dist/**/**/*.json ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",
         "build:compile": "tsc --declaration false",
         "build:declaration": "tsc --emitDeclarationOnly --declaration true --removeComments false",
+        "build:packages": "copyfiles -u 1 src/**/package.json src/**/*.md dist",
         "build:test": "mocha --recursive --reporter dot",
         "build:docs": "npm run docs",
         "build": "npm-run-all build:*"

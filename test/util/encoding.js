@@ -30,7 +30,7 @@ import {
     u8aToB64u,
     u8aToHex,
     u8aToString
-} from '@whiteflag/util';
+} from '@whiteflagprotocol/util';
 
 /* Test data */
 import testVector from './encoding.json' with { type: 'json' };

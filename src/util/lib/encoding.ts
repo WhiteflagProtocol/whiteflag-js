@@ -60,6 +60,7 @@ function isString(charString: any): boolean {
 
 /**
  * Checks if a string is base64 encoded
+ * @function isBase64
  * @param base64 a string that might be base64 encoded
  * @returns true if base64 encoded, else false
  */
@@ -69,6 +70,7 @@ function isBase64(base64: string): boolean {
 
 /**
  * Checks if a string is base64url encoded
+ * @function isBase64u
  * @param base64u a string that might be base64url encoded
  * @returns true if base64url encoded, else false
  */
@@ -78,6 +80,7 @@ function isBase64u(base64u: string): boolean {
 
 /**
  * Checks if a string is hexadecimal encoded
+ * @function hexString
  * @param hexString a string that might be hexadecimal encoded
  * @returns true if hexadecimal encoded, else false
  */
@@ -87,6 +90,7 @@ function isHex(hexString: string): boolean {
 
 /**
  * Removes the '0x' hex prefix if present
+ * @function hexString
  * @param hexString a hexadecimal encoded string
  * @returns the the string without the hex prefix
  */
@@ -119,6 +123,7 @@ function b64uToObj(base64u: string): Object {
 
 /**
  * Convert base64 to base64url
+ * @function base64
  * @param base64 a base64 encoded string
  * @returns a base64url encoded string
  */
@@ -131,6 +136,7 @@ function b64ToB64u(base64: string): string {
 
 /**
  * Convert base64url to base64
+ * @function base64u
  * @param base64u a base64url encoded string
  * @returns a base64 encoded string
  */

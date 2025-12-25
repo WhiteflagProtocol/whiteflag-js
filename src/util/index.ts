@@ -1,7 +1,10 @@
+'use strict';
 /**
  * @module util
  * @summary Whiteflag JS common utility and helper functions
  * @document docs/md/modules.md
+ * @primaryExport
  */
-export { BinaryArray } from './lib/binary';
-export * from './lib/convert';
+export * from './lib/binary.ts';
+export * from './lib/encoding.ts';
+export * from './lib/jws.ts';

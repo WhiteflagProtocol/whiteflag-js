@@ -1,0 +1,153 @@
+{
+    "$description": "Whiteflag protocol version 1 message structure",
+    "header": {
+        "Prefix": {
+            "encoding": "utf-8",
+            "pattern": "^WF$",
+            "startBit": 0,
+            "endBit": 16
+        },
+        "Version": {
+            "encoding": "utf-8",
+            "pattern": "^[A-Z0-9]{1}$",
+            "startBit": 16,
+            "endBit": 24
+        },
+        "EncryptionIndicator": {
+            "encoding": "utf-8",
+            "pattern": "^[A-Z0-9]{1}$",
+            "startBit": 24,
+            "endBit": 32
+        },
+        "DuressIndicator": {
+            "encoding": "binary",
+            "pattern": "^[0-1]{1}$",
+            "startBit": 32,
+            "endBit": 33
+        },
+        "MessageCode": {
+            "encoding": "utf-8",
+            "pattern": "^[A-Z]{1}$",
+            "startBit": 33,
+            "endBit": 41
+        },
+        "ReferenceIndicator": {
+            "encoding": "hexadecimal",
+            "pattern": "^[a-fA-F0-9]{1}$",
+            "startBit": 41,
+            "endBit": 45
+        },
+        "ReferencedMessage": {
+            "encoding": "hexadecimal",
+            "pattern": "^[a-fA-F0-9]{64}$",
+            "startBit": 45,
+            "endBit": 301
+        }
+    },
+    "body": {
+        "A": {
+            "VerificationMethod": {
+                "encoding": "hexadecimal",
+                "startBit": 301,
+                "endBit": 305
+            },
+            "VerificationData": {
+                "encoding": "utf-8",
+                "startBit": 305,
+                "endBit": -1
+            }
+        },
+        "K": {
+            "CryptoDataType": {
+                "encoding": "hexadecimal",
+                "startBit": 301,
+                "endBit": 305
+            },
+            "CryptoData": {
+                "encoding": "hexadecimal",
+                "startBit": 305,
+                "endBit": -1
+            }
+        },
+        "T": {
+            "PseudoMessageCode": {
+                "encoding": "utf-8",
+                "startBit": 301,
+                "endBit": 309
+            }
+        },
+        "R": {
+            "ReferenceMethod": {
+                "encoding": "hexadecimal",
+                "startBit": 301,
+                "endBit": 305
+            },
+            "ReferenceData": {
+                "encoding": "utf-8",
+                "startBit": 305,
+                "endBit": -1
+            }
+        },
+        "F": {
+            "Text": {
+                "encoding": "utf-8",
+                "startBit": 301,
+                "endBit": -1
+            }
+        },
+        "P": { "$signsignal": true },
+        "D": { "$signsignal": true },
+        "S": { "$signsignal": true },
+        "E": { "$signsignal": true },
+        "I": { "$signsignal": true },
+        "M": { "$signsignal": true },
+        "Q": { "$signsignal": true },
+        "$signsignal": {
+            "SubjectCode": {
+                "encoding": "hexadecimal",
+                "startBit": 301,
+                "endBit": 309
+            },
+            "DateTime": {
+                "encoding": "datetime",
+                "startBit": 309,
+                "endBit": 365
+            },
+            "Duration": {
+                "encoding": "duration",
+                "startBit": 365,
+                "endBit": 389
+            },
+            "ObjectType": {
+                "encoding": "hexadecimal",
+                "startBit": 389,
+                "endBit": 397
+            },
+            "ObjectLatitude": {
+                "encoding": "latitude",
+                "startBit": 397,
+                "endBit": 426
+            },
+            "ObjectLongitude": {
+                "encoding": "longitude",
+                "startBit": 426,
+                "endBit": 459
+            },
+            "ObjectSizeDim1": {
+                "encoding": "decimal",
+                "startBit": 459,
+                "endBit": 475
+            },
+            "ObjectSizeDim2": {
+                "encoding": "decimal",
+                "startBit": 475,
+                "endBit": 491
+            },
+            "ObjectOrientation": {
+                "encoding": "decimal",
+                "startBit": 491,
+                "endBit": 503
+            }
+        }
+    }
+}

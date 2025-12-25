@@ -1,0 +1,35 @@
+{
+    "$description": "Whiteflag protocol version 1 field encoding",
+    "binary": {
+        "pattern": "^[0-1]*$",
+        "length": -1
+    },
+    "decimal": {
+        "pattern": "^[0-9]*$",
+        "length": -1
+    },
+    "hexadecimal": {
+        "pattern": "^[a-fA-F0-9]*$",
+        "length": -1
+    },
+    "utf-8": {
+        "pattern": "^[\\u0000-\\u007F]*$",
+        "length": -1
+    },
+    "datetime": {
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "length": 56
+    },
+    "duration": {
+        "pattern": "^P[0-9]{2}D[0-9]{2}H[0-9]{2}M$",
+        "length": 24
+    },
+    "latitude": {
+        "pattern": "^[+-][0-9]{2}.[0-9]{5}$",
+        "length": 29
+    },
+    "longitude": {
+        "pattern": "^[+-][0-9]{3}.[0-9]{5}$",
+        "length": 33
+    }
+}

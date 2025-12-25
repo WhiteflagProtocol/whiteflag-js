@@ -1,0 +1,42 @@
+{
+    "1": {
+        "$description": "Whiteflag Standard Annex C example",
+        "signInput": "eyJhbGciOiJFUzI1NiJ9.eyJhZGRyIjoiMUM4S1NLNjhTSmpmRFNCeDlCcFN4M3FCM2JlUGYyM3I3NyIsIm9yZ25hbWUiOiJPcmdhbmlzYXRpb24gTmFtZSIsInVybCI6Imh0dHBzOi8vb3JnYW5pc2F0aW9uLmludC93aGl0ZWZsYWcifQ",
+        "compact": "eyJhbGciOiJFUzI1NiJ9.eyJhZGRyIjoiMUM4S1NLNjhTSmpmRFNCeDlCcFN4M3FCM2JlUGYyM3I3NyIsIm9yZ25hbWUiOiJPcmdhbmlzYXRpb24gTmFtZSIsInVybCI6Imh0dHBzOi8vb3JnYW5pc2F0aW9uLmludC93aGl0ZWZsYWcifQ.XWBRA1TrCxs8tpep1lLPcmpp9JlO_A0TJB5ULOROvadje3SgAsfkFEjE2DoHGpWJ_zNGlEPBtdUQo9MEypIp2Q",
+        "flat": {
+            "protected": "eyJhbGciOiJFUzI1NiJ9",
+            "payload": "eyJhZGRyIjoiMUM4S1NLNjhTSmpmRFNCeDlCcFN4M3FCM2JlUGYyM3I3NyIsIm9yZ25hbWUiOiJPcmdhbmlzYXRpb24gTmFtZSIsInVybCI6Imh0dHBzOi8vb3JnYW5pc2F0aW9uLmludC93aGl0ZWZsYWcifQ",
+            "signature": "XWBRA1TrCxs8tpep1lLPcmpp9JlO_A0TJB5ULOROvadje3SgAsfkFEjE2DoHGpWJ_zNGlEPBtdUQo9MEypIp2Q"
+        },
+        "full": {
+            "protected": {
+                "alg": "ES256"
+            },
+            "payload": {
+                "addr": "1C8KSK68SJjfDSBx9BpSx3qB3bePf23r77",
+                "orgname": "Organisation Name",
+                "url": "https://organisation.int/whiteflag"
+            },
+            "signature": "XWBRA1TrCxs8tpep1lLPcmpp9JlO_A0TJB5ULOROvadje3SgAsfkFEjE2DoHGpWJ_zNGlEPBtdUQo9MEypIp2Q"
+        }
+    },
+    "2": {
+        "$description": "Whiteflag Standard Annex C unsigned example",
+        "signInput": "eyJhbGciOiJFUzI1NiJ9.eyJhZGRyIjoiMUM4S1NLNjhTSmpmRFNCeDlCcFN4M3FCM2JlUGYyM3I3NyIsIm9yZ25hbWUiOiJPcmdhbmlzYXRpb24gTmFtZSIsInVybCI6Imh0dHBzOi8vb3JnYW5pc2F0aW9uLmludC93aGl0ZWZsYWcifQ",
+        "falseSignature": "V2hpdGVmbGFnOjU3NDYvdGVzdC0wMT8/Pw==",
+        "flat": {
+            "protected": "eyJhbGciOiJFUzI1NiJ9",
+            "payload": "eyJhZGRyIjoiMUM4S1NLNjhTSmpmRFNCeDlCcFN4M3FCM2JlUGYyM3I3NyIsIm9yZ25hbWUiOiJPcmdhbmlzYXRpb24gTmFtZSIsInVybCI6Imh0dHBzOi8vb3JnYW5pc2F0aW9uLmludC93aGl0ZWZsYWcifQ"
+        },
+        "full": {
+            "protected": {
+                "alg": "ES256"
+            },
+            "payload": {
+                "addr": "1C8KSK68SJjfDSBx9BpSx3qB3bePf23r77",
+                "orgname": "Organisation Name",
+                "url": "https://organisation.int/whiteflag"
+            }
+        }
+    }
+}

@@ -1,0 +1,73 @@
+{
+    "1": {
+        "hex": "f00fff",
+        "bitLength": 14,
+        "crop": {
+            "nBits": -10,
+            "hex": "f00c"
+        },
+        "shift": {
+            "nBits": 3,
+            "left": { "hex": "807ff8" },
+            "right": { "hex": "1e01ffe0" }
+        }
+    },
+    "2": {
+        "hex": "57463130a6a1f7da7067d41891592131a12a60c9053b4eb0aefe6263385da9f5b789421e1d7401009841882148a800000114c1e596006f04c050eca6420084",
+        "bitLength": 504
+    },
+    "3": {
+        "hex1": "ffffff",
+        "bitLength1": 21,
+        "hex2": "5555",
+        "bitLength2": 10,
+        "append": {
+            "hex": "fffffaaa",
+            "bitLength": 31
+        },
+        "extract": {
+            "startBit": 14,
+            "endBit": 27,
+            "hex": "fea8"
+        },
+        "insert": {
+            "hex": "557ffffe",
+            "bitLength": 31
+        },
+        "shift": {
+            "nBits": 5,
+            "left": { "hex": "afffffc0" },
+            "right": { "hex": "02abfffff0" }
+        }
+    },
+    "4": {
+        "hex1": "afff",
+        "bitLength1": 16,
+        "hex2": "6a",
+        "bitLength2": 8,
+        "append": {
+            "hex":  "afff6a",
+            "bitLength": 24
+        },
+        "extract": {
+            "startBit": 12,
+            "endBit": 20,
+            "hex": "f6"
+        }
+    },
+    "5": {
+        "hex1": "bfff",
+        "bitLength1": 14,
+        "hex2": "6affff",
+        "bitLength2": 24,
+        "append": {
+            "hex": "bffdabfffc",
+            "bitLength": 38
+        },
+        "extract": {
+            "startBit": 10,
+            "endBit": 20,
+            "hex": "f680"
+        }
+    }
+}

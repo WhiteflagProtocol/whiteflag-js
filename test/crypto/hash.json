@@ -1,0 +1,65 @@
+{
+    "1": {
+        "$description": "FIPS 180-4 SHA-256 Short Message tests for BYTE oriented implementations",
+        "L": 32,
+        "Msg": "74ba2521",
+        "MD": "b16aa56be3880d18cd41e68384cf1ec8c17680c45a02b1575dc1518923ae8b0e"
+    },
+    "2": {
+        "$description": "FIPS 180-4 SHA-256 Short Message tests for BYTE oriented implementations",
+        "L": 128,
+        "Msg": "0a27847cdc98bd6f62220b046edd762b",
+        "MD": "80c25ec1600587e7f28b18b1b18e3cdc89928e39cab3bc25e4d4a4c139bcedc4"
+    },
+    "3": {
+        "$description": "FIPS 180-4 SHA-256 Short Message tests for BYTE oriented implementations",
+        "L": 512,
+        "Msg": "5a86b737eaea8ee976a0a24da63e7ed7eefad18a101c1211e2b3650c5187c2a8a650547208251f6d4237e661c7bf4c77f335390394c37fa1a9f9be836ac28509",
+        "MD": "42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa"
+    },
+    "4": {
+        "$description": "FIPS 198-1 SHA-256 HMAC Test Vector 132",
+        "Count": 132,
+        "Klen": 64,
+        "Tlen": 32,
+        "Key": "fd013d615c6ca959030a520e148808a07e27d38a215634d53486ae8be43a856f3e5dc6eb4fd9874a8a6570276a9e7b25585af7e1ce39d325bd7d195f2c1bb951",
+        "Msg": "91ea78334108ce6261ddee5d98045bb307a6e8f3d0ee65c1d9bc7d28cd9edf3264fc9cb6e592d072e9238559616cd42eda584d5200729adb619f5ee5740d632dda67f5dce34b89a054fda301685df6f31416cca78f19a8a7124a2a22dd7834847a934b4a451940152cd20ffdb4bd07273c4a2b9a86c9d94e7323a9860ec89860",
+        "Mac": "eb5aaa4ee702ff7b5324bc72c98fe87df6d9cc342b053ebce6cbf27fdea0eabf"
+    },
+    "5": {
+        "$description": "FIPS 198-1 SHA-256 HMAC Test Vector 211",
+        "Count": 211,
+        "Klen": 74,
+        "Tlen": 32,
+        "Key": "44f71c2317cde52151c84260d1d3c04a28cc15ce5b3802b2e5357e2bfcaf10ab15d77dfaaad1a3883bada502939948234c559dcd95e7e158338fa12ac6fd21874ec2ffabed051416ef77",
+        "Msg": "2ac0bb0524c22b902de34ce64e6172d1b2074e159f517ab1abd152622cd10669f03aed8e2eb51c65bd0f38d084e288c532724e512fd558ddd257d2b1d41c5eb6040767803ddbb18b95a035c5d8492d4d35936b7b3630ee20f625b70f8e71d9dcd0efd0e3387d138c1f5eedce32dd88f223334b9a9eab65017f04aa8442179f62",
+        "Mac": "ca0053d51f6cf6f9998ff1e0db00b90e82c7b18cb5377acc8ebe9afe20da1c3d"
+    },
+    "6": {
+        "$description": "RFC 5869 A.1 Test Case 1",
+        "IKM": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+        "salt": "000102030405060708090a0b0c",
+        "info": "f0f1f2f3f4f5f6f7f8f9",
+        "L": 42,
+        "PKM": "077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5",
+        "OKM": "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
+    },
+    "7": {
+        "$description": "RFC 5869 A.2 Test Case 2",
+        "IKM": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f",
+        "salt": "606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeaf",
+        "info": "b0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff",
+        "L": 82,
+        "PKM": "06a6b88c5853361a06104c9ceb35b45cef760014904671014a193f40c15fc244",
+        "OKM": "b11e398dc80327a1c8e7f78c596a49344f012eda2d4efad8a050cc4c19afa97c59045a99cac7827271cb41c65e590e09da3275600c2f09b8367793a9aca3db71cc30c58179ec3e87c14c01d5c1f3434f1d87"
+    },
+    "8": {
+        "$description": "RFC 5869 A.3 Test Case 3",
+        "IKM": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+        "salt": "",
+        "info": "",
+        "L": 42,
+        "PKM": "19ef24a32c717b167f33a91d6f648bdf96596776afdb6377ac434c1c293ccb04",
+        "OKM": "8da4e775a563c18f715f802a063c5a31b8a11f5c5ee1879ec3454e5f3c738d2d9d201395faa4b61a96c8"
+    }
+}

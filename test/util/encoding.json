@@ -1,0 +1,19 @@
+{
+    "0": {
+        "hex": "5768697465666c61673a353734362f746573742d30313f3f3f",
+        "hexp": "0x5768697465666c61673a353734362f746573742d30313f3f3f",
+        "string": "Whiteflag:5746/test-01???",
+        "base64": "V2hpdGVmbGFnOjU3NDYvdGVzdC0wMT8/Pw==",
+        "base64url": "V2hpdGVmbGFnOjU3NDYvdGVzdC0wMT8_Pw",
+        "Uint8Array": [ 87, 104, 105, 116, 101, 102, 108, 97, 103, 58, 53, 55, 52, 54, 47, 116, 101, 115, 116, 45, 48, 49, 63, 63, 63 ],
+        "object": {
+            "$description": "RFC 7515 A.2.1 header encoding example",
+            "base64url": "eyJhbGciOiJSUzI1NiJ9",
+            "plain": {
+                "protected": {
+                    "alg":"RS256"
+                }
+            }
+        }
+    }
+}

@@ -35,7 +35,7 @@ code `F`) and set the `Text` field, may be done as follows:
 
 ```{javascript}
 let wfMessage = new WfCoreMessage('F');
-WfCoreMessage.set('Text', 'Example text to be sent with the FreeText message');
+wfMessage.set('Text', 'Example text to be sent with the FreeText message');
 ```
 
 The `encode()` method encodes the message. The `WfCoreMessage` class

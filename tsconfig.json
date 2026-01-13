@@ -20,11 +20,5 @@
         },
         "noImplicitThis": true,
     },
-    "include": ["./src/**/*"],
-    "typedocOptions": {
-        "entryPoints": [
-            "src/**/*.ts"
-        ],
-        "out": "docs/typedoc"
-    }
+    "include": ["./src/**/*"]
 }

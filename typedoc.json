@@ -1,0 +1,13 @@
+{
+    "name": "Whiteflag JavaScript Library",
+    "entryPointStrategy": "packages",
+    "entryPoints": ["src/*"],
+    "packageOptions": {
+        "entryPointStrategy": "resolve",
+        "entryPoints": [ "./index.ts" ]
+    },
+    "out": "docs/typedoc",
+    "groupReferencesByType": true,
+    "router": "structure",
+    "favicon": "docs/favicon.ico"
+}

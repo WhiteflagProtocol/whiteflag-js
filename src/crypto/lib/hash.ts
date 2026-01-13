@@ -73,7 +73,7 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
  */
 async function hash(data: Uint8Array<ArrayBuffer>,
                     length = HASHLEN,
-                    algorithm = HASHALG
+                    algorithm: AlgorithmIdentifier = HASHALG
                 ): Promise<Uint8Array<ArrayBuffer>> {
     /* Create hash */
     const hash = await crypto.subtle.digest(algorithm, data);

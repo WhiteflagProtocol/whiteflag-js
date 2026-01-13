@@ -7,9 +7,10 @@ Protocol written in [TypeScript](https://developer.mozilla.org/en-US/docs/Glossa
 and compiled to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript),
 to support the development of Whiteflag-enabled applications in JavaScript.
 
-The `@whiteflagprotocol/crypto` package provides cryptographic functions for
-other Whiteflag packages. Therefore, it should normally not be necessary to
-add this package as a dependency.
+The [`@whiteflagprotocol/crypto`](https://www.npmjs.com/package/@whiteflagprotocol/crypto)
+package provides cryptographic functions for other Whiteflag packages.
+Therefore, it should normally not be necessary to add this package as a
+dependency.
 
 The WFJSL uses the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 for the basic implementation of Whiteflag cryptographic functions, such as

@@ -6,6 +6,7 @@
  * @primaryExport
  */
 export {
+    WfCodec,
     encodeField,
     decodeField,
     isValidValue

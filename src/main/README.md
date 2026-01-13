@@ -7,9 +7,10 @@ Protocol written in [TypeScript](https://developer.mozilla.org/en-US/docs/Glossa
 and compiled to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript),
 to support the development of Whiteflag-enabled applications in JavaScript.
 
-The `@whiteflagprotocol/main` package provides all classes and functions
-required to implement the Whiteflag protocol. Normally this should be
-the only dependency for projects implementing Whiteflag.
+The [`@whiteflagprotocol/main`](https://www.npmjs.com/package/@whiteflagprotocol/main)
+package provides all classes and functions required to implement the Whiteflag
+protocol. This should normally be the only dependency for projects
+implementing Whiteflag.
 
 This description provides a generic overview of the Whiteflag main package.
 Please refer to the [WFJSL TypeDoc documentation](https://js.whiteflagprotocol.org/typedoc)

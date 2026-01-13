@@ -21,7 +21,7 @@ declare function hkdf(ikm: Uint8Array<ArrayBuffer>, salt: Uint8Array<ArrayBuffer
  * @param algorithm the hash algorithm to be used; default is SHA-256
  * @returns the hash value
  */
-declare function hash(data: Uint8Array<ArrayBuffer>, length?: number, algorithm?: string): Promise<Uint8Array<ArrayBuffer>>;
+declare function hash(data: Uint8Array<ArrayBuffer>, length?: number, algorithm?: AlgorithmIdentifier): Promise<Uint8Array<ArrayBuffer>>;
 /**
  * Hash-Based Message Authentication Code function
  * @function hmac

@@ -7,9 +7,10 @@ Protocol written in [TypeScript](https://developer.mozilla.org/en-US/docs/Glossa
 and compiled to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript),
 to support the development of Whiteflag-enabled applications in JavaScript.
 
-The `@whiteflagprotocol/main` package provides all classes and functions
-required to implement the Whiteflag protocol. Normally this should be
-the only dependency for projects implementing Whiteflag.
+The [`@whiteflagprotocol/main`](https://www.npmjs.com/package/@whiteflagprotocol/main)
+package provides all classes and functions required to implement the Whiteflag
+protocol. This should normally be the only dependency for projects
+implementing Whiteflag.
 
 This description provides a generic overview of the Whiteflag main package.
 Please refer to the [WFJSL TypeDoc documentation](https://js.whiteflagprotocol.org/typedoc)
@@ -17,7 +18,7 @@ for a detailed description of all classes and functions.
 
 ## Whiteflag message class
 
-The Whiteflag message class `WfMessage` defined in the `main` module
+The Whiteflag message class `WfMessage` defined in the `message` module
 represents a Whiteflag message.
 
 This class extends the core Whiteflag message class `WfCoreMessage` by adding
@@ -31,8 +32,8 @@ factory method. For example, creating a new FreeText message (message
 code `F`) and set the `Text` field, may be done as follows:
 
 ```{javascript}
-let wfMessage = new WfCoreMessage('F');
-WfCoreMessage.set('Text', 'Example text to be sent with the FreeText message');
+let wfMessage = new WfMessage('F');
+wfMessage.set('Text', 'Example text to be sent with the FreeText message');
 ```
 
 The `encode()` method encodes the message. It automatically verifies the fields
@@ -52,7 +53,7 @@ static factory methods such as `fromHex(...)` or `fromU8a(...)`, since the
 message type is probably not known before decoding.
 
 ```{javascript}
-wfMessage = await WfCoreMessage.fromHex(hexMessage);
+wfMessage = await WfMessage.fromHex(hexMessage);
 ```
 
 Encryption and decryption is automatically performed upon encoding and

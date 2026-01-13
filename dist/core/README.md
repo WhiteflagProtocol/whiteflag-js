@@ -7,13 +7,14 @@ Protocol written in [TypeScript](https://developer.mozilla.org/en-US/docs/Glossa
 and compiled to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript),
 to support the development of Whiteflag-enabled applications in JavaScript.
 
-The `@whiteflagprotocol/core` package provides the modules that define
-Whiteflag core protocol features as specified in the Whiteflag standard.
-As such, this package is not a fully functional implementation of the
-protocol, but separates core protocol functions from implementation-specific
-design decisions. Therefore, this package is not intended to be used directly
-by implementations of Whiteflag; instead, the `@whiteflagprotocol/main` should
-be used.
+The [`@whiteflagprotocol/core`](https://www.npmjs.com/package/@whiteflagprotocol/core)
+package provides the modules that define Whiteflag core protocol features as
+specified in the Whiteflag standard. As such, this package is not a fully
+functional implementation of the protocol, but separates core protocol
+functions from implementation-specific design decisions. Therefore, this
+package is not intended to be used directly by implementations of Whiteflag;
+instead, the [`@whiteflagprotocol/main`](https://www.npmjs.com/package/@whiteflagprotocol/main)
+package should be used.
 
 This description provides a generic overview of the WFJSL core package.
 Please see the [WFJSL TypeDoc documentation](https://js.whiteflagprotocol.org/typedoc)
@@ -35,7 +36,7 @@ code `F`) and set the `Text` field, may be done as follows:
 
 ```{javascript}
 let wfMessage = new WfCoreMessage('F');
-WfCoreMessage.set('Text', 'Example text to be sent with the FreeText message');
+wfMessage.set('Text', 'Example text to be sent with the FreeText message');
 ```
 
 The `encode()` method encodes the message. The `WfCoreMessage` class

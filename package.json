@@ -1,6 +1,6 @@
 {
     "name": "whiteflag-js",
-    "version": "1.0.0-dev",
+    "version": "1.0.0",
     "description": "JavaScript implementation of the Whiteflag protocol",
     "license": "CC0-1.0",
     "private": true,
@@ -48,10 +48,10 @@
     "scripts": {
         "test": "tsc && mocha --recursive",
         "docs:cleanup": "rimraf -g ./docs/typedoc/**/*",
-        "docs:src": "typedoc --groupReferencesByType --router structure",
+        "docs:typedoc": "typedoc",
         "docs": "npm-run-all docs:*",
         "build:cleanup": "rimraf -g ./dist/**/*.md ./dist/**/*.json ./dist/**/**/*.json ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",
-        "build:compile": "tsc --declaration false",
+        "build:compile": "tsc --declaration false --removeComments true",
         "build:declaration": "tsc --emitDeclarationOnly --declaration true --removeComments false",
         "build:packages": "copyfiles -u 1 src/**/package.json src/**/*.md dist",
         "build:test": "mocha --recursive --reporter dot",

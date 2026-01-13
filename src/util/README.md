@@ -7,11 +7,12 @@ Protocol written in [TypeScript](https://developer.mozilla.org/en-US/docs/Glossa
 and compiled to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript),
 to support the development of Whiteflag-enabled applications in JavaScript.
 
-The `@whiteflagprotocol/util` package provides common utilities for other
-Whiteflag packages. These utilities include common data conversions, generic
-helper functions, etc. for other Whiteflag packages. It should normally not be
-necessary to add this package as a dependency, but its functionality might be
-useful for other purposes.
+The [`@whiteflagprotocol/util`](https://www.npmjs.com/package/@whiteflagprotocol/util)
+package provides common utilities for other Whiteflag packages. These
+utilities include common data conversions, generic helper functions, etc.
+for other Whiteflag packages. It should normally not be necessary to add this
+package as a dependency, but its functionality might be useful for other
+purposes.
 
 This description provides a generic overview of the WFJSL utility package.
 Please see the [WFJSL TypeDoc documentation](https://js.whiteflagprotocol.org/typedoc)

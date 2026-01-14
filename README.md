@@ -18,7 +18,7 @@ of the Whiteflag Protocol written in [TypeScript](https://developer.mozilla.org/
 and compiled to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript),
 to support the development of Whiteflag-enabled applications in JavaScript.
 
-The WFJSL is currently **in development** in order to separate the Whiteflag
+The WFJSL is currently developed in order to separate the Whiteflag
 core protocol code from the current reference implementation, i.e. the
 [Whiteflag API](https://api.whiteflagprotocol.org). This makes the code
 better to maintain and test in support of future Whiteflag protocol

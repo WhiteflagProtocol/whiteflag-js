@@ -1,5 +1,6 @@
 {
     "name": "Whiteflag JavaScript Library",
+    "includeVersion": true,
     "entryPointStrategy": "packages",
     "entryPoints": ["src/*"],
     "packageOptions": {

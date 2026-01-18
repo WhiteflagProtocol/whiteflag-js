@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module core/message
- * @summary Whiteflag JS message class
+ * @summary Whiteflag JS message module
  */
 export {
     WfMsgType,
@@ -119,12 +119,12 @@ class WfCoreMessage {
      * Creates new Whiteflag message from a binary buffer
      * @function fromBinary
      * @param message a binary buffer with the encoded message
-     * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param address the binary encoded originator address, if the message is encrypted
+     * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    public static async fromBinary(message: BinaryBuffer, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
+    public static async fromBinary(message: BinaryBuffer, address?: Uint8Array, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
         let buffer = message;
 
         /* Decode and check unencrypted header */
@@ -186,12 +186,12 @@ class WfCoreMessage {
     /**
      * Creates new Whiteflag message from a hexadecimal encoded string
      * @param message  atring with the hexadecimal encoded message
-     * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
      * @param address the hexadecimal encoded originator address, if the message is encrypted
+     * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
      * @param iv the hexadecimal initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    public static async fromHex(message: string, ikm?: string, address?: string, iv?: string): Promise<WfCoreMessage> {
+    public static async fromHex(message: string, address?: string, ikm?: string, iv?: string): Promise<WfCoreMessage> {
         /* Convert hexadecimal encryption paramters if present */
         if (ikm && address && iv) {
             return this.fromBinary(
@@ -209,12 +209,12 @@ class WfCoreMessage {
     /**
      * Creates new Whiteflag message from a binary encoded message
      * @param message a Uint8Array with the binary encoded message
-     * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param address the binary encoded originator address, if the message is encrypted
+     * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    public static async fromU8a(message: Uint8Array, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
+    public static async fromU8a(message: Uint8Array, address?: Uint8Array, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
         return this.fromBinary(BinaryBuffer.fromU8a(message), ikm, address, iv);
     }
 

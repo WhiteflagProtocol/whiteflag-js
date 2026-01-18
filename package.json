@@ -1,6 +1,6 @@
 {
     "name": "whiteflag-js",
-    "version": "1.0.0",
+    "version": "1.1.0-dev",
     "description": "JavaScript implementation of the Whiteflag protocol",
     "license": "CC0-1.0",
     "private": true,

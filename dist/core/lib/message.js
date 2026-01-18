@@ -40,7 +40,7 @@ class WfCoreMessage {
         if (binary instanceof BinaryBuffer)
             this.binary = binary;
     }
-    static async fromBinary(message, ikm, address, iv) {
+    static async fromBinary(message, address, ikm, iv) {
         let buffer = message;
         const { prefix, version, encryption } = extractUnencryptedHeader(buffer);
         if (!checkPrefix(prefix)) {
@@ -85,13 +85,13 @@ class WfCoreMessage {
         }
         return wfMessage;
     }
-    static async fromHex(message, ikm, address, iv) {
+    static async fromHex(message, address, ikm, iv) {
         if (ikm && address && iv) {
             return this.fromBinary(BinaryBuffer.fromHex(message), hexToU8a(ikm), hexToU8a(address), hexToU8a(iv));
         }
         return this.fromBinary(BinaryBuffer.fromHex(message));
     }
-    static async fromU8a(message, ikm, address, iv) {
+    static async fromU8a(message, address, ikm, iv) {
         return this.fromBinary(BinaryBuffer.fromU8a(message), ikm, address, iv);
     }
     isEncoded() {

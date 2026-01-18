@@ -25,7 +25,7 @@ declare class Jws {
      * @param payload the JWS payload
      * @param signature the JWS signature
      */
-    private constructor();
+    constructor(header: any, payload: any, signature?: string);
     /**
      * Creates a new JWS from a payload
      * @function fromPayload
@@ -33,6 +33,12 @@ declare class Jws {
      * @returns a new Binary Array
      */
     static fromPayload(payload: Object): Jws;
+    /**
+     * Creates a new JWS object from a plain javaScript object
+     * @param jws
+     * @returns
+     */
+    static fromJSON(jws: string): Jws;
     /**
      * Creates a new JWS object from a plain javaScript object
      * @function fromObject
@@ -80,11 +86,11 @@ declare class Jws {
      */
     getSignature(): string;
     /**
-     * Returns a full JWS
-     * @function toFull
-     * @returns the JWS as a full JWS plain JavaScript object
+     * Return a compact serialised JWS as a compact serialized string
+     * @function toCompact
+     * @returns the JWS as a compact serialized JWS string
      */
-    toFull(): Object;
+    toCompact(): string;
     /**
      * Returns a flattened JWS
      * @function toFlat
@@ -92,9 +98,21 @@ declare class Jws {
      */
     toFlat(): Object;
     /**
-     * Return a compact serialised JWS as a compact serialized string
-     * @function toCompact
-     * @returns the JWS as a compact serialized JWS string
+     * Returns a full JWS
+     * @function toFull
+     * @returns the JWS as a full JWS plain JavaScript object
      */
-    toCompact(): string;
+    toFull(): Object;
+    /**
+     * Returns the JWS as a plain JavaScript object
+     * @function toObject()
+     * @returns the JWS as a full JWS plain JavaScript object
+     */
+    toObject(): Object;
+    /**
+     * Returns the JWS as a JSON string
+     * @function toJSON
+     * @returns the JWS as a JSON string
+     */
+    toJSON(): string;
 }

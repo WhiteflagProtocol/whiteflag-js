@@ -9,8 +9,9 @@ import { describe as testCase } from 'mocha';
 import { it as assertion } from 'mocha';
 import { strictEqual, deepStrictEqual } from 'assert';
 
-/* Functions required for test */
+/* Classes and Functions required for test */
 import { BinaryBuffer, hexToU8a } from '@whiteflagprotocol/util';
+import { Account } from  './account.js';
 
 /* Functions to test */
 import { WfCoreMessage, encryptMessage, decryptMessage } from '@whiteflagprotocol/core';
@@ -105,10 +106,11 @@ testCase('Core message module', function() {
             return strictEqual(MSG_ENCRYPTED.toHex(), testVector['5'].encodedMessage);
         });
         assertion(' 5b. should correctly encrypt plain message object', async function() {
+            const ACCOUNT = new Account(testVector['5'].originatorAddress);
             const MSG = await WfCoreMessage.fromObject(testVector['5'].wfMessage);
             await MSG.encode(
+                ACCOUNT,
                 hexToU8a(testVector['5'].encryptionKeyInput),
-                hexToU8a(testVector['5'].originatorAddress),
                 hexToU8a(testVector['5'].encryptionInitVector)
             );
             return strictEqual(MSG.toHex(), testVector['5'].encodedMessage);
@@ -127,10 +129,11 @@ testCase('Core message module', function() {
             return strictEqual(MSG_UNENCRYPTED.toHex(), testVector['5'].unencryptedMessage);
         });
         assertion(' 6b. should correctly create message from plain encrypted message', async function() {
+            const ACCOUNT = new Account(testVector['5'].originatorAddress);
             const MSG = await WfCoreMessage.fromHex(
                 testVector['5'].encodedMessage,
+                ACCOUNT,
                 testVector['5'].encryptionKeyInput,
-                testVector['5'].originatorAddress,
                 testVector['5'].encryptionInitVector
             );
             return strictEqual(MSG.get('Text'), testVector['5'].wfMessage.MessageBody['Text']);

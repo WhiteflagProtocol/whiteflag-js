@@ -1,6 +1,6 @@
 /**
  * @module core/versions
- * @summary Whiteflag JS protocol versions
+ * @summary Whiteflag JS core protocol versions
  */
 export { WfVersion };
 /**

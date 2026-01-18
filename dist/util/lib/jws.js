@@ -22,6 +22,9 @@ class Jws {
     static fromPayload(payload) {
         return new Jws({}, payload, '');
     }
+    static fromJSON(jws) {
+        return this.fromObject(JSON.parse(jws));
+    }
     static fromObject(jws) {
         switch (jwsType(jws)) {
             case JwsFormat.FULL: {
@@ -78,20 +81,6 @@ class Jws {
     getSignature() {
         return this.signature;
     }
-    toFull() {
-        return {
-            protected: this.protected,
-            payload: this.payload,
-            signature: this.signature
-        };
-    }
-    toFlat() {
-        return {
-            protected: objToB64u(this.protected),
-            payload: objToB64u(this.payload),
-            signature: this.signature
-        };
-    }
     toCompact() {
         let compactJws = objToB64u(this.protected)
             + JWSSEPARATOR
@@ -102,6 +91,26 @@ class Jws {
                 + this.signature;
         }
         return compactJws;
+    }
+    toFlat() {
+        return {
+            protected: objToB64u(this.protected),
+            payload: objToB64u(this.payload),
+            signature: this.signature
+        };
+    }
+    toFull() {
+        return {
+            protected: this.protected,
+            payload: this.payload,
+            signature: this.signature
+        };
+    }
+    toObject() {
+        return this.toFull();
+    }
+    toJSON() {
+        return JSON.stringify(this.toObject());
     }
 }
 function jwsType(jws) {

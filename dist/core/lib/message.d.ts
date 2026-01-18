@@ -1,10 +1,11 @@
 /**
  * @module core/message
- * @summary Whiteflag JS message class
+ * @summary Whiteflag JS core message module
  */
 export { WfMsgType, WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
 import { WfCryptoMethod } from '@whiteflagprotocol/crypto';
 import { BinaryBuffer } from '@whiteflagprotocol/util';
+import { WfAccount } from './account.ts';
 import { WfVersion } from './versions.ts';
 /**
  * Whiteflag message types, defining the types of Whiteflag message
@@ -78,12 +79,12 @@ declare class WfCoreMessage {
      * Creates new Whiteflag message from a binary buffer
      * @function fromBinary
      * @param message a binary buffer with the encoded message
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
-     * @param address the binary encoded originator address, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    static fromBinary(message: BinaryBuffer, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
+    static fromBinary(message: BinaryBuffer, account?: WfAccount, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
     /**
      * Creates new Whiteflag message from a plain object
      * @function fromObject
@@ -94,21 +95,21 @@ declare class WfCoreMessage {
     /**
      * Creates new Whiteflag message from a hexadecimal encoded string
      * @param message  atring with the hexadecimal encoded message
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
-     * @param address the hexadecimal encoded originator address, if the message is encrypted
      * @param iv the hexadecimal initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    static fromHex(message: string, ikm?: string, address?: string, iv?: string): Promise<WfCoreMessage>;
+    static fromHex(message: string, account?: WfAccount, ikm?: string, iv?: string): Promise<WfCoreMessage>;
     /**
      * Creates new Whiteflag message from a binary encoded message
      * @param message a Uint8Array with the binary encoded message
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
-     * @param address the binary encoded originator address, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    static fromU8a(message: Uint8Array, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
+    static fromU8a(message: Uint8Array, account?: WfAccount, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
     /**
      * Indicates if the message has already been encoded
      * @function isEncoded
@@ -136,12 +137,12 @@ declare class WfCoreMessage {
     /**
      * Encodes the message, making the contents final
      * @function encode
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is to be encrypted
-     * @param address the binary encoded originator address, if the message is to be encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns this Whitedlag message object with the encoded message
      */
-    encode(ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
+    encode(account?: WfAccount, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage>;
     /**
      * Returns the value of the specified message field
      * @function get

@@ -40,7 +40,7 @@ class WfCoreMessage {
         if (binary instanceof BinaryBuffer)
             this.binary = binary;
     }
-    static async fromBinary(message, ikm, address, iv) {
+    static async fromBinary(message, account, ikm, iv) {
         let buffer = message;
         const { prefix, version, encryption } = extractUnencryptedHeader(buffer);
         if (!checkPrefix(prefix)) {
@@ -55,9 +55,9 @@ class WfCoreMessage {
         if (encryption !== MSG_NOENCRYPT) {
             if (!ikm)
                 throw new Error('Missing encryption key');
-            if (!address)
-                throw new Error('Missing orginator address');
-            buffer = await decryptMessage(message, encryption, ikm, address, iv, version);
+            if (!account)
+                throw new Error('Missing orginator account');
+            buffer = await decryptMessage(message, encryption, ikm, account.getBinaryAddress(), iv, version);
         }
         let type = extractHeaderField(buffer, 'MessageCode');
         if (!checkType(type)) {
@@ -85,14 +85,16 @@ class WfCoreMessage {
         }
         return wfMessage;
     }
-    static async fromHex(message, ikm, address, iv) {
-        if (ikm && address && iv) {
-            return this.fromBinary(BinaryBuffer.fromHex(message), hexToU8a(ikm), hexToU8a(address), hexToU8a(iv));
+    static async fromHex(message, account, ikm, iv) {
+        if (ikm) {
+            if (!iv)
+                return this.fromBinary(BinaryBuffer.fromHex(message), account, hexToU8a(ikm));
+            return this.fromBinary(BinaryBuffer.fromHex(message), account, hexToU8a(ikm), hexToU8a(iv));
         }
         return this.fromBinary(BinaryBuffer.fromHex(message));
     }
-    static async fromU8a(message, ikm, address, iv) {
-        return this.fromBinary(BinaryBuffer.fromU8a(message), ikm, address, iv);
+    static async fromU8a(message, account, ikm, iv) {
+        return this.fromBinary(BinaryBuffer.fromU8a(message), account, ikm, iv);
     }
     isEncoded() {
         if (this.final)
@@ -144,7 +146,7 @@ class WfCoreMessage {
         }
         return this;
     }
-    async encode(ikm, address, iv) {
+    async encode(account, ikm, iv) {
         if (!this.final) {
             const errors = this.validate();
             if (errors.length > 0) {
@@ -164,9 +166,9 @@ class WfCoreMessage {
             if (this.header['EncryptionIndicator'] !== MSG_NOENCRYPT) {
                 if (!ikm)
                     throw new Error('Missing encryption key');
-                if (!address)
-                    throw new Error('Missing orginator address');
-                this.binary = await encryptMessage(this.binary, this.header['EncryptionIndicator'], ikm, address, iv, this.header['Version']);
+                if (!account)
+                    throw new Error('Missing orginator account');
+                this.binary = await encryptMessage(this.binary, this.header['EncryptionIndicator'], ikm, account.getBinaryAddress(), iv, this.header['Version']);
             }
             this.final = true;
         }

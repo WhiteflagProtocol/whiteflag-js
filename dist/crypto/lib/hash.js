@@ -8,16 +8,16 @@ const HASHLEN = 32;
 async function hkdf(ikm, salt, info, keylen) {
     const prk = await hmac(salt, ikm);
     zeroise(ikm);
-    let okm = new Uint8Array(keylen);
-    let t = new Uint8Array(HASHLEN);
+    const okm = new Uint8Array(keylen);
+    const t = new Uint8Array(HASHLEN);
     let offset = 0;
     const N = Math.ceil(keylen / HASHLEN);
     for (let i = 1; i <= N; i++) {
-        let block = new Uint8Array(offset + info.length + 1);
+        const block = new Uint8Array(offset + info.length + 1);
         block.set(t.slice(0, block.length));
         block.set(info.slice(0, info.length), offset);
         block[offset + info.length] = i;
-        let hash = await hmac(prk, block);
+        const hash = await hmac(prk, block);
         t.set(hash.slice(0, t.length));
         offset = offset * (i - 1);
         if (offset < okm.length) {

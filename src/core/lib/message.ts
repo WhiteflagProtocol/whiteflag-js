@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module core/message
- * @summary Whiteflag JS message class
+ * @summary Whiteflag JS core message module
  */
 export {
     WfMsgType,
@@ -17,6 +17,7 @@ import { WfCryptoMethod, encrypt, decrypt, deriveKey } from '@whiteflagprotocol/
 import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
 
 /* Module imports */
+import { WfAccount } from './account.ts';
 import { WfVersion } from './versions.ts';
 import { WfProtocolError, WfErrorCode } from './errors.ts';
 import { WfCodec, decodeField, encodeField, isValidValue } from './codec.ts';
@@ -119,12 +120,12 @@ class WfCoreMessage {
      * Creates new Whiteflag message from a binary buffer
      * @function fromBinary
      * @param message a binary buffer with the encoded message
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
-     * @param address the binary encoded originator address, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    public static async fromBinary(message: BinaryBuffer, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
+    public static async fromBinary(message: BinaryBuffer, account?: WfAccount, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
         let buffer = message;
 
         /* Decode and check unencrypted header */
@@ -141,8 +142,15 @@ class WfCoreMessage {
         /* Decrypt binary message if necessary */
         if (encryption !== MSG_NOENCRYPT) {
             if (!ikm) throw new Error('Missing encryption key');
-            if (!address) throw new Error('Missing orginator address');
-            buffer = await decryptMessage(message, encryption as WfCryptoMethod, ikm, address, iv, version as WfVersion);
+            if (!account) throw new Error('Missing orginator account');
+            buffer = await decryptMessage(
+                message as BinaryBuffer,
+                encryption as WfCryptoMethod,
+                ikm as Uint8Array<ArrayBuffer>,
+                account.getBinaryAddress() as Uint8Array<ArrayBuffer>,
+                iv as Uint8Array<ArrayBuffer>,
+                version as WfVersion
+            );
         }
         /* Decode message type */
         let type = extractHeaderField(buffer, 'MessageCode') as WfMsgType;
@@ -186,20 +194,16 @@ class WfCoreMessage {
     /**
      * Creates new Whiteflag message from a hexadecimal encoded string
      * @param message  atring with the hexadecimal encoded message
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
-     * @param address the hexadecimal encoded originator address, if the message is encrypted
      * @param iv the hexadecimal initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    public static async fromHex(message: string, ikm?: string, address?: string, iv?: string): Promise<WfCoreMessage> {
+    public static async fromHex(message: string, account?: WfAccount, ikm?: string, iv?: string): Promise<WfCoreMessage> {
         /* Convert hexadecimal encryption paramters if present */
-        if (ikm && address && iv) {
-            return this.fromBinary(
-                BinaryBuffer.fromHex(message),
-                hexToU8a(ikm),
-                hexToU8a(address),
-                hexToU8a(iv)
-            );
+        if (ikm) {
+            if (!iv) return this.fromBinary(BinaryBuffer.fromHex(message), account, hexToU8a(ikm));
+            return this.fromBinary(BinaryBuffer.fromHex(message), account, hexToU8a(ikm), hexToU8a(iv));
         }
         /* No encryption paramters */
         return this.fromBinary(
@@ -209,13 +213,13 @@ class WfCoreMessage {
     /**
      * Creates new Whiteflag message from a binary encoded message
      * @param message a Uint8Array with the binary encoded message
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
-     * @param address the binary encoded originator address, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
      */
-    public static async fromU8a(message: Uint8Array, ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
-        return this.fromBinary(BinaryBuffer.fromU8a(message), ikm, address, iv);
+    public static async fromU8a(message: Uint8Array, account?: WfAccount, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
+        return this.fromBinary(BinaryBuffer.fromU8a(message), account, ikm, iv);
     }
 
     /* PUBLIC CLASS METHODS */
@@ -294,12 +298,12 @@ class WfCoreMessage {
     /**
      * Encodes the message, making the contents final
      * @function encode
+     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is to be encrypted
-     * @param address the binary encoded originator address, if the message is to be encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns this Whitedlag message object with the encoded message
      */
-    public async encode(ikm?: Uint8Array, address?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
+    public async encode(account?: WfAccount, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfCoreMessage> {
         if (!this.final) {
             /* Validate message before encoding */
             const errors = this.validate();
@@ -323,12 +327,12 @@ class WfCoreMessage {
             /* Encrypt message if encryption indicator is set */
             if (this.header['EncryptionIndicator'] !== MSG_NOENCRYPT) {
                 if (!ikm) throw new Error('Missing encryption key');
-                if (!address) throw new Error('Missing orginator address');
+                if (!account) throw new Error('Missing orginator account');
                 this.binary = await encryptMessage(
                     this.binary, 
                     this.header['EncryptionIndicator'] as WfCryptoMethod,
                     ikm as Uint8Array<ArrayBuffer>,
-                    address as Uint8Array<ArrayBuffer>,
+                    account.getBinaryAddress() as Uint8Array<ArrayBuffer>,
                     iv as Uint8Array<ArrayBuffer>,
                     this.header['Version'] as WfVersion
                 );

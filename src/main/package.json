@@ -1,6 +1,6 @@
 {
     "name": "@whiteflagprotocol/main",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Whiteflag JS main package",
     "license": "CC0-1.0",
     "keywords": [
@@ -12,8 +12,8 @@
         "lib": "lib"
     },
     "dependencies": {
-        "@whiteflagprotocol/crypto": "^1.0.0",
-        "@whiteflagprotocol/util": "^1.0.0"
+        "@whiteflagprotocol/crypto": "^1.1.0",
+        "@whiteflagprotocol/util": "^1.1.0"
     },
     "homepage": "https://github.com/WhiteflagProtocol/whiteflag-js#readme",
     "repository": {

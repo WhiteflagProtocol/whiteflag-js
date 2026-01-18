@@ -38,20 +38,20 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
     zeroise(ikm);
 
     /* Step 2. HKDF-Expand(PRK, info, L) -> OKM */
-    let okm = new Uint8Array(keylen);
-    let t = new Uint8Array(HASHLEN);
+    const okm = new Uint8Array(keylen);
+    const t = new Uint8Array(HASHLEN);
     let offset = 0;
 
     const N = Math.ceil(keylen / HASHLEN);
     for (let i = 1; i <= N; i++) {
         /* Concatinate previous hash t, info and counter i */
-        let block = new Uint8Array(offset + info.length + 1);
+        const block = new Uint8Array(offset + info.length + 1);
         block.set(t.slice(0, block.length));
         block.set(info.slice(0, info.length), offset);
         block[offset + info.length] = i;
 
         /* Get hash and add to okm buffer */
-        let hash = await hmac(prk, block);
+        const hash = await hmac(prk, block);
         t.set(hash.slice(0, t.length))
         offset = offset * (i - 1);
         if (offset < okm.length) {

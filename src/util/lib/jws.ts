@@ -34,7 +34,13 @@ enum JwsFormat {
  * @Constant
  */
 const JWSSEPARATOR = '.';
+/**
+ * Regular expression for a flattened JWS object
+ */
 const REGEX_FLAT = /e[yw][A-Za-z0-9-_]+/;
+/**
+ * Regular expression for a compact serialised JWS string
+ */
 const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
 
 /* MODULE DECLARATIONS */
@@ -64,7 +70,7 @@ class Jws {
      * @param payload the JWS payload
      * @param signature the JWS signature
      */
-    private constructor(header: any, payload: any, signature: string = '') {
+    public constructor(header: any, payload: any, signature: string = '') {
         this.protected = header;
         this.payload = payload;
         this.signature = signature;
@@ -79,6 +85,14 @@ class Jws {
      */
     public static fromPayload(payload: Object): Jws {
         return new Jws({}, payload, '');
+    }
+    /**
+     * Creates a new JWS object from a plain javaScript object
+     * @param jws 
+     * @returns 
+     */
+    public static fromJSON(jws: string): Jws {
+        return this.fromObject(JSON.parse(jws));
     }
     /**
      * Creates a new JWS object from a plain javaScript object
@@ -182,30 +196,6 @@ class Jws {
         return this.signature;
     }
     /**
-     * Returns a full JWS
-     * @function toFull
-     * @returns the JWS as a full JWS plain JavaScript object
-     */
-    public toFull(): Object {
-        return {
-            protected: this.protected,
-            payload: this.payload,
-            signature: this.signature
-        }
-    }
-    /**
-     * Returns a flattened JWS
-     * @function toFlat
-     * @returns the JWS as a flattened JWS plain JavaScript object
-     */ 
-    public toFlat(): Object {
-        return {
-            protected: objToB64u(this.protected),
-            payload: objToB64u(this.payload),
-            signature: this.signature
-        }
-    }
-    /**
      * Return a compact serialised JWS as a compact serialized string
      * @function toCompact
      * @returns the JWS as a compact serialized JWS string
@@ -220,6 +210,46 @@ class Jws {
                         + this.signature
         }
         return compactJws;
+    }
+    /**
+     * Returns a flattened JWS
+     * @function toFlat
+     * @returns the JWS as a flattened JWS plain JavaScript object
+     */ 
+    public toFlat(): Object {
+        return {
+            protected: objToB64u(this.protected),
+            payload: objToB64u(this.payload),
+            signature: this.signature
+        }
+    }
+    /**
+     * Returns a full JWS
+     * @function toFull
+     * @returns the JWS as a full JWS plain JavaScript object
+     */
+    public toFull(): Object {
+        return {
+            protected: this.protected,
+            payload: this.payload,
+            signature: this.signature
+        }
+    }
+    /**
+     * Returns the JWS as a plain JavaScript object
+     * @function toObject()
+     * @returns the JWS as a full JWS plain JavaScript object
+     */
+    public toObject(): Object {
+        return this.toFull();
+    }
+    /**
+     * Returns the JWS as a JSON string
+     * @function toJSON
+     * @returns the JWS as a JSON string
+     */
+    public toJSON(): string {
+        return JSON.stringify(this.toObject());
     }
 }
 

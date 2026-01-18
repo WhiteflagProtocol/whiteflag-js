@@ -1,6 +1,6 @@
 /**
  * @module core/errors
- * @summary Whiteflag JS error classes
+ * @summary Whiteflag JS core error classes
  * @document docs/md/errors.md
  */
 export { WfProtocolError, WfErrorCode, catchedError };

@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module core/codec
- * @summary Whiteflag JS message field encoding and decoding module
+ * @summary Whiteflag JS core message field encoding and decoding module
  */
 export {
     WfCodec,

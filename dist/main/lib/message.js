@@ -1,6 +1,7 @@
 'use strict';
 export { WfMessage };
 import { WfCoreMessage } from '@whiteflagprotocol/core';
+import { u8aToHex } from '@whiteflagprotocol/util';
 class WfMessage extends WfCoreMessage {
     meta = {};
     constructor(type, version = '1') {
@@ -8,6 +9,29 @@ class WfMessage extends WfCoreMessage {
     }
     static async fromJSON(message) {
         const wfMessage = await this.fromObject(JSON.parse(message));
+        return wfMessage;
+    }
+    static async fromObject(message) {
+        const wfMessage = await super.fromObject(message);
+        for (const key in message?.MetaHeader) {
+            wfMessage.setMeta(key, message.MetaHeader[key]);
+        }
+        return wfMessage;
+    }
+    static async fromHex(message, account, ikm, iv) {
+        const wfMessage = await super.fromHex(message, account, ikm, iv);
+        if (account)
+            wfMessage.setMeta('originatorAddress', account.address);
+        if (iv)
+            wfMessage.setMeta('encryptionInitVector', iv);
+        return wfMessage;
+    }
+    static async fromU8a(message, account, ikm, iv) {
+        const wfMessage = await super.fromU8a(message, account, ikm, iv);
+        if (account)
+            wfMessage.setMeta('originatorAddress', account.address);
+        if (iv)
+            wfMessage.setMeta('encryptionInitVector', u8aToHex(iv));
         return wfMessage;
     }
     getMeta(fieldName) {
@@ -22,7 +46,7 @@ class WfMessage extends WfCoreMessage {
         return true;
     }
     toObject() {
-        let message = super.toObject();
+        const message = super.toObject();
         message.MetaHeader = this.meta;
         return message;
     }

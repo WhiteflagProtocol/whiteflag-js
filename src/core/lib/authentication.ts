@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module core/codec
  * @summary Whiteflag JS core authentication module

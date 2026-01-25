@@ -15,7 +15,7 @@
         "./dist/main",
         "./dist/util"
     ],
-     "directories": {
+    "directories": {
         "dist": "dist",
         "dos": "docs",
         "src": "src",
@@ -37,7 +37,7 @@
         "@whiteflagprotocol/util": "file:./dist/util"
     },
     "devDependencies": {
-        "@types/node": "latest",
+        "@types/node": "^25.0.10",
         "copyfiles": "latest",
         "mocha": "^11.7.5",
         "npm-run-all": "latest",

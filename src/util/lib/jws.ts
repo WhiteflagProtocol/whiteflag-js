@@ -196,7 +196,7 @@ class Jws {
         return this.signature;
     }
     /**
-     * Return a compact serialised JWS as a compact serialized string
+     * Returns a compact serialised JWS as a compact serialized string
      * @function toCompact
      * @returns the JWS as a compact serialized JWS string
      */

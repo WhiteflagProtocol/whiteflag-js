@@ -1,3 +1,4 @@
+'use strict';
 export { WfSignature };
 import { Jws } from '@whiteflagprotocol/util';
 class WfSignature extends Jws {

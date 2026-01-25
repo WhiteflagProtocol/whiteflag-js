@@ -12,6 +12,7 @@
         "removeComments": true,
         "rootDir": "./src",
         "outDir": "./dist",
+        "typeRoots": ["./node_modules/@types"],
         "paths": {
             "@whiteflagprotocol/main": ["./src/main"],
             "@whiteflagprotocol/core": ["./src/core"],

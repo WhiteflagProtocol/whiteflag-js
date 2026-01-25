@@ -5,9 +5,8 @@
  */
 
 /* Test framework */
-import { describe as testCase } from 'mocha';
-import { it as assertion } from 'mocha';
-import { strictEqual, deepStrictEqual, throws } from 'assert';
+import { describe as testCase, it as assertion } from 'mocha';
+import { strictEqual, deepStrictEqual, throws } from 'node:assert';
 
 /* Functions to test */
 import { Jws } from '@whiteflagprotocol/util';

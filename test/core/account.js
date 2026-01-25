@@ -5,7 +5,7 @@
  */
 
 /* Dependencies */
-import { BinaryBuffer, hexToU8a } from '@whiteflagprotocol/util';
+import { hexToU8a } from '@whiteflagprotocol/util';
 
 export class Account {
     constructor(address) {

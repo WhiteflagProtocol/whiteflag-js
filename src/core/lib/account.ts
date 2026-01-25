@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @module core/account
  * @summary Whiteflag JS core account module

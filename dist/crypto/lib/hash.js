@@ -2,9 +2,9 @@
 export { hkdf, hash, hmac };
 import { zeroise } from "./common.js";
 import { createHmacKey } from "./keys.js";
-const HMAC = 'HMAC';
 const HASHALG = 'SHA-256';
 const HASHLEN = 32;
+const HMAC = 'HMAC';
 async function hkdf(ikm, salt, info, keylen) {
     const prk = await hmac(salt, ikm);
     zeroise(ikm);

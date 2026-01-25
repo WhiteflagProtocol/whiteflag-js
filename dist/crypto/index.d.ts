@@ -5,5 +5,6 @@
  * @primaryExport
  */
 export { WfCryptoMethod, encrypt, decrypt, deriveKey } from './lib/cipher.ts';
+export { generateEcdhKeypair, deriveEcdhSecret } from './lib/ecdh.ts';
 export { hkdf, hash, hmac } from './lib/hash.ts';
-export { createAesKey, createHmacKey } from './lib/keys.ts';
+export { createAesKey, createHmacKey, createEcdhPubkey } from './lib/keys.ts';

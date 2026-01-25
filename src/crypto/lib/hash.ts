@@ -14,9 +14,9 @@ import { zeroise } from './common.ts';
 import { createHmacKey } from './keys.ts';
 
 /* Constants */
-const HMAC = 'HMAC';
 const HASHALG = 'SHA-256';
 const HASHLEN = 32;
+const HMAC = 'HMAC';
 
 /* MODULE FUNCTIONS */
 /**
@@ -72,7 +72,7 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
  * @returns the hash value
  */
 async function hash(data: Uint8Array<ArrayBuffer>,
-                    length = HASHLEN,
+                    length: number = HASHLEN,
                     algorithm: AlgorithmIdentifier = HASHALG
                 ): Promise<Uint8Array<ArrayBuffer>> {
     /* Create hash */

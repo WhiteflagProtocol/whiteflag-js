@@ -13,13 +13,12 @@ export {
 };
 
 /* Dependencies */
-import { WfCryptoMethod, encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
+import { WfCryptoMethod, WfVersion, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
+import { encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
 import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { WfAccount } from './account.ts';
-import { WfVersion } from './versions.ts';
-import { WfProtocolError, WfErrorCode } from './errors.ts';
 import { WfCodec, decodeField, encodeField, isValidValue } from './codec.ts';
 
 /* Whiteflag specification */

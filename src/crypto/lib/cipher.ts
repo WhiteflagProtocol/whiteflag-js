@@ -4,15 +4,14 @@
  * @summary Whiteflag JS encryption and decryption functions
  */
 export {
-    WfCryptoMethod,
     encrypt,
     decrypt,
     deriveKey
 };
 
 /* Dependencies */
-import { WfVersion } from '@whiteflagprotocol/core';
-import { hexToU8a } from '@whiteflagprotocol/util';
+import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
+import { hexToU8a, noNumber } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { zeroise } from './common.ts';
@@ -26,19 +25,6 @@ import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'jso
 const BYTELENGTH = 8;
 
 /* MODULE DECLARATIONS */
-/**
- * Whiteflag encryption methods, defining the encryption methods
- * for Whiteflag messages as specified by the Whiteflag standard
- * @enum WfCryptoMethod
- * @wfversion v1-draft.7
- * @wfreference 5.2.4 Message Encryption
- */
-enum WfCryptoMethod {
-    /** Whiteflag encryption method 1: negotiated key */
-    ECDH = '1',
-    /** Whiteflag encryption method 2: pre-shared key */
-    PSK = '2'
-}
 /**
  * Whiteflag encryption parameters for each method
  */
@@ -109,8 +95,8 @@ async function decrypt(message: Uint8Array<ArrayBuffer>,
  * @wfversion v1-draft.7
  * @wfreference 5.2.3 Encryption Key and Authentication Token Derivation
  * @param ikm the raw input key material
- * @param info information to bind the key, e.g. the blockchain address of the originator
  * @param method the Whiteflag encryption method
+ * @param info information to bind the key, e.g. the blockchain address of the originator
  * @param version the Whiteflag protocol version
  * @returns the encryption key
  */
@@ -118,7 +104,7 @@ async function deriveKey(ikm: Uint8Array<ArrayBuffer>,
                          method: WfCryptoMethod,
                          info: Uint8Array<ArrayBuffer>,
                          version = WfVersion.v1
-                    ): Promise<CryptoKey> {
+                        ): Promise<CryptoKey> {
     /* Derive raw key with HKDF */
     const salt = hexToU8a(PARAMS[method][version].salt);
     const keyLength = PARAMS[method][version].keyLength;
@@ -139,27 +125,28 @@ async function deriveKey(ikm: Uint8Array<ArrayBuffer>,
 
 /* PRIVATE MODULE DECLARATIONS */
 /**
- * Defines an object with field encoding definitions
+ * Defines an object with encryption parameters
  * @private
- * @interface WfFieldEncoding
+ * @interface WfCryptoParams
  */
 interface WfCryptoParams {
-    [key: string]: {            // Encryption method
-        [key: string]: {        // Whiteflag version
-            algorithm: string,  // Encryption algorithm
-            keyLength: number,  // Byte length of the encryption key
-            ivLength: number,   // Byte length of the initialisation vector
-            ctrLength: number   // Byte length of the counter block part used as counter
-            salt: string        // Salt for HKDF key generation
+    [key: string]: {                // Encryption method
+        [key: string]: {            // Whiteflag version
+            $description: string,   // Description of the encryption method
+            algorithm: string,      // Encryption algorithm
+            keyLength: number,      // Byte length of the encryption key
+            salt: string            // Salt for HKDF key generation
+            ivLength?: number,      // Byte length of the initialisation vector
+            ctrLength?: number      // Byte length of the counter block part used as counter
         }
     }
 }
 
 /* PRIVATE MODULE FUNCTIONS */
 /**
- * Compiles an object with all valid field type definitions
+ * Compiles an object with all encryption parameters
  * @private
- * @returns an object with field type definitions
+ * @returns an object with encryption parameters
  */
 function compileCryptoParams(): WfCryptoParams {
     const params: WfCryptoParams = {};
@@ -232,7 +219,7 @@ function getAesParameters(method: WfCryptoMethod,
             return {
                 name: PARAMS[method][version].algorithm,
                 counter: iv,
-                length: PARAMS[method][version].ctrLength * BYTELENGTH
+                length: (PARAMS[method][version].ctrLength || noNumber('AES counter length')) * BYTELENGTH
             };
         }
         default: {

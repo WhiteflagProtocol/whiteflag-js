@@ -1,20 +1,25 @@
 'use strict';
 /**
  * @module util/jws
- * @summary Whiteflag JS JSON Web Signature class and functions
+ * @summary Whiteflag JS basic JSON Web Signature class and functions
  */
 export {
-    Jws
+    Jws,
+    JwsHeader,
+    JwsPayload,
+    JwsSignature
 };
 
 /* Module imports */
 import {
-    isObject,
-    isString,
     isBase64u,
     objToB64u,
     b64uToObj
 } from './encoding.ts';
+import {
+    isObject,
+    isString
+} from './objects.ts';
 
 /* Constants */
 /**
@@ -30,7 +35,7 @@ enum JwsFormat {
     FULL = 'JWS_FULL',
 }
 /**
- * Separator in compact serialised JWS
+ * Separator in compact serialized JWS
  * @Constant
  */
 const JWSSEPARATOR = '.';
@@ -39,7 +44,7 @@ const JWSSEPARATOR = '.';
  */
 const REGEX_FLAT = /e[yw][A-Za-z0-9-_]+/;
 /**
- * Regular expression for a compact serialised JWS string
+ * Regular expression for a compact serialized JWS string
  */
 const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
 
@@ -56,11 +61,11 @@ class Jws {
     /* CLASS PROPERTIES */
 
     /** The protected the JWS protected header */
-    private protected = { alg: '' }
+    public protected: JwsHeader = { alg: '' }
     /** The JWS payload */
-    private payload = { iat: 0 }
+    public payload: JwsPayload = { iat: 0 }
     /** The JWS signature */
-    private signature: string = '';
+    public signature: JwsSignature = '';
 
     /* CONSTRUCTOR */
     /**
@@ -69,11 +74,21 @@ class Jws {
      * @param header the JWS header, which will automatically be protected
      * @param payload the JWS payload
      * @param signature the JWS signature
+     * @throws if invalid JWS
      */
-    public constructor(header: any, payload: any, signature: string = '') {
+    public constructor(header: Object, payload: Object, signature: string = '') {
+        /* Check inpout */
+        if (!isObject(header)) throw TypeError('Provided JWS protected header is not an object');
+        if (!isObject(payload)) throw TypeError('Provided JWS payload is not an object');
+        if (!isBase64u(signature)) throw new TypeError('Signature is not base64url encoded');
+
+        /* Set properties */
         this.protected = header;
         this.payload = payload;
         this.signature = signature;
+
+        /* Make object immutable if signature provided */
+        if (signature) Object.freeze(this);
     }
 
     /* STATIC FACTORY METHODS */
@@ -88,8 +103,9 @@ class Jws {
     }
     /**
      * Creates a new JWS object from a plain javaScript object
-     * @param jws 
-     * @returns 
+     * @param jws a JSON string
+     * @returns a new JWS object
+     * @throws if invalid JSON or invalid JWS object
      */
     public static fromJSON(jws: string): Jws {
         return this.fromObject(JSON.parse(jws));
@@ -99,6 +115,7 @@ class Jws {
      * @function fromObject
      * @param jws a plain object
      * @returns a new JWS object
+     * @throws if invalid JWS object
      */
     public static fromObject(jws: any): Jws {
         switch (jwsType(jws)) {
@@ -119,17 +136,21 @@ class Jws {
             case JwsFormat.COMPACT: {
                 return this.fromCompact(jws);
             }
+            default: {
+                throw new TypeError('Invalid JWS representation or encoding');
+            }
         }
     } 
     /**
-     * Creates a new JWS object from a compact serialised JWS string
+     * Creates a new JWS object from a compact serialized JWS string
      * @function fromCompact
-     * @param jws a compact serialised JWS string
+     * @param jws a compact serialized JWS string
      * @returns a new JWS object
+     * @throws if invalid serialized JWS
      */
     public static fromCompact(jws: string): Jws {
         if (jwsType(jws) !== JwsFormat.COMPACT) {
-            throw new TypeError('Invalid compact serialised JWS string');
+            throw new TypeError('Invalid compact serialized JWS string');
         }
         const jwsArray = jws.split(JWSSEPARATOR);
         let header = {};
@@ -153,7 +174,7 @@ class Jws {
     /**
      * Returns the JWS signature input
      * @function getSignInput
-     * @returns a string with the input to be signed by the signing algorithm
+     * @returns the base64url encoded data to be signed by the signing algorithm
      */
     public getSignInput(): string {
         /* Add timestamp if not (yet) signed */
@@ -185,6 +206,7 @@ class Jws {
             throw new TypeError('Signature is not base64url encoded');
         }
         this.signature = signature;
+        Object.freeze(this);
         return true;
     }
     /**
@@ -196,7 +218,7 @@ class Jws {
         return this.signature;
     }
     /**
-     * Returns a compact serialised JWS as a compact serialized string
+     * Returns a compact serialized JWS as a compact serialized string
      * @function toCompact
      * @returns the JWS as a compact serialized JWS string
      */
@@ -252,16 +274,34 @@ class Jws {
         return JSON.stringify(this.toObject());
     }
 }
+/**
+ * Defines the JWS header object
+ * @interface JwsHeader
+ */
+interface JwsHeader {
+    [key: string]: any
+}
+/**
+ * Defines the JWS payload object
+ * @interface JwsPayload
+ */
+interface JwsPayload {
+    [key: string]: any
+}
+/**
+ * Defines the JWS payload object
+ * @type JwsPayload
+ */
+type JwsSignature = string;
 
 /* PRIVATE FUNCTIONS */
 /**
  * Return the type of the provided JWS
  * @private
  * @param jws a JSON Web Signature
- * @returns the JWS format
- * @throws if invalid JWS
+ * @returns the JWS format, or null if invalid format
  */
-function jwsType(jws: any): JwsFormat {
+function jwsType(jws: any): JwsFormat | null {
     if (isString(jws) && REGEX_COMPACT.test(jws)) {
         return JwsFormat.COMPACT;
     }
@@ -274,5 +314,5 @@ function jwsType(jws: any): JwsFormat {
                 return JwsFormat.FLAT;
         }
     }
-    throw new TypeError('Invalid JWS representation or encoding');
+    return null;
 }

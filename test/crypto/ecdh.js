@@ -2,7 +2,6 @@
 /**
  * @module test/crypto/ecdh
  * @summary Whiteflag JS ECDH secret negotiation functions
- * @todo Test against RFC 6932 Test Vector A.2
  */
 
 /* Test framework */

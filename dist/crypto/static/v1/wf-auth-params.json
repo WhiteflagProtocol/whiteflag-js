@@ -1,0 +1,11 @@
+{
+    "$description": "Whiteflag protocol version 1 authentication methods",
+    "1": {
+        "$description": "Whiteflag authentication method 1: URL"
+    },
+    "2": {
+        "$description": "Whiteflag authentication method 2: pre-shared secret",
+        "tokenLength": 32,
+        "salt": "420abc48f5d69328c457d61725d3fd7af2883cad8460976167e375b9f2c14081"
+    }
+}

@@ -1,5 +1,5 @@
 'use strict';
-export { isObject, isString, isBase64, isBase64u, isHex, noHexPrefix, objToB64u, b64uToObj, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
+export { isBase64, isBase64u, isHex, noHexPrefix, objToB64u, b64uToObj, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
 const NOSEPARATOR = '';
 const HEXBYTELENGTH = 2;
 const HEXRADIX = 16;
@@ -7,16 +7,14 @@ const HEXPREFIX = '0x';
 const REGEX_BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
 const REGEX_BASE64U = /^(?:[A-Za-z0-9_-]+)$/;
 const REGEX_HEXSTRING = /^(0x|0X)?(?:[a-fA-F0-9]{2})+$/;
-function isObject(obj) {
-    return (typeof obj === 'object' || obj instanceof Object);
-}
-function isString(charString) {
-    return (typeof charString === 'string' || charString instanceof String);
-}
 function isBase64(base64) {
+    if (base64 === '')
+        return true;
     return REGEX_BASE64.test(base64);
 }
 function isBase64u(base64u) {
+    if (base64u === '')
+        return true;
     return REGEX_BASE64U.test(base64u);
 }
 function isHex(hexString) {

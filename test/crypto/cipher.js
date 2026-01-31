@@ -15,7 +15,7 @@ import { hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 import { encrypt, decrypt, createAesKey } from '@whiteflagprotocol/crypto';
 
 /* Test data */
-import testVector from './cipher.json' with { type: 'json' };
+import testVector from './static/cipher.json' with { type: 'json' };
 const AES256CTR_PSK = '2'; // pre-shared key
 
 /* TEST SCRIPT */

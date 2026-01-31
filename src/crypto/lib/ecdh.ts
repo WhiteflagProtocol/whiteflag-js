@@ -2,6 +2,7 @@
 /**
  * @module crypto/ecdh
  * @summary Whiteflag JS ECDH secret negotiation functions
+ * @todo Test against RFC 6932 Test Vector A.2
  */
 export {
     generateEcdhKeypair,
@@ -10,15 +11,15 @@ export {
 
 /* Dependencies */
 import { createECDH } from 'node:crypto';
-import { hexToU8a } from "@whiteflagprotocol/util";
+import { hexToU8a } from '@whiteflagprotocol/util';
 
 /* Module imports */
-import { WfCryptoKey, WfCryptoKeyPair, createKeypair } from "./keys.ts";
+import { WfCryptoKey, WfCryptoKeyPair, createKeypair } from './keys.ts';
 
 /* Constants */
 const ECDHALG = 'ECDH';
 const ECDHCURVE = 'brainpoolP256r1';
-const KEYENCODING = 'hex';
+const HEXENCODING = 'hex';
 
 /* MODULE FUNCTIONS */
 /**
@@ -31,31 +32,31 @@ async function generateEcdhKeypair(): Promise<WfCryptoKeyPair> {
             name: ECDHALG,
             namedCurve: ECDHCURVE,
     }
-    const rawPublicKey = ecdh.generateKeys(KEYENCODING, 'compressed');
-    const rawPrivateKey = ecdh.getPrivateKey(KEYENCODING);
+    const rawPublicKey = ecdh.generateKeys(HEXENCODING, 'compressed');
+    const rawPrivateKey = ecdh.getPrivateKey(HEXENCODING);
     return createKeypair(
         new WfCryptoKey(
             hexToU8a(rawPrivateKey),
             'private',
             ecdhAlgorithm,
-            ["deriveBits", "deriveKey"]
+            ['deriveBits', 'deriveKey']
         ),
         new WfCryptoKey(
             hexToU8a(rawPublicKey),
             'public',
             ecdhAlgorithm,
-            ["deriveBits", "deriveKey"]
+            ['deriveBits', 'deriveKey']
         ),
     )
 }
 /**
  * Derives a shared secret from a key pair and someone else's public key
- * @param privateKey the key pair with one's own secret key
- * @param publicKey the other's public key
+ * @param keypair the key pair with one's own secret key
+ * @param pubkey the other's public key
  * @returns a shared secret
  */
 async function deriveEcdhSecret(keypair: WfCryptoKeyPair, pubkey: WfCryptoKey): Promise<Uint8Array<ArrayBuffer>> {
     const ecdh = createECDH(ECDHCURVE);
-    ecdh.setPrivateKey(keypair.privateKey.toHex(), KEYENCODING);
-    return hexToU8a(ecdh.computeSecret(pubkey.toHex(), KEYENCODING, KEYENCODING));
+    ecdh.setPrivateKey(keypair.privateKey.toHex(), HEXENCODING);
+    return hexToU8a(ecdh.computeSecret(pubkey.toHex(), HEXENCODING, HEXENCODING));
 }

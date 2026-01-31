@@ -2,11 +2,13 @@
 /**
  * @module crypto
  * @summary Whiteflag JS cryptographic classes and functions
- * @document docs/md/modules.md
+ * @document docs/md/packages.md
  * @primaryExport
  */
 export {
-    WfCryptoMethod,
+    deriveToken
+} from './lib/auth.ts'
+export {
     encrypt,
     decrypt,
     deriveKey
@@ -21,6 +23,10 @@ export {
     hmac
 } from './lib/hash.ts';
 export {
+    WfCryptoKey,
+    WfCryptoKeyPair,
+    WfKeyAlgorithm,
+    createKeypair,
     createAesKey,
     createHmacKey,
     createEcdhPubkey

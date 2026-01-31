@@ -16,7 +16,7 @@ import { Account } from  './account.js';
 import { WfCoreMessage, encryptMessage, decryptMessage } from '@whiteflagprotocol/core';
 
 /* Test data */
-import testVector from './message.json' with { type: 'json' };
+import testVector from './static/message.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Core message module', function() {

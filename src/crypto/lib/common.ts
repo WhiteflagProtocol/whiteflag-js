@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/common
- * @summary Whiteflag JS common crypto functions
+ * @summary Whiteflag JS common cryptographic functions
  */
 export {
     zeroise

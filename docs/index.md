@@ -26,8 +26,8 @@ blockchain, database solution, user interface, etc.
 
 ### Source Code Description
 
-* [Main WFSJL Interface](md/main.md)
+* [Main WFSJL Programming Interface](md/main.md)
+* [Common Definitions](md/common.md)
 * [Core Protocol Implementation](md/core.md)
 * [Cryptographic Functions](md/crypto.md)
 * [Utility Classes and Functions](md/utility.md)
-* [Error Handling](md/errors.md)

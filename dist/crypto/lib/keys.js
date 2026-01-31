@@ -15,18 +15,18 @@ class WfCryptoKey {
     algorithm;
     usages;
     extractable = true;
-    constructor(keyData, type, algorithm, usages) {
-        this.data = keyData;
+    constructor(rawKey, type, algorithm, usages) {
+        this.data = rawKey.buffer;
         this.type = type;
         this.algorithm = algorithm;
         this.usages = usages;
         Object.freeze(this);
     }
     toHex() {
-        return u8aToHex(this.data);
+        return u8aToHex(this.toU8a());
     }
     toU8a() {
-        return this.data;
+        return new Uint8Array(this.data);
     }
 }
 function createKeypair(privateKey, publicKey) {

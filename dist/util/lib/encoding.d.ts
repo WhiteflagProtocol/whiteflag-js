@@ -1,22 +1,8 @@
 /**
  * @module util/encoding
- * @summary Whiteflag JS common encodings and data conversions
+ * @summary Whiteflag JS encoding and data conversions utility functions
  */
-export { isObject, isString, isBase64, isBase64u, isHex, noHexPrefix, objToB64u, b64uToObj, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
-/**
- * Checks if something is an object
- * @function isObject
- * @param obj something that might be an object
- * @returns true if object, else false
- */
-declare function isObject(obj: any): boolean;
-/**
- * Checks if something is a string
- * @function isString
- * @param charString something that might be a string
- * @returns true if string, else false
- */
-declare function isString(charString: any): boolean;
+export { isBase64, isBase64u, isHex, noHexPrefix, objToB64u, b64uToObj, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB64u, u8aToHex, u8aToString, };
 /**
  * Checks if a string is base64 encoded
  * @function isBase64

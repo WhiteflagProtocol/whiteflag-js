@@ -2,7 +2,7 @@
 /**
  * @module main
  * @summary Whiteflag JS main package
- * @document docs/md/modules.md
+ * @document docs/md/packages.md
  * @primaryExport
  */
 export {
@@ -11,4 +11,4 @@ export {
 } from './lib/message.ts';
 export {
     WfVersion
-} from '@whiteflagprotocol/core';
+} from '@whiteflagprotocol/common';

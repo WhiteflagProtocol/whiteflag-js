@@ -12,7 +12,7 @@ import { strictEqual, deepStrictEqual, throws } from 'node:assert';
 import { Jws } from '@whiteflagprotocol/util';
 
 /* Test data */
-import testVector from './jws.json' with { type: 'json' };
+import testVector from './static/jws.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Util JWS module', function() { 

@@ -1,7 +1,7 @@
 'use strict';
 /**
- * @module core/errors
- * @summary Whiteflag JS core error classes
+ * @module common/errors
+ * @summary Whiteflag JS common error classes
  * @document docs/md/errors.md
  */
 export {

@@ -11,10 +11,8 @@ export {
 };
 
 /* Dependencies */
+import { WfVersion } from '@whiteflagprotocol/common';
 import { BinaryBuffer } from '@whiteflagprotocol/util';
-
-/* Module imports */
-import { WfVersion } from './versions.ts';
 
 /* Whiteflag specification */
 import fieldSpec_v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };

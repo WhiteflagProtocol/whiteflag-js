@@ -42,7 +42,7 @@ declare class WfMessage extends WfCoreMessage {
     /**
      * Creates new Whiteflag message from a hexadecimal encoded string
      * @param message  atring with the hexadecimal encoded message
-     * @param address the hexadecimal encoded originator address, if the message is encrypted
+     * @param account the hexadecimal encoded originator address, if the message is encrypted
      * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
      * @param iv the hexadecimal initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
@@ -51,7 +51,7 @@ declare class WfMessage extends WfCoreMessage {
     /**
      * Creates new Whiteflag message from a binary encoded message
      * @param message a Uint8Array with the binary encoded message
-     * @param address the binary encoded originator address, if the message is encrypted
+     * @param account the binary encoded originator address, if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message

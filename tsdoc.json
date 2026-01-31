@@ -3,6 +3,7 @@
     "extends": [ "typedoc/tsdoc.json" ],
     "noStandardTags": false,
     "tagDefinitions": [
+        { "tagName": "@todo", "syntaxKind": "block" },
         { "tagName": "@wfreference", "syntaxKind": "block" },
         { "tagName": "@wfversion", "syntaxKind": "block" }
     ]

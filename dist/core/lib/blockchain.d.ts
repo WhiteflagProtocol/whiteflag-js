@@ -5,11 +5,11 @@
 export { WfBlockchain };
 /**
  * The blockchain used to send Whiteflag messages
- * @interfcae WfBlockchain
+ * @interface WfBlockchain
  * @remarks The Whiteflag Protocol works on top of one or more blockchains.
  * While Whiteflag is blockchain-agnostic, the protocol requires some
  * information about the underlying blockchain to function correctly.
- * This interface is an abtraction of a blockchain class that contains the
+ * This interface is an abstraction of a blockchain class that contains the
  * blockchain-specific parameters and methods that Whiteflag depends on.
  */
 interface WfBlockchain {

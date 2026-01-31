@@ -15,7 +15,7 @@ import { BinaryBuffer } from '@whiteflagprotocol/util';
 import { encodeField, decodeField } from '@whiteflagprotocol/core';
 
 /* Test data */
-import testVector from './codec.json' with { type: 'json' };
+import testVector from './static/codec.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Core codec module', function() {

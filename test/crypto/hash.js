@@ -15,7 +15,7 @@ import { hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 import { hkdf, hmac, hash } from '@whiteflagprotocol/crypto';
 
 /* Test data */
-import testVector from './hash.json' with { type: 'json' };
+import testVector from './static/hash.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Crypto hashing module', function() {

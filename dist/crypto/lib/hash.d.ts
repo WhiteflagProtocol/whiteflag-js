@@ -1,6 +1,6 @@
 /**
  * @module crypto/hash
- * @summary Whiteflag JS hashing functions
+ * @summary Whiteflag JS cryptographic hashing functions
  */
 export { hkdf, hash, hmac };
 /**

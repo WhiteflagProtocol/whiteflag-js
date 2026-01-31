@@ -1,6 +1,6 @@
 /**
  * @module util/jws
- * @summary Whiteflag JS JSON Web Signature class and functions
+ * @summary Whiteflag JS basic JSON Web Signature class and functions
  */
 export { Jws };
 /**
@@ -13,19 +13,20 @@ export { Jws };
  */
 declare class Jws {
     /** The protected the JWS protected header */
-    private protected;
+    protected: JwsHeader;
     /** The JWS payload */
-    private payload;
+    payload: JwsPayload;
     /** The JWS signature */
-    private signature;
+    signature: JwsSignature;
     /**
      * Constructor for a Whiteflag message
      * @private
      * @param header the JWS header, which will automatically be protected
      * @param payload the JWS payload
      * @param signature the JWS signature
+     * @throws if invalid JWS
      */
-    constructor(header: any, payload: any, signature?: string);
+    constructor(header: Object, payload: Object, signature?: string);
     /**
      * Creates a new JWS from a payload
      * @function fromPayload
@@ -35,8 +36,9 @@ declare class Jws {
     static fromPayload(payload: Object): Jws;
     /**
      * Creates a new JWS object from a plain javaScript object
-     * @param jws
-     * @returns
+     * @param jws a JSON string
+     * @returns a new JWS object
+     * @throws if invalid JSON or invalid JWS object
      */
     static fromJSON(jws: string): Jws;
     /**
@@ -44,13 +46,15 @@ declare class Jws {
      * @function fromObject
      * @param jws a plain object
      * @returns a new JWS object
+     * @throws if invalid JWS object
      */
     static fromObject(jws: any): Jws;
     /**
-     * Creates a new JWS object from a compact serialised JWS string
+     * Creates a new JWS object from a compact serialized JWS string
      * @function fromCompact
-     * @param jws a compact serialised JWS string
+     * @param jws a compact serialized JWS string
      * @returns a new JWS object
+     * @throws if invalid serialized JWS
      */
     static fromCompact(jws: string): Jws;
     /**
@@ -62,7 +66,7 @@ declare class Jws {
     /**
      * Returns the JWS signature input
      * @function getSignInput
-     * @returns a string with the input to be signed by the signing algorithm
+     * @returns the base64url encoded data to be signed by the signing algorithm
      */
     getSignInput(): string;
     /**
@@ -86,7 +90,7 @@ declare class Jws {
      */
     getSignature(): string;
     /**
-     * Returns a compact serialised JWS as a compact serialized string
+     * Returns a compact serialized JWS as a compact serialized string
      * @function toCompact
      * @returns the JWS as a compact serialized JWS string
      */
@@ -116,3 +120,22 @@ declare class Jws {
      */
     toJSON(): string;
 }
+/**
+ * Defines the JWS header object
+ * @interface JwsHeader
+ */
+interface JwsHeader {
+    [key: string]: any;
+}
+/**
+ * Defines the JWS payload object
+ * @interface JwsPayload
+ */
+interface JwsPayload {
+    [key: string]: any;
+}
+/**
+ * Defines the JWS payload object
+ * @interface JwsPayload
+ */
+type JwsSignature = string;

@@ -1,6 +1,7 @@
 'use strict';
 export { Jws };
-import { isObject, isString, isBase64u, objToB64u, b64uToObj } from "./encoding.js";
+import { isBase64u, objToB64u, b64uToObj } from "./encoding.js";
+import { isObject, isString } from "./objects.js";
 var JwsFormat;
 (function (JwsFormat) {
     JwsFormat["COMPACT"] = "JWS_COMPACT";
@@ -15,9 +16,17 @@ class Jws {
     payload = { iat: 0 };
     signature = '';
     constructor(header, payload, signature = '') {
+        if (!isObject(header))
+            throw TypeError('Provided JWS protected header is not an object');
+        if (!isObject(payload))
+            throw TypeError('Provided JWS payload is not an object');
+        if (!isBase64u(signature))
+            throw new TypeError('Signature is not base64url encoded');
         this.protected = header;
         this.payload = payload;
         this.signature = signature;
+        if (signature)
+            Object.freeze(this);
     }
     static fromPayload(payload) {
         return new Jws({}, payload, '');
@@ -36,11 +45,14 @@ class Jws {
             case JwsFormat.COMPACT: {
                 return this.fromCompact(jws);
             }
+            default: {
+                throw new TypeError('Invalid JWS representation or encoding');
+            }
         }
     }
     static fromCompact(jws) {
         if (jwsType(jws) !== JwsFormat.COMPACT) {
-            throw new TypeError('Invalid compact serialised JWS string');
+            throw new TypeError('Invalid compact serialized JWS string');
         }
         const jwsArray = jws.split(JWSSEPARATOR);
         let header = {};
@@ -76,6 +88,7 @@ class Jws {
             throw new TypeError('Signature is not base64url encoded');
         }
         this.signature = signature;
+        Object.freeze(this);
         return true;
     }
     getSignature() {
@@ -126,5 +139,5 @@ function jwsType(jws) {
             return JwsFormat.FLAT;
         }
     }
-    throw new TypeError('Invalid JWS representation or encoding');
+    return null;
 }

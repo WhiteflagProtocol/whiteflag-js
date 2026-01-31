@@ -1,7 +1,7 @@
 'use strict';
 export { WfCodec, encodeField, decodeField, isValidValue };
+import { WfVersion } from '@whiteflagprotocol/common';
 import { BinaryBuffer } from '@whiteflagprotocol/util';
-import { WfVersion } from "./versions.js";
 import fieldSpec_v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
 const NOCHAR = '';
 const HEXRADIX = 16;

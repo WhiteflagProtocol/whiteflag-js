@@ -3,8 +3,8 @@
  * @summary Whiteflag JS core message field encoding and decoding module
  */
 export { WfCodec, encodeField, decodeField, isValidValue };
+import { WfVersion } from '@whiteflagprotocol/common';
 import { BinaryBuffer } from '@whiteflagprotocol/util';
-import { WfVersion } from './versions.ts';
 /**
  * Whiteflag field encodings, defining the encoding of Whiteflag
  * message fields as defined by the Whiteflag specification

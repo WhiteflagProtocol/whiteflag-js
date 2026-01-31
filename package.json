@@ -31,6 +31,7 @@
     },
     "type": "module",
     "dependencies": {
+        "@whiteflagprotocol/common": "file:./dist/common",
         "@whiteflagprotocol/core": "file:./dist/core",
         "@whiteflagprotocol/crypto": "file:./dist/crypto",
         "@whiteflagprotocol/main": "file:./dist/main",

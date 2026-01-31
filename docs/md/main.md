@@ -28,7 +28,7 @@ A new message may be created using the constructor, or by using a static
 factory method. For example, creating a new FreeText message (message
 code `F`) and set the `Text` field, may be done as follows:
 
-```{javascript}
+```javascript
 let wfMessage = new WfMessage('F');
 wfMessage.set('Text', 'Example text to be sent with the FreeText message');
 ```
@@ -39,7 +39,7 @@ meaning the functions return [Promises](https://developer.mozilla.org/en-US/docs
 Once encoded, the methods `toHex()` and `toU8a()` may be used to obtain the
 encoded message as a hexadecimal string or a UInt8array, respectively.
 
-```{javascript}
+```javascript
 await wfMessage.encode();
 const hexMessage = wfMessage.toHex();
 ```
@@ -49,17 +49,10 @@ content cannot be changed. Decoding a message is done using a one of the
 static factory methods such as `fromHex(...)` or `fromU8a(...)`, since the
 message type is probably not known before decoding.
 
-```{javascript}
+```javascript
 wfMessage = await WfMessage.fromHex(hexMessage);
 ```
 
 Encryption and decryption is automatically performed upon encoding and
 decoding, based on the value of the `EncryptionIndicator` field in the message
 header.
-
-## Whiteflag versions
-
-Currently, only one version of the Whiteflag protocol has been developed. For
-ease of implementation of future Whiteflag versions, WFJSL functions and
-classes take the Whiteflag version into account. The available Whiteflag
-versions are defined with the `WfVersions` enum.

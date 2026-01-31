@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/keys
- * @summary Whiteflag JS cryptographic key generation functions
+ * @summary Whiteflag JS cryptographic key management functions
  */
 export {
     WfCryptoKey,
@@ -31,7 +31,7 @@ const HMAC = 'HMAC';
  * An interface that extends the KeyAlgortihm interface to specify which
  * algorithm a cryptographic key supports
  * @interface WfKeyAlgorithm
- * @remark This interface is an extention of the Web Crypto API
+ * @remarks This interface is an extention of the Web Crypto API
  * KeyAlgorithm interface for algorithms or curves that are currently not
  * supported by the Web Crypto API.
  */
@@ -45,7 +45,7 @@ interface WfKeyAlgorithm extends KeyAlgorithm {
  * An interface that extends the CryptoKeyPair interface to create key pairs
  * from WfCryptoKey classes
  * @interface WfKeyAlgorithm
- * @remark This interface is an extention of the Web Crypto API
+ * @remarks This interface is an extention of the Web Crypto API
  * CryptoKeyPair interface for keys used for algorithms or curves that are
  * currently not supported by the Web Crypto API.
  */
@@ -56,25 +56,27 @@ interface WfCryptoKeyPair extends CryptoKeyPair {
 /**
  * A class that implements the CryptoKey interface to respresent a crytpographic key
  * @class WfCryptoKey
- * @remark This class is an extended implementation for the Web Crypto API
+ * @remarks This class is an extended implementation for the Web Crypto API
  * CryptoKey interface to hold keys for algorithms or curves that are
  * currently not supported by the Web Crypto API.
  */
 class WfCryptoKey implements CryptoKey {
-    private readonly data: Uint8Array;
-    public type: KeyType;
-    public algorithm: WfKeyAlgorithm;
-    public usages: KeyUsage[];
-    public extractable = true;
+    protected readonly data: ArrayBuffer;
+    public readonly type: KeyType;
+    public readonly algorithm: WfKeyAlgorithm;
+    public readonly usages: KeyUsage[];
+    public readonly extractable = true;
 
     /* CONSTRUCTOR */
     /**
-     * Constructor for a generic cryptographic key pair
-     * @param privateKey The private key of the key pair
-     * @param publicKey The public key of the key pair
+     * Constructor for a generic cryptographic key
+     * @param rawKey the raw binary cryptographic key
+     * @param type the key type, i.e. private, public, or secret
+     * @param algorithm the algortihm for which the key is created
+     * @param usages operations that the cryptographic key can perform
      */
-    constructor(keyData: Uint8Array<ArrayBuffer>, type: KeyType, algorithm: WfKeyAlgorithm, usages: KeyUsage[]) {
-        this.data = keyData;
+    constructor(rawKey: Uint8Array<ArrayBuffer>, type: KeyType, algorithm: WfKeyAlgorithm, usages: KeyUsage[]) {
+        this.data = rawKey.buffer;
         this.type = type;
         this.algorithm = algorithm;
         this.usages = usages;
@@ -87,14 +89,14 @@ class WfCryptoKey implements CryptoKey {
      * @returns the key as a hexadcimal string
      */
     public toHex(): string {
-        return u8aToHex(this.data)
+        return u8aToHex(this.toU8a());
     }
     /**
      * Returns the raw key
      * @returns the key as a byte array
      */
     public toU8a(): Uint8Array {
-        return this.data;
+        return new Uint8Array(this.data);
     }
 }
 
@@ -105,7 +107,7 @@ class WfCryptoKey implements CryptoKey {
  * @param privateKey the private key
  * @param publicKey the corresponding public key
  * @returns a key pair
- * @remark This function is a generic implementation of the Web Crypto API
+ * @remarks This function is a generic implementation of the Web Crypto API
  * CryptoKeyPair interface.
  */
 function createKeypair(privateKey: WfCryptoKey, publicKey: WfCryptoKey): WfCryptoKeyPair {

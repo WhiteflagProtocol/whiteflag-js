@@ -2,21 +2,8 @@
  * @module crypto/cipher
  * @summary Whiteflag JS encryption and decryption functions
  */
-export { WfCryptoMethod, encrypt, decrypt, deriveKey };
-import { WfVersion } from '@whiteflagprotocol/core';
-/**
- * Whiteflag encryption methods, defining the encryption methods
- * for Whiteflag messages as specified by the Whiteflag standard
- * @enum WfCryptoMethod
- * @wfversion v1-draft.7
- * @wfreference 5.2.4 Message Encryption
- */
-declare enum WfCryptoMethod {
-    /** Whiteflag encryption method 1: negotiated key */
-    ECDH = "1",
-    /** Whiteflag encryption method 2: pre-shared key */
-    PSK = "2"
-}
+export { encrypt, decrypt, deriveKey };
+import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
 /**
  * Encrypts a message based on the specified encryption method
  * @function encrypt
@@ -47,8 +34,8 @@ declare function decrypt(message: Uint8Array<ArrayBuffer>, method: WfCryptoMetho
  * @wfversion v1-draft.7
  * @wfreference 5.2.3 Encryption Key and Authentication Token Derivation
  * @param ikm the raw input key material
- * @param info information to bind the key, e.g. the blockchain address of the originator
  * @param method the Whiteflag encryption method
+ * @param info information to bind the key, e.g. the blockchain address of the originator
  * @param version the Whiteflag protocol version
  * @returns the encryption key
  */

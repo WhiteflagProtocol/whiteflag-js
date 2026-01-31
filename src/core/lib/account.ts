@@ -16,7 +16,7 @@ import { WfBlockchain } from './blockchain.ts';
  * @interface WfAccount
  * @wfversion v1-draft.7
  * @wfreference 2.4.1.2 Originator and Account
- * @remarks This interface is an abtraction of a blockchain account class.
+ * @remarks This interface is an abstraction of a blockchain account class.
  * Note that some blockchains lack the concept of an account, whereas
  * Whiteflag assumes an identifiable originator that has an account on
  * a blockchain. An account for Whiteflag is nothing else than a key pair
@@ -43,14 +43,18 @@ interface WfAccount {
      * Signs data with the account's private key
      */
     sign(data: Uint8Array): Uint8Array;
+    /**
+     * Verifies signature with the account's public key
+     */
+    verify(data: Uint8Array, signature: Uint8Array): boolean;
 }
 
 /**
  * The organisation or person sending Whiteflag messages
- * @interface WfAccount
+ * @interface WfOriginator
  * @wfversion v1-draft.7
  * @wfreference 2.4.1.2 Originator and Account
- * @remarks This interface is an abtraction of an originator class.
+ * @remarks This interface is an abstraction of an originator class.
  * An originator is a Whiteflag participant that sends Whiteflag messages
  * on a blockchain. An originator may use multiple blockchain accounts.
  */

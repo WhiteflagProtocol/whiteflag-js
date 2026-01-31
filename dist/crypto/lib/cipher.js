@@ -1,17 +1,12 @@
 'use strict';
-export { WfCryptoMethod, encrypt, decrypt, deriveKey };
-import { WfVersion } from '@whiteflagprotocol/core';
-import { hexToU8a } from '@whiteflagprotocol/util';
+export { encrypt, decrypt, deriveKey };
+import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
+import { hexToU8a, noNumber } from '@whiteflagprotocol/util';
 import { zeroise } from "./common.js";
 import { hkdf } from "./hash.js";
 import { createAesKey } from "./keys.js";
 import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'json' };
 const BYTELENGTH = 8;
-var WfCryptoMethod;
-(function (WfCryptoMethod) {
-    WfCryptoMethod["ECDH"] = "1";
-    WfCryptoMethod["PSK"] = "2";
-})(WfCryptoMethod || (WfCryptoMethod = {}));
 const PARAMS = compileCryptoParams();
 async function encrypt(message, method, key, iv, version = WfVersion.v1) {
     switch (method) {
@@ -84,7 +79,7 @@ function getAesParameters(method, iv, version = WfVersion.v1) {
             return {
                 name: PARAMS[method][version].algorithm,
                 counter: iv,
-                length: PARAMS[method][version].ctrLength * BYTELENGTH
+                length: (PARAMS[method][version].ctrLength || noNumber('AES counter length')) * BYTELENGTH
             };
         }
         default: {

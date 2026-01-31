@@ -70,3 +70,26 @@ for different data encodings:
 
 Whiteflag uses JSON Web Signatures (JWS). To create, sign and convert JWSs
 the `jws` module provides a common `Jws` class to other Whiteflag packages.
+Once a JWS is signed, it cannot be changed.
+
+Static methods to create a binary buffer:
+
+* `Jws.fromJSON(...)`: creates a JWS from a JSON string
+* `Jws.fromObject(...)`: creates a JWS from a plain JavaScript object
+* `Jws.fromCompact(...)`: creates a JWS from a compact serialized JWS string
+
+Public methods for signing the JWS:
+
+* `Jws.isSigned()`: indicates if the JWS has been signed
+* `Jws.setSignAlgorithm(...)`: sets the signing algorithm identifier in the protected header
+* `Jws.getSignInput()`: gets the base64url encoded JWS data to sign
+* `Jws.setSignInput(...)`: sets the base64url encoded signature, effectively signing the JWS
+* `Jws.getSignature()`: gets the JWS signature
+
+Public methods to get the JWS in different formats:
+
+* `Jws.toCompact()`: returns the JWS as a compact serialized JWS string
+* `Jws.toFlat()`: the JWS as a flattened JWS plain JavaScript object
+* `Jws.toFull()`: returns the JWS as a full JWS plain JavaScript object
+* `Jws.toObject()`: returns the JWS as a plain JavaScript object
+* `Jws.toJSON()`: returns the JWS as a JSON string

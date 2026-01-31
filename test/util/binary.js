@@ -20,7 +20,7 @@ import {
 } from '@whiteflagprotocol/util';
 
 /* Test data */
-import testVector from './binary.json' with { type: 'json' };
+import testVector from './static/binary.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Util binary buffer module', function() {

@@ -17,7 +17,41 @@ This description provides a generic overview of the Whiteflag core package.
 Please refer to the [WFJSL TypeDoc documentation](../typedoc) for a detailed
 description of all classes and functions.
 
-## Whiteflag message class
+## Whiteflag versions
+
+Currently, only one version of the Whiteflag protocol has been developed. For
+ease of implementation of future Whiteflag versions, WFJSL functions and
+classes take the Whiteflag version into account. The `versions` module defines
+the available Whiteflag versions with the `WfVersions` enum.
+
+## Blockchains, Accounts, and Originators
+
+The Whiteflag Protocol works on top of one or more blockchains. While
+Whiteflag is blockchain-agnostic, the protocol requires some information about
+the underlying blockchain to function correctly. An originator is a person or
+organization sending Whiteflag messages.
+
+An originator may use one or more blockchain accounts to send messages. Some
+blockchains lack the concept of an account, whereas Whiteflag assumes an
+identifiable originator that has an account on a blockchain. An account for
+Whiteflag is nothing else than a key pair for signing blockchain transactions,
+with some related information, e.g. an address, balance etc.
+
+The `account` and `blockchain` modules define the following interfaces to
+represent blockchains, originators and accounts:
+
+| Interface      | Purpose                                                                                           |
+|----------------|---------------------------------------------------------------------------------------------------|
+| `WfBlockchain` | an abstraction of a blockchain class that contains the blockchain-specific parameters and methods |
+| `WfAccount`    | an abstraction of a blockchain account class to hold the address and key pair                     |
+| `WfOriginator` | an abstraction of an originator class that contains the name and accounts of an organization      |
+
+## Authentication
+
+The `authentication` module contains the classes and functions for the
+authentication of originator accounts.
+
+## Whiteflag messages
 
 The Whiteflag message class `WfCoreMessage` defined in the `message` module
 represents a Whiteflag message. The class contains the methods to create,
@@ -27,14 +61,13 @@ there normally is no need to use the `WfCoreMessage` directly. Instead, the
 class to use for Whiteflag message, as this extended class provides methods to
 process the metadata required for full protocol functionality.
 
-A new message may be created using the constructor, or by using a static
-factory method. For example, creating a new FreeText message (message
-code `F`) and set the `Text` field, may be done as follows:
+A new message may be created using the constructor, basically creating a new
+empty message of a specific type. Static factory methods are also available:
 
-```{javascript}
-let wfMessage = new WfCoreMessage('F');
-wfMessage.set('Text', 'Example text to be sent with the FreeText message');
-```
+* `fromObject(...)`: creates a message from a plain JavaScript object
+* `fromBinary(...)`: creates a message from a binary buffer with an encoded message
+* `fromHex(...)`: creates a message from a hexadecimal string with an encoded message
+* `fromU8a(...)`: creates a message from a `UInt8Array` binary encoded message
 
 The `encode()` method encodes the message. The `WfCoreMessage` class
 automatically verifies the fields and values when encoding and decoding.
@@ -43,19 +76,8 @@ Encoding and decoding are asynchronous, meaning the functions return
 Once encoded, the methods `toHex()` and `toU8a()` may be used to obtain the
 encoded message as a hexadecimal string or a UInt8array, respectively.
 
-```{javascript}
-await wfMessage.encode();
-const hexMessage = wfMessage.toHex();
-```
-
 If a message is encoded, or decoded, the message is "final", meaning its
-content cannot be changed. Decoding a message is done using a one of the
-static factory methods such as `fromHex(...)` or `fromU8a(...)`, since the
-message type is probably not known before decoding.
-
-```{javascript}
-wfMessage = await WfCoreMessage.fromHex(hexMessage);
-```
+content cannot be changed.
 
 Encryption and decryption is automatically performed upon encoding and
 decoding, based on the value of the `EncryptionIndicator` field in the message
@@ -93,10 +115,3 @@ verification of field values, the module provides the following functions.
 
 These functions are used by the `WfCoreMessage` class when encoding and
 decoding a message.
-
-## Whiteflag versions
-
-Currently, only one version of the Whiteflag protocol has been developed. For
-ease of implementation of future Whiteflag versions, WFJSL functions and
-classes take the Whiteflag version into account. The `versions` module defines
-the available Whiteflag versions with the `WfVersions` enum.

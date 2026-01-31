@@ -1,11 +1,9 @@
 'use strict';
 /**
  * @module util/encoding
- * @summary Whiteflag JS common encodings and data conversions
+ * @summary Whiteflag JS encoding and data conversions utility functions
  */
 export {
-    isObject,
-    isString,
     isBase64,
     isBase64u,
     isHex,
@@ -39,32 +37,13 @@ const REGEX_HEXSTRING = /^(0x|0X)?(?:[a-fA-F0-9]{2})+$/
 
 /* MODULE FUNCTIONS */
 /**
- * Checks if something is an object
- * @function isObject
- * @param obj something that might be an object
- * @returns true if object, else false
- */
-function isObject(obj: any): boolean {
-    return (typeof obj === 'object' || obj instanceof Object);
-}
-
-/**
- * Checks if something is a string
- * @function isString
- * @param charString something that might be a string
- * @returns true if string, else false
- */
-function isString(charString: any): boolean {
-    return (typeof charString === 'string' || charString instanceof String); 
-}
-
-/**
  * Checks if a string is base64 encoded
  * @function isBase64
  * @param base64 a string that might be base64 encoded
  * @returns true if base64 encoded, else false
  */
 function isBase64(base64: string): boolean {
+    if (base64 === '') return true;     // Empty string is valid base64
     return REGEX_BASE64.test(base64);
 }
 
@@ -75,6 +54,7 @@ function isBase64(base64: string): boolean {
  * @returns true if base64url encoded, else false
  */
 function isBase64u(base64u: string): boolean {
+    if (base64u === '') return true;     // Empty string is valid base64url
     return REGEX_BASE64U.test(base64u);
 }
 

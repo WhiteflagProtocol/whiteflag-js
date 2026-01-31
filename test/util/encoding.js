@@ -32,7 +32,7 @@ import {
 } from '@whiteflagprotocol/util';
 
 /* Test data */
-import testVector from './encoding.json' with { type: 'json' };
+import testVector from './static/encoding.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Util encoding module', function() {

@@ -1,9 +1,8 @@
 'use strict';
 export { WfMsgType, WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
-import { WfCryptoMethod, encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
+import { WfCryptoMethod, WfVersion, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
+import { encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
 import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
-import { WfVersion } from "./versions.js";
-import { WfProtocolError, WfErrorCode } from "./errors.js";
 import { decodeField, encodeField, isValidValue } from "./codec.js";
 import msgSpec_v1 from '../static/v1/wf-msg-structure.json' with { type: 'json' };
 const EMPTYPSTRING = '';

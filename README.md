@@ -45,7 +45,7 @@ Testing of the software is done with the [Mocha](https://mochajs.org/)
 test framework. To do a full test and run all the test scripts, use the
 following NPM command in the project root:
 
-```{sh}
+```shell
 npm test
 ```
 

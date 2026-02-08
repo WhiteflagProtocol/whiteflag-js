@@ -1,22 +1,17 @@
 'use strict';
-export { WfCryptoKey, createKeypair, createAesKey, createHmacKey, createEcdhPubkey };
-import { u8aToHex } from "@whiteflagprotocol/util";
-const BYTELENGTH = 8;
-const RAWKEY = 'raw';
-const NOTEXTRACTABLE = false;
-const DEFAULT_HASHALG = 'SHA-256';
-const DEFAULT_ENCRYPTALG = 'AES-CTR';
-const DEFAULT_ECDHCURVE = 'brainpoolP256r1';
-const ECDH = 'ECDH';
-const HMAC = 'HMAC';
-class WfCryptoKey {
-    data;
+export { ExtCryptoKey, createKeyPair, createExtKeyPair, generateEcdhKeyPair, generateSignKeyPair, createAesKey, createHmacKey, createEcdhPubkey, createSignPubkey };
+import { createECDH } from 'node:crypto';
+import { hexToU8a, u8aToHex } from "@whiteflagprotocol/util";
+import { getSignParams, SignAlgorithm } from "./sign.js";
+import { BYTELENGTH, HEXENCODING, RAWKEY, EXTRACTABLE, NOTEXTRACTABLE, DEFAULT_ECDHCURVE, DEFAULT_ENCRYPTALG, DEFAULT_HASHALG, ECDH, HMAC } from "./constants.js";
+class ExtCryptoKey {
+    rawKey;
     type;
+    extractable = EXTRACTABLE;
     algorithm;
     usages;
-    extractable = true;
     constructor(rawKey, type, algorithm, usages) {
-        this.data = rawKey.buffer;
+        this.rawKey = rawKey.buffer;
         this.type = type;
         this.algorithm = algorithm;
         this.usages = usages;
@@ -26,21 +21,42 @@ class WfCryptoKey {
         return u8aToHex(this.toU8a());
     }
     toU8a() {
-        return new Uint8Array(this.data);
+        return new Uint8Array(this.rawKey);
     }
 }
-function createKeypair(privateKey, publicKey) {
+function createKeyPair(privateKey, publicKey) {
     if (privateKey.type !== 'private')
-        throw new Error(`Cannot use ${privateKey.type} key as private key`);
+        throw new TypeError(`Cannot use ${privateKey.type} key as private key`);
     if (publicKey.type !== 'public')
-        throw new Error(`Cannot use ${publicKey.type} key as public key`);
+        throw new TypeError(`Cannot use ${publicKey.type} key as public key`);
     if (publicKey.algorithm.name !== privateKey.algorithm.name) {
-        throw new Error('Private key algorithm does not match public key algorithm');
+        throw new TypeError('Private key algorithm does not match public key algorithm');
     }
     return {
         privateKey: privateKey,
-        publicKey: publicKey,
+        publicKey: publicKey
     };
+}
+function createExtKeyPair(privateKey, publicKey) {
+    return createKeyPair(privateKey, publicKey);
+}
+async function generateEcdhKeyPair(curve = DEFAULT_ECDHCURVE) {
+    const ecdh = createECDH(curve);
+    const ecdhAlgorithm = {
+        name: ECDH,
+        namedCurve: curve,
+    };
+    const rawPublicKey = ecdh.generateKeys(HEXENCODING, 'compressed');
+    const rawPrivateKey = ecdh.getPrivateKey(HEXENCODING);
+    return createExtKeyPair(new ExtCryptoKey(hexToU8a(rawPrivateKey), 'private', ecdhAlgorithm, ['deriveBits', 'deriveKey']), new ExtCryptoKey(hexToU8a(rawPublicKey), 'public', ecdhAlgorithm, ['deriveBits', 'deriveKey']));
+}
+async function generateSignKeyPair(alg = SignAlgorithm.ES256) {
+    const keyPair = await crypto.subtle.generateKey(getSignParams(alg), EXTRACTABLE, ['sign', 'verify']);
+    if (!Object.hasOwn(keyPair, 'privateKey'))
+        throw new TypeError('Generated key pair is missing private key');
+    if (!Object.hasOwn(keyPair, 'publicKey'))
+        throw new TypeError('Generated key pair is missing public key');
+    return keyPair;
 }
 async function createAesKey(rawKey, algorithm = DEFAULT_ENCRYPTALG) {
     const aesAlgorithm = {
@@ -61,5 +77,9 @@ async function createEcdhPubkey(rawKey, curve = DEFAULT_ECDHCURVE) {
         name: ECDH,
         namedCurve: curve,
     };
-    return new WfCryptoKey(rawKey, 'public', ecdhAlgorithm, ['deriveBits', 'deriveKey']);
+    return new ExtCryptoKey(rawKey, 'public', ecdhAlgorithm, ['deriveBits', 'deriveKey']);
+}
+async function createSignPubkey(rawKey, algorithm) {
+    const signAlgorithm = getSignParams(algorithm);
+    return crypto.subtle.importKey(RAWKEY, rawKey.buffer, signAlgorithm, NOTEXTRACTABLE, ['verify']);
 }

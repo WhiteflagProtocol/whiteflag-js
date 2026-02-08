@@ -6,8 +6,7 @@
  * @primaryExport
  */
 export {
-    WfAccount,
-    WfOriginator
+    WfAccount
 } from './lib/account.ts';
 export {
     WfSignature,
@@ -18,9 +17,6 @@ export {
     isValidAuthToken
 } from './lib/authentication.ts';
 export {
-    WfBlockchain
-} from './lib/blockchain.ts';
-export {
     WfCodec,
     encodeField,
     decodeField,
@@ -28,9 +24,11 @@ export {
 } from './lib/codec.ts';
 export {
     WfCoreMessage,
-    WfMsgType,
     isValidMessage,
     validateMessage,
     encryptMessage,
     decryptMessage
 } from './lib/message.ts';
+export {
+    WfOriginator
+} from './lib/originator.ts';

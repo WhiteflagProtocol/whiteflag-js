@@ -1,16 +1,16 @@
 'use strict';
 export { Jws };
-import { isBase64u, objToB64u, b64uToObj } from "./encoding.js";
-import { isObject, isString } from "./objects.js";
+import { isBase64u, stringToU8a } from "./encoding.js";
+import { isObject, isString, objToB64u, b64uToObj } from "./objects.js";
+const JWSSEPARATOR = '.';
+const REGEX_JWS_FLAT = /e[yw][A-Za-z0-9-_]+/;
+const REGEX_JWS_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
 var JwsFormat;
 (function (JwsFormat) {
     JwsFormat["COMPACT"] = "JWS_COMPACT";
     JwsFormat["FLAT"] = "JWS_FLATTENED";
     JwsFormat["FULL"] = "JWS_FULL";
 })(JwsFormat || (JwsFormat = {}));
-const JWSSEPARATOR = '.';
-const REGEX_FLAT = /e[yw][A-Za-z0-9-_]+/;
-const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
 class Jws {
     protected = { alg: '' };
     payload = { iat: 0 };
@@ -40,7 +40,7 @@ class Jws {
                 return new Jws(jws?.protected, jws?.payload, jws?.signature);
             }
             case JwsFormat.FLAT: {
-                return new Jws(b64uToObj(jws.protected), b64uToObj(jws.payload), jws?.signature);
+                return new Jws(b64uToObj(jws?.protected), b64uToObj(jws?.payload), jws?.signature);
             }
             case JwsFormat.COMPACT: {
                 return this.fromCompact(jws);
@@ -75,6 +75,9 @@ class Jws {
         }
         return objToB64u(this.protected) + JWSSEPARATOR + objToB64u(this.payload);
     }
+    getBinSignInput() {
+        return stringToU8a(this.getSignInput());
+    }
     setSignAlgorithm(algorithm) {
         if (this.isSigned())
             return false;
@@ -83,13 +86,18 @@ class Jws {
     }
     setSignature(signature) {
         if (this.isSigned())
-            return false;
+            return this;
+        if (this.protected.alg === 'none') {
+            throw new Error('Cannot sign an unsecured JWS');
+        }
         if (!isBase64u(signature)) {
             throw new TypeError('Signature is not base64url encoded');
         }
+        if (signature === '') {
+            throw new TypeError('Cannot sign with an empty signature');
+        }
         this.signature = signature;
-        Object.freeze(this);
-        return true;
+        return Object.freeze(this);
     }
     getSignature() {
         return this.signature;
@@ -127,15 +135,15 @@ class Jws {
     }
 }
 function jwsType(jws) {
-    if (isString(jws) && REGEX_COMPACT.test(jws)) {
+    if (isString(jws) && REGEX_JWS_COMPACT.test(jws)) {
         return JwsFormat.COMPACT;
     }
     if (isObject(jws)) {
         if (isObject(jws.protected) && isObject(jws.payload)) {
             return JwsFormat.FULL;
         }
-        if (isString(jws.protected) && REGEX_FLAT.test(jws.protected)
-            && isString(jws.payload) && REGEX_FLAT.test(jws.payload)) {
+        if (isString(jws.protected) && REGEX_JWS_FLAT.test(jws.protected)
+            && isString(jws.payload) && REGEX_JWS_FLAT.test(jws.payload)) {
             return JwsFormat.FLAT;
         }
     }

@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module common/versions
- * @summary Whiteflag JS common protocol version definitions
+ * @summary Whiteflag JS common protocol version definitions module
  */
 export {
     WfVersion

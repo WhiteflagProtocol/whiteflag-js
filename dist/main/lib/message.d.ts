@@ -1,9 +1,9 @@
 /**
  * @module main/message
- * @summary Whiteflag JS message class
+ * @summary Whiteflag JS main message module
  */
 export { WfMessage, WfMetaHeader };
-import { WfCoreMessage, WfAccount } from '@whiteflagprotocol/core';
+import { WfAccount, WfCoreMessage } from '@whiteflagprotocol/core';
 /**
  * A Whiteflag message as defined by the Whiteflag specification
  * @class WfMessage

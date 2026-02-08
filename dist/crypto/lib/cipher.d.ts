@@ -1,6 +1,6 @@
 /**
  * @module crypto/cipher
- * @summary Whiteflag JS encryption and decryption functions
+ * @summary Whiteflag JS encryption and decryption module
  */
 export { encrypt, decrypt, deriveKey };
 import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';

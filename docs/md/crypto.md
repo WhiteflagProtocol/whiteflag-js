@@ -69,11 +69,30 @@ ECDH secret negotiation with the `ecdh` module:
 
 | Function              | Purpose                                                    |
 |-----------------------|------------------------------------------------------------|
-| `generateEcdhKeypair` | Generates a new ECDH key pair                              |
+| `generateEcdhKeyPair` | Generates a new ECDH key pair                              |
 | `deriveEcdhSecret`    | Generates a shared secret from a key pair and a public key |
 
 Because the Web Crypto API does not support the RFC 5639 Brainpool curves,
 the module uses the Node.js cryptography module instead.
+
+## Digital signatures
+
+The Whiteflag cryptography package provides the following functions for
+creating and verifying digital signatures:
+
+| Function | Purpose                                                    |
+|----------|------------------------------------------------------------|
+| `sign`   | Signs an arbitrary piece of data                           |
+| `verify` | Generates a shared secret from a key pair and a public key |
+
+The `generateSignKeyPair` function generates a new key pair for creating
+digital signatures. The `SignAlgorithm` enum defines the supporting digital
+signature algorithms:
+
+* `RS256`: RSASSA-PKCS1-v1_5 using SHA-256 (RFC 3447)
+* `PS256`: RSASSA-PSS using SHA-256 (RFC 3447)
+* `ES256`: ECDSA using P-256 and SHA-256 (FIPS 186-5)
+* `Ed25519`: EdDSA based on Curve25519 (RFC 8032)
 
 ## Cryptographic Keys
 
@@ -81,14 +100,17 @@ The cryptographic functions of the Whiteflag cryptography package use key
 objects rather than raw binary keys. The following functions of the `keys`
 module create the appropriate key objects from raw keys:
 
-| Function           | Purpose                                             |
-|--------------------|-----------------------------------------------------|
-| `createAesKey`     | Creates an AES encryption and decryption key object |
-| `createHmacKey`    | Creates an HMAC signing key object                  |
-| `createEcdhPubkey` | Creates an ECDH public key object                   |
+| Function              | Purpose                                             |
+|-----------------------|-----------------------------------------------------|
+| `generateEcdhKeyPair` | Generates a new ECDH key pair                       |
+| `generateSignKeyPair` | Generates a new key pair for digital signatures     |
+| `createAesKey`        | Creates an AES encryption and decryption key object |
+| `createHmacKey`       | Creates an HMAC signing key object                  |
+| `createEcdhPubkey`    | Creates an ECDH public key object                   |
+| `createSignPubkey`    | Creates a digital signature public key object       |
 
 The created key is a Web Crypto API `CryptoKey` object, except for the
-ECDH public key, which is a `WfCryptoKey` object. The `WfCryptoKey` is an
+ECDH public key, which is a `ExtCryptoKey` object. The `ExtCryptoKey` is an
 extension of the first one to allow algorithms and curves that are currently
 not supported by the Web Crypto API, such as the RFC 5639 Brainpool curves.
 
@@ -96,8 +118,8 @@ To allow for cryptographic algorithms and curves that are not supported by the
 Web Crypto API, while adhering to the API for interoperability, the `keys`
 module provides the following extensions to the Web Crypto API:
 
-| Class / Interface | Purpose                                                                                             |
-|-------------------|-----------------------------------------------------------------------------------------------------|
-| `WfCryptoKey`     | Class implementing the of the `CryptoKey` interface to represent a cryptographic key                |
-| `WfCryptoKeyPair` | Interface extending the `CryptoKeyPair` interface for `WfCryptoKey` objects                         |
-| `WfKeyAlgorithm`  | Interface extending the `KeyAlgortihm` interface to allow keys for additional algorithms and curves |
+| Class / Interface  | Purpose                                                                                              |
+|--------------------|------------------------------------------------------------------------------------------------------|
+| `ExtCryptoKey`     | Class implementing the of the `CryptoKey` interface to represent a cryptographic key                 |
+| `ExtCryptoKeyPair` | Interface extending the `CryptoKeyPair` interface for `ExtCryptoKey` objects                         |
+| `ExtKeyAlgorithm`  | Interface extending the `KeyAlgortihm` interface to allow keys for additional algorithms and curves  |

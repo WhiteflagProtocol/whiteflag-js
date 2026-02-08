@@ -1,27 +1,28 @@
 'use strict';
 /**
  * @module util/jws
- * @summary Whiteflag JS basic JSON Web Signature class and functions
+ * @summary Whiteflag JS basic JSON Web Signature module
  */
 export {
     Jws,
     JwsHeader,
     JwsPayload,
-    JwsSignature
+    JwsFlatObject,
+    JwsFullObject,
+    JwsCompact
 };
 
 /* Module imports */
-import {
-    isBase64u,
-    objToB64u,
-    b64uToObj
-} from './encoding.ts';
-import {
-    isObject,
-    isString
-} from './objects.ts';
+import { Base64url, isBase64u, JSON, stringToU8a } from './encoding.ts';
+import { isObject, isString, objToB64u, b64uToObj } from './objects.ts';
 
 /* Constants */
+const JWSSEPARATOR = '.';
+const REGEX_JWS_FLAT = /e[yw][A-Za-z0-9-_]+/;
+const REGEX_JWS_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
+
+/* MODULE DECLARATIONS */
+
 /**
  * Defines JWS formats i.a.w. RFC 7515
  * @enum JwsFormat
@@ -34,21 +35,6 @@ enum JwsFormat {
     /** full JWS JSON object */
     FULL = 'JWS_FULL',
 }
-/**
- * Separator in compact serialized JWS
- * @Constant
- */
-const JWSSEPARATOR = '.';
-/**
- * Regular expression for a flattened JWS object
- */
-const REGEX_FLAT = /e[yw][A-Za-z0-9-_]+/;
-/**
- * Regular expression for a compact serialized JWS string
- */
-const REGEX_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
-
-/* MODULE DECLARATIONS */
 /**
  * A class representing a JSON Web Token (JWS)
  * @class Jws
@@ -65,7 +51,7 @@ class Jws {
     /** The JWS payload */
     public payload: JwsPayload = { iat: 0 }
     /** The JWS signature */
-    public signature: JwsSignature = '';
+    public signature: Base64url = '';
 
     /* CONSTRUCTOR */
     /**
@@ -76,7 +62,7 @@ class Jws {
      * @param signature the JWS signature
      * @throws if invalid JWS
      */
-    public constructor(header: Object, payload: Object, signature: string = '') {
+    public constructor(header: JwsHeader, payload: JwsPayload, signature: Base64url = '') {
         /* Check inpout */
         if (!isObject(header)) throw TypeError('Provided JWS protected header is not an object');
         if (!isObject(payload)) throw TypeError('Provided JWS payload is not an object');
@@ -98,16 +84,16 @@ class Jws {
      * @param payload the JWS payload 
      * @returns a new Binary Array
      */
-    public static fromPayload(payload: Object): Jws {
+    public static fromPayload(payload: JwsPayload): Jws {
         return new Jws({}, payload, '');
     }
     /**
      * Creates a new JWS object from a plain javaScript object
-     * @param jws a JSON string
+     * @param jws a JSON string representing a JWS
      * @returns a new JWS object
      * @throws if invalid JSON or invalid JWS object
      */
-    public static fromJSON(jws: string): Jws {
+    public static fromJSON(jws: JSON): Jws {
         return this.fromObject(JSON.parse(jws));
     }
     /**
@@ -128,8 +114,8 @@ class Jws {
             }
             case JwsFormat.FLAT: {
                 return new Jws(
-                    b64uToObj(jws.protected),
-                    b64uToObj(jws.payload),
+                    b64uToObj(jws?.protected),
+                    b64uToObj(jws?.payload),
                     jws?.signature
                 );
             }
@@ -148,7 +134,7 @@ class Jws {
      * @returns a new JWS object
      * @throws if invalid serialized JWS
      */
-    public static fromCompact(jws: string): Jws {
+    public static fromCompact(jws: JwsCompact): Jws {
         if (jwsType(jws) !== JwsFormat.COMPACT) {
             throw new TypeError('Invalid compact serialized JWS string');
         }
@@ -174,7 +160,7 @@ class Jws {
     /**
      * Returns the JWS signature input
      * @function getSignInput
-     * @returns the base64url encoded data to be signed by the signing algorithm
+     * @returns the data to be signed by the signing algorithm
      */
     public getSignInput(): string {
         /* Add timestamp if not (yet) signed */
@@ -182,6 +168,14 @@ class Jws {
             this.payload.iat = Math.floor(Date.now()/1000);
         }
         return objToB64u(this.protected) + JWSSEPARATOR + objToB64u(this.payload);
+    }
+    /**
+     * Returns the binary JWS signature input
+     * @function getBinSignInput
+     * @returns the binary data to be signed by the signing algorithm
+     */
+    public getBinSignInput(): Uint8Array<ArrayBuffer> {
+        return stringToU8a(this.getSignInput());
     }
     /**
      * Sets the identifier of the signing algorithm, if not yet signed
@@ -195,26 +189,31 @@ class Jws {
         return true;
     }
     /**
-     * Sets the signature, if not yet signed
+     * Sets the JWS signature, if not yet signed
      * @function setSignature
      * @param signature the base64url encoded signature
      * @returns true if signature could be added, false if already signed
      */
-    public setSignature(signature: string): boolean {
-        if (this.isSigned()) return false;
+    public setSignature(signature: Base64url): Jws {
+        if (this.isSigned()) return this;
+        if (this.protected.alg === 'none') {
+            throw new Error('Cannot sign an unsecured JWS');
+        }
         if (!isBase64u(signature)) {
             throw new TypeError('Signature is not base64url encoded');
         }
+        if (signature === '') {
+            throw new TypeError('Cannot sign with an empty signature');
+        }
         this.signature = signature;
-        Object.freeze(this);
-        return true;
+        return Object.freeze(this);
     }
     /**
      * Returns the JWS signature
      * @function getSignature
-     * @returns a string with the the JWS signature
+     * @returns a string with the base64url encoded JWS signature
      */
-    public getSignature(): string {
+    public getSignature(): Base64url {
         return this.signature;
     }
     /**
@@ -222,7 +221,7 @@ class Jws {
      * @function toCompact
      * @returns the JWS as a compact serialized JWS string
      */
-    public toCompact(): string {
+    public toCompact(): JwsCompact {
         let compactJws = objToB64u(this.protected)
                         + JWSSEPARATOR
                         + objToB64u(this.payload);
@@ -238,7 +237,7 @@ class Jws {
      * @function toFlat
      * @returns the JWS as a flattened JWS plain JavaScript object
      */ 
-    public toFlat(): Object {
+    public toFlat(): JwsFlatObject {
         return {
             protected: objToB64u(this.protected),
             payload: objToB64u(this.payload),
@@ -250,7 +249,7 @@ class Jws {
      * @function toFull
      * @returns the JWS as a full JWS plain JavaScript object
      */
-    public toFull(): Object {
+    public toFull(): JwsFullObject {
         return {
             protected: this.protected,
             payload: this.payload,
@@ -270,29 +269,46 @@ class Jws {
      * @function toJSON
      * @returns the JWS as a JSON string
      */
-    public toJSON(): string {
+    public toJSON(): JSON {
         return JSON.stringify(this.toObject());
     }
 }
+/** 
+ * A compact serialized JWS string
+ */
+type JwsCompact = string;
 /**
- * Defines the JWS header object
+ * A flat JWS object
+ * @interface JwsFlatObject
+ */
+interface JwsFlatObject {
+    protected: Base64url,
+    payload: Base64url,
+    signature: Base64url
+}
+/**
+ * A full JWS object
+ * @interface JwsFullObject
+ */
+interface JwsFullObject {
+    protected: JwsHeader,
+    payload: JwsPayload,
+    signature: Base64url
+}
+/**
+ * The JWS header object
  * @interface JwsHeader
  */
 interface JwsHeader {
     [key: string]: any
 }
 /**
- * Defines the JWS payload object
+ * The JWS payload object
  * @interface JwsPayload
  */
 interface JwsPayload {
     [key: string]: any
 }
-/**
- * Defines the JWS payload object
- * @type JwsPayload
- */
-type JwsSignature = string;
 
 /* PRIVATE FUNCTIONS */
 /**
@@ -302,15 +318,15 @@ type JwsSignature = string;
  * @returns the JWS format, or null if invalid format
  */
 function jwsType(jws: any): JwsFormat | null {
-    if (isString(jws) && REGEX_COMPACT.test(jws)) {
+    if (isString(jws) && REGEX_JWS_COMPACT.test(jws)) {
         return JwsFormat.COMPACT;
     }
     if (isObject(jws)) {
         if (isObject(jws.protected) && isObject(jws.payload)) {
             return JwsFormat.FULL;
         }
-        if (isString(jws.protected) && REGEX_FLAT.test(jws.protected)
-         && isString(jws.payload) && REGEX_FLAT.test(jws.payload)) {
+        if (isString(jws.protected) && REGEX_JWS_FLAT.test(jws.protected)
+         && isString(jws.payload) && REGEX_JWS_FLAT.test(jws.payload)) {
                 return JwsFormat.FLAT;
         }
     }

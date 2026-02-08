@@ -1,8 +1,9 @@
 /**
  * @module util/jws
- * @summary Whiteflag JS basic JSON Web Signature class and functions
+ * @summary Whiteflag JS basic JSON Web Signature module
  */
-export { Jws };
+export { Jws, JwsHeader, JwsPayload, JwsFlatObject, JwsFullObject, JwsCompact };
+import { Base64url, JSON } from './encoding.ts';
 /**
  * A class representing a JSON Web Token (JWS)
  * @class Jws
@@ -17,7 +18,7 @@ declare class Jws {
     /** The JWS payload */
     payload: JwsPayload;
     /** The JWS signature */
-    signature: JwsSignature;
+    signature: Base64url;
     /**
      * Constructor for a Whiteflag message
      * @private
@@ -26,21 +27,21 @@ declare class Jws {
      * @param signature the JWS signature
      * @throws if invalid JWS
      */
-    constructor(header: Object, payload: Object, signature?: string);
+    constructor(header: JwsHeader, payload: JwsPayload, signature?: Base64url);
     /**
      * Creates a new JWS from a payload
      * @function fromPayload
      * @param payload the JWS payload
      * @returns a new Binary Array
      */
-    static fromPayload(payload: Object): Jws;
+    static fromPayload(payload: JwsPayload): Jws;
     /**
      * Creates a new JWS object from a plain javaScript object
-     * @param jws a JSON string
+     * @param jws a JSON string representing a JWS
      * @returns a new JWS object
      * @throws if invalid JSON or invalid JWS object
      */
-    static fromJSON(jws: string): Jws;
+    static fromJSON(jws: JSON): Jws;
     /**
      * Creates a new JWS object from a plain javaScript object
      * @function fromObject
@@ -56,7 +57,7 @@ declare class Jws {
      * @returns a new JWS object
      * @throws if invalid serialized JWS
      */
-    static fromCompact(jws: string): Jws;
+    static fromCompact(jws: JwsCompact): Jws;
     /**
      * Indicates if the JWS has been signed
      * @function isSigned
@@ -66,9 +67,15 @@ declare class Jws {
     /**
      * Returns the JWS signature input
      * @function getSignInput
-     * @returns the base64url encoded data to be signed by the signing algorithm
+     * @returns the data to be signed by the signing algorithm
      */
     getSignInput(): string;
+    /**
+     * Returns the binary JWS signature input
+     * @function getBinSignInput
+     * @returns the binary data to be signed by the signing algorithm
+     */
+    getBinSignInput(): Uint8Array<ArrayBuffer>;
     /**
      * Sets the identifier of the signing algorithm, if not yet signed
      * @function setSignAlgorithm
@@ -77,36 +84,36 @@ declare class Jws {
      */
     setSignAlgorithm(algorithm: string): boolean;
     /**
-     * Sets the signature, if not yet signed
+     * Sets the JWS signature, if not yet signed
      * @function setSignature
      * @param signature the base64url encoded signature
      * @returns true if signature could be added, false if already signed
      */
-    setSignature(signature: string): boolean;
+    setSignature(signature: Base64url): Jws;
     /**
      * Returns the JWS signature
      * @function getSignature
-     * @returns a string with the the JWS signature
+     * @returns a string with the base64url encoded JWS signature
      */
-    getSignature(): string;
+    getSignature(): Base64url;
     /**
      * Returns a compact serialized JWS as a compact serialized string
      * @function toCompact
      * @returns the JWS as a compact serialized JWS string
      */
-    toCompact(): string;
+    toCompact(): JwsCompact;
     /**
      * Returns a flattened JWS
      * @function toFlat
      * @returns the JWS as a flattened JWS plain JavaScript object
      */
-    toFlat(): Object;
+    toFlat(): JwsFlatObject;
     /**
      * Returns a full JWS
      * @function toFull
      * @returns the JWS as a full JWS plain JavaScript object
      */
-    toFull(): Object;
+    toFull(): JwsFullObject;
     /**
      * Returns the JWS as a plain JavaScript object
      * @function toObject()
@@ -118,24 +125,41 @@ declare class Jws {
      * @function toJSON
      * @returns the JWS as a JSON string
      */
-    toJSON(): string;
+    toJSON(): JSON;
 }
 /**
- * Defines the JWS header object
+ * A compact serialized JWS string
+ */
+type JwsCompact = string;
+/**
+ * A flat JWS object
+ * @interface JwsFlatObject
+ */
+interface JwsFlatObject {
+    protected: Base64url;
+    payload: Base64url;
+    signature: Base64url;
+}
+/**
+ * A full JWS object
+ * @interface JwsFullObject
+ */
+interface JwsFullObject {
+    protected: JwsHeader;
+    payload: JwsPayload;
+    signature: Base64url;
+}
+/**
+ * The JWS header object
  * @interface JwsHeader
  */
 interface JwsHeader {
     [key: string]: any;
 }
 /**
- * Defines the JWS payload object
+ * The JWS payload object
  * @interface JwsPayload
  */
 interface JwsPayload {
     [key: string]: any;
 }
-/**
- * Defines the JWS payload object
- * @interface JwsPayload
- */
-type JwsSignature = string;

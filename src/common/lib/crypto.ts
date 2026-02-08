@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module common/crypto
- * @summary Whiteflag JS common authentication adn encryption method definitions
+ * @summary Whiteflag JS common authentication and encryption definitions module
  */
 export {
     WfAuthMethod,

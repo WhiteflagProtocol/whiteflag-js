@@ -2,7 +2,6 @@
 /**
  * @module core/authentication
  * @summary Whiteflag JS core authentication module
- * @todo Test authentication module
  */
 export {
     WfSignature,
@@ -14,12 +13,13 @@ export {
 };
 
 /* Dependencies */
-import { WfVersion, WfAuthMethod } from '@whiteflagprotocol/common';
+import { WfVersion, WfAuthMethod, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
+import { Jws, JwsHeader, JwsPayload, arrayEquals, b64uToU8a, u8aToB64u, stringToU8a } from '@whiteflagprotocol/util';
 import { deriveToken } from '@whiteflagprotocol/crypto';
-import { Jws, arrayEquals, b64uToU8a, u8aToB64u } from '@whiteflagprotocol/util';
 
 /* Module imports */
-import { WfAccount, WfOriginator } from './account.ts';
+import { WfAccount } from './account.ts';
+import { WfOriginator } from './originator.ts';
 
 /* MODULE DECLARATIONS */
 /**
@@ -31,7 +31,6 @@ import { WfAccount, WfOriginator } from './account.ts';
  * digital signatures used for authentication method 1. The Whiteflag digital
  * authentication signature must be published at the URL where the `A1`
  * authentication message points to.
- * @todo Implement signing algorithm
  */
 class WfSignature extends Jws {
     /* STATIC FACTORY METHODS */
@@ -40,14 +39,15 @@ class WfSignature extends Jws {
      * @param account the blockchain account to create the signature for
      * @param orgname the name of the originator
      * @param url the url where the signature will be available
+     * @param extpubkey the extended public key for key derivation
      */
     public static create(account: WfAccount, orgname: String, url: URL, extpubkey?: string): WfSignature {
         /* Create header i.a.w. Whiteflag specification */
-        const header: any = {
+        const header: JwsHeader = {
             alg: account.blockchain.signAlgorithm
         };
         /* Create payload i.a.w. Whiteflag specification */
-        const payload: any = {
+        const payload: JwsPayload = {
             addr: account.address,
             orgname: orgname,
             url: url.toString()
@@ -55,7 +55,7 @@ class WfSignature extends Jws {
         if (extpubkey) payload.extpubkey = extpubkey;
 
         /* Create payload i.a.w. Whiteflag specification */
-        return new Jws(header, payload) as WfSignature;
+        return new WfSignature(header, payload);
     }
 }
 /**
@@ -73,8 +73,11 @@ async function createAuthSignature(originator: WfOriginator, account: WfAccount,
         url
     );
     /* Sign and return JWS */
-    const signature = account.sign(b64uToU8a(authSignature.getSignInput()));
-    authSignature.setSignature(u8aToB64u(signature));
+    const data = authSignature.getBinSignInput();
+    const signature = u8aToB64u(await account.createSignature(data));
+    if (!authSignature.setSignature(signature).isSigned()) {
+        throw new WfProtocolError(`Could not create authentication signature for account ${account.address}`, null, WfErrorCode.SIGNATURE);
+    }
     return authSignature;
 }
 /**
@@ -111,9 +114,11 @@ async function validateAuthSignature(signature: WfSignature, account: WfAccount,
     if (!Object.hasOwn(signature.payload, 'orgname')) {
         errors.push('Missing originator name in signature payload');
     }
-    if (!account.verify(b64uToU8a(signature.getSignInput()), b64uToU8a(signature.getSignature()))) {
-        errors.push('Digital signature is invalid for the payload');
-    }
+    const valid = await account.verifySignature(
+        stringToU8a(signature.getSignInput()),
+        b64uToU8a(signature.getSignature())
+    );
+    if (!valid) errors.push('Digital signature is invalid for the payload');
     return errors;
 }
 /**
@@ -123,22 +128,23 @@ async function validateAuthSignature(signature: WfSignature, account: WfAccount,
  * @returns the binary authentication token
  */
 async function createAuthToken(account: WfAccount, secret: Uint8Array): Promise<Uint8Array> {
+    const binAddress = await account.getBinAddress();
     const authToken = await deriveToken(
         secret as Uint8Array<ArrayBuffer>,
         WfAuthMethod.SECRET,
-        account.getBinaryAddress() as Uint8Array<ArrayBuffer>,
+        binAddress as Uint8Array<ArrayBuffer>,
         WfVersion.v1
     );
     return authToken;
 }
 /**
- * 
+ * Checks if a Whiteflag authentication token is valid
  * @param token the Whiteflag authentication token to validate
  * @param account the account to be authenticated
  * @param secret the shared secret used to authenticate
  * @returns true if token is valid, else false
  */
-async function isValidAuthToken(token: Uint8Array, account: WfAccount, secret: Uint8Array) {
+async function isValidAuthToken(token: Uint8Array, account: WfAccount, secret: Uint8Array): Promise<boolean> {
     const result = await createAuthToken(account, secret);
     return arrayEquals(token, result);
 }

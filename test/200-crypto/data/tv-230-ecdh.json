@@ -1,0 +1,14 @@
+{
+    "1": {
+        "$description": "RFC 6932 Test Vector for brainpoolP256r1",
+        "A": {
+            "key": "041eb8b1e2bc681bce8e39963b2e9fc415b05283313dd1a8bcc055f11ae49699",
+            "pubkey": "0478028496b5ecaab3c8b6c12e45db1e02c9e4d26b4113bc4f015f60c5ccc0d206a2ae1762a3831c1d20f03f8d1e3c0c39afe6f09b4d44bbe80cd100987b05f92b"
+        },
+        "B": {
+            "key": "06f5240eacdb9837bc96d48274c8aa834b6c87ba9cc3eedd81f99a16b8d804d3",
+            "pubkey": "048e07e219ba588916c5b06aa30a2f464c2f2acfc1610a3be2fb240b635341f0db148ea1d7d1e7e54b9555b6c9ac90629c18b63bee5d7aa6949ebbf47b24fde40d"
+        },
+        "secret": "05e940915549e9f6a4a75693716e37466aba79b4bf2919877a16dd2cc2e23708"
+    }
+}

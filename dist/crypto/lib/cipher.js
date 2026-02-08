@@ -1,8 +1,7 @@
 'use strict';
 export { encrypt, decrypt, deriveKey };
 import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
-import { hexToU8a, noNumber } from '@whiteflagprotocol/util';
-import { zeroise } from "./common.js";
+import { hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
 import { hkdf } from "./hash.js";
 import { createAesKey } from "./keys.js";
 import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'json' };

@@ -1,0 +1,38 @@
+{
+    "1": {
+        "pubkey": "04b54d8d32c5973970d389b8546178abb6ee51e5fd5f257525e86153cc43087158406f4a6f4e6a4fd19ffabf4d9fba9678cebe2d0fd6cbef78814d08775d51c55f",
+        "wrongkey": "044a346da651df6320ca4ef9b9d17a385dacfaf95757ba22602c089aaab3cf634a136a8014626b0e77168df72a9a87d1071a95ca5a5ffd665af9799cf7f95c80e9",
+        "signature": {
+            "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9",
+            "payload": "eyJhZGRyIjoidW8yaXN0cW5na0l2WmRsQjNWSHR3dyIsIm9yZ25hbWUiOiJPcmdhbmlzYXRpb24iLCJ1cmwiOiJodHRwczovL29yZ2FuaXNhdGlvbi5pbnQvd2hpdGVmbGFnL2F1dGhlbnRpY2F0aW9uLmpzb24ifQ",
+            "signature": "WbrUP65z5kNpabvZ73MHCC9d4_6ur8MVOnGrSG-jfUxrWJPxmi5K5PdmiRB_HSfnZR8VHtK2hk9Ic0SCPORITA"
+        },
+        "invalid": {
+            "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9",
+            "payload": "eyJhZGRyIjoieG8yaXN0cW5na0l2WmRsQjNWSHR3dyIsIm9yZ25hbWUiOiJPcmdhbmlzYXRpb24iLCJ1cmwiOiJodHRwOi8vb3JnYW5pc2F0aW9uLm9yZy93aGl0ZWZsYWcvYXV0aGVudGljYXRpb24uanNvbiJ9",
+            "signature": "WbrUP65z5kNpabvZ73MHCC9d4_6ur8MVOnGrSG-jfUxrWJPxmi5K5PdmiRB_HSfnZR8VHtK2hk9Ic0SCPORITA"
+        },
+        "address": {
+            "correct": "uo2istqngkIvZdlB3VHtww",
+            "false": "xo2istqngkIvZdlB3VHtww"
+        },
+        "url": {
+            "correct": "https://organisation.int/whiteflag/authentication.json",
+            "false": "http://organisation.org/whiteflag/authentication.json"
+        }
+    },
+    "2": {
+        "orgname": "Organisation",
+        "url": "https://organisation.int/whiteflag"
+    },
+    "3": {
+        "secret": "23dc7d546d",
+        "address": "5ChTiv9G4bC5QGZfcgc55hv3tXvB6DBqn8wtVyLaUvW8Jkuh",
+        "token": "98d028d3fcef112ce81f089c247352bba09219da144958dbd0024e2f9ea6d43c"
+    },
+    "4": {
+        "secret": "25b06becb40a3b57276fee6f27dc7a9f62e552174f0f81a5c4e3c5efc27a91cf",
+        "address": "AjvK3pL6kyvZCC1CYsSXT5ThwY7QZ78dmhxFNrz6DDHXhby4",
+        "token": "d5d3d8e7a91664f3e30731d83539acfbdb4b7dc4a1a4cb6a5010185a583fbeed"
+    }
+}

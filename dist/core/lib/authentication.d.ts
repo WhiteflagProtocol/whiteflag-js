@@ -1,11 +1,11 @@
 /**
  * @module core/authentication
  * @summary Whiteflag JS core authentication module
- * @todo Test authentication module
  */
 export { WfSignature, createAuthSignature, createAuthToken, isValidAuthSignature, validateAuthSignature, isValidAuthToken };
 import { Jws } from '@whiteflagprotocol/util';
-import { WfAccount, WfOriginator } from './account.ts';
+import { WfAccount } from './account.ts';
+import { WfOriginator } from './originator.ts';
 /**
  * A class representing a Whiteflag authentication signature
  * @class WfSignature
@@ -15,7 +15,6 @@ import { WfAccount, WfOriginator } from './account.ts';
  * digital signatures used for authentication method 1. The Whiteflag digital
  * authentication signature must be published at the URL where the `A1`
  * authentication message points to.
- * @todo Implement signing algorithm
  */
 declare class WfSignature extends Jws {
     /**
@@ -23,6 +22,7 @@ declare class WfSignature extends Jws {
      * @param account the blockchain account to create the signature for
      * @param orgname the name of the originator
      * @param url the url where the signature will be available
+     * @param extpubkey the extended public key for key derivation
      */
     static create(account: WfAccount, orgname: String, url: URL, extpubkey?: string): WfSignature;
 }
@@ -58,7 +58,7 @@ declare function validateAuthSignature(signature: WfSignature, account: WfAccoun
  */
 declare function createAuthToken(account: WfAccount, secret: Uint8Array): Promise<Uint8Array>;
 /**
- *
+ * Checks if a Whiteflag authentication token is valid
  * @param token the Whiteflag authentication token to validate
  * @param account the account to be authenticated
  * @param secret the shared secret used to authenticate

@@ -25,7 +25,7 @@ development guidelines for the source code.
 ## Main package
 
 The [`@whiteflagprotocol/main`](main.md) package provides all classes and
-functions required to implement the Whiteflag protocol. Normally this should
+functions required to implement the Whiteflag protocol. Normally, this should
 be the only dependency for projects implementing Whiteflag.
 
 ## Common package
@@ -37,7 +37,7 @@ prevent any mutual or circular dependencies.
 ## Core package
 
 The [`@whiteflagprotocol/core`](core.md) package provides the modules that
-define Whiteflag core protocol features as specified in the Whiteflag
+implement Whiteflag core protocol features as specified in the Whiteflag
 standard. As such, this package is not a fully functional implementation of
 the protocol. This is to separate core protocol features from
 implementation-specific design decisions.

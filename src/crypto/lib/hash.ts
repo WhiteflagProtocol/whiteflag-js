@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/hash
- * @summary Whiteflag JS cryptographic hashing functions
+ * @summary Whiteflag JS cryptographic hashing module
  */
 export {
     hkdf,
@@ -9,14 +9,16 @@ export {
     hmac
 };
 
-/* Module imports */
-import { zeroise } from './common.ts';
-import { createHmacKey } from './keys.ts';
+/* Dependencies */
+import { hexToB64u, hexToU8a, zeroise } from '@whiteflagprotocol/util';
 
-/* Constants */
-const HASHALG = 'SHA-256';
-const HASHLEN = 32;
-const HMAC = 'HMAC';
+/* Module imports */
+import { createHmacKey } from './keys.ts';
+import {
+    HMAC,
+    DEFAULT_HASHALG,
+    DEFAULT_HASHLEN
+} from './constants.ts';
 
 /* MODULE FUNCTIONS */
 /**
@@ -39,10 +41,10 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
 
     /* Step 2. HKDF-Expand(PRK, info, L) -> OKM */
     const okm = new Uint8Array(keylen);
-    const t = new Uint8Array(HASHLEN);
+    const t = new Uint8Array(DEFAULT_HASHLEN);
     let offset = 0;
 
-    const N = Math.ceil(keylen / HASHLEN);
+    const N = Math.ceil(keylen / DEFAULT_HASHLEN);
     for (let i = 1; i <= N; i++) {
         /* Concatinate previous hash t, info and counter i */
         const block = new Uint8Array(offset + info.length + 1);
@@ -51,14 +53,14 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
         block[offset + info.length] = i;
 
         /* Get hash and add to okm buffer */
-        const hash = await hmac(prk, block);
-        t.set(hash.slice(0, t.length))
+        const h = await hmac(prk, block);
+        t.set(h.slice(0, t.length))
         offset = offset * (i - 1);
         if (offset < okm.length) {
-            okm.set(hash.slice(0, (okm.length-offset)), offset);
+            okm.set(h.slice(0, (okm.length-offset)), offset);
         }
         /* Block contains t after after first interation */
-        offset = HASHLEN;
+        offset = DEFAULT_HASHLEN;
     }
     /* Return output key material */
     return okm;
@@ -72,12 +74,12 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
  * @returns the hash value
  */
 async function hash(data: Uint8Array<ArrayBuffer>,
-                    length: number = HASHLEN,
-                    algorithm: AlgorithmIdentifier = HASHALG
+                    length: number = DEFAULT_HASHLEN,
+                    algorithm: AlgorithmIdentifier = DEFAULT_HASHALG
                 ): Promise<Uint8Array<ArrayBuffer>> {
     /* Create hash */
-    const hash = await crypto.subtle.digest(algorithm, data);
-    return new Uint8Array(hash, 0, length);
+    const h = await crypto.subtle.digest(algorithm, data);
+    return new Uint8Array(h, 0, length);
 }
 /**
  * Hash-Based Message Authentication Code function
@@ -89,7 +91,7 @@ async function hash(data: Uint8Array<ArrayBuffer>,
  */
 async function hmac(rawKey: Uint8Array<ArrayBuffer>,
                     message: Uint8Array<ArrayBuffer>,
-                    algorithm = HASHALG
+                    algorithm = DEFAULT_HASHALG
                 ): Promise<Uint8Array<ArrayBuffer>> {
     const key = await createHmacKey(rawKey, algorithm);
     const mac = await crypto.subtle.sign(HMAC, key, message.buffer);

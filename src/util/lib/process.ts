@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module util/process
- * @summary Whiteflag JS utility functions for code improvments
+ * @summary Whiteflag JS processing utility module
  */
 export {
     ignore,
@@ -18,7 +18,7 @@ function ignore(): void {}
  * Throws a syntax error for missing a numeric parameter as a result of a coding error
  * @param descr description of the missing parameter
  * @throws a syntax error
- * @remarks Typically used where a value might be optional in one case,
+ * @remarks To be used where a value might be optional in one case,
  * but required in another: `let nr = params?.nr || noNumber()`
  */
 function noNumber(descr?: string): number {
@@ -29,7 +29,7 @@ function noNumber(descr?: string): number {
  * Throws a syntax error for missing a string parameter as a result of a coding error
  * @param descr description of the missing parameter
  * @throws a syntax error
- * @remarks Typically used where a value might be optional in one case,
+ * @remarks To be used where a value might be optional in one case,
  * but required in another: `let str = params?.str || noString()`
  */
 function noString(descr?: string): string {

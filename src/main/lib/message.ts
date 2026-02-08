@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module main/message
- * @summary Whiteflag JS message class
+ * @summary Whiteflag JS main message module
  */
 export {
     WfMessage,
@@ -9,8 +9,8 @@ export {
 };
 
 /* Dependencies */
-import { WfVersion } from '@whiteflagprotocol/common';
-import { WfMsgType, WfCoreMessage, WfAccount } from '@whiteflagprotocol/core';
+import { WfVersion, WfMsgType } from '@whiteflagprotocol/common';
+import { WfAccount, WfCoreMessage } from '@whiteflagprotocol/core';
 import { u8aToHex } from '@whiteflagprotocol/util';
 
 /**

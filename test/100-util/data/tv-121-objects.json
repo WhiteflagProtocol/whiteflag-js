@@ -1,0 +1,13 @@
+{
+    "0": {
+        "object": {
+            "$description": "RFC 7515 A.2.1 header encoding example",
+            "base64url": "eyJhbGciOiJSUzI1NiJ9",
+            "plain": {
+                "protected": {
+                    "alg":"RS256"
+                }
+            }
+        }
+    }
+}

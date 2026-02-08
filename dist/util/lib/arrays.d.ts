@@ -1,6 +1,6 @@
 /**
  * @module util/arrays
- * @summary Whiteflag JS utility functions for arrays
+ * @summary Whiteflag JS arrays utility module
  */
 export { isArray, arrayEquals, arrayPluck, arrayPluckSub };
 /**
@@ -14,11 +14,11 @@ declare function isArray(arr: any): boolean;
  * Checks if two arrays contain equal values
  * @param arr1 the first array
  * @param arr2 the second array
- * @returns true if values are equal, else false
+ * @returns true if arrays and values are equal, else false
  */
 declare function arrayEquals(arr1: any, arr2: any): boolean;
 /**
- * Gets single property from an array of objects
+ * Gets the values of single property from an array of objects
  * @function pluck
  * @param arr array of objects
  * @param key object property name
@@ -26,7 +26,7 @@ declare function arrayEquals(arr1: any, arr2: any): boolean;
  */
 declare function arrayPluck(arr: Array<any>, key: string): Array<any>;
 /**
- * Gets single subobject property from an array of objects
+ * Gets the values of single subobject property from an array of objects
  * @function plucksub
  * @param arr array of objects
  * @param key object property name

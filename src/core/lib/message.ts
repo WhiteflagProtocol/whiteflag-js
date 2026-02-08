@@ -4,7 +4,6 @@
  * @summary Whiteflag JS core message module
  */
 export {
-    WfMsgType,
     WfCoreMessage,
     isValidMessage,
     validateMessage,
@@ -13,9 +12,9 @@ export {
 };
 
 /* Dependencies */
-import { WfCryptoMethod, WfVersion, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
-import { encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
+import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
 import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
+import { encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
 
 /* Module imports */
 import { WfAccount } from './account.ts';
@@ -30,40 +29,6 @@ const MSG_PREFIX = 'WF';
 const MSG_NOENCRYPT = '0';
 
 /* MODULE DECLARATIONS */
-/**
- * Whiteflag message types, defining the types of Whiteflag message
- * as specified by the Whiteflag standard
- * @enum WfFieldType
- * @wfversion v1-draft.7
- * @wfreference 2.4.2.1 Functional Messages, 2.4.2.2 Management Messages
- * 
- */
-enum WfMsgType {
-    /** Authentication message */
-    A = 'A',
-    /** Cryptographic support message */
-    K = 'K',
-    /** Test message */
-    T = 'T',
-    /** Protection sign */
-    P = 'P',
-    /** Protection sign */
-    D = 'D',
-    /** Status signal */
-    S = 'S',
-    /** Emergency signal */
-    E = 'E',
-    /** Infrstructure sign */
-    I = 'I',
-    /** Mission signal */
-    M = 'M',
-    /** Request signal */
-    Q = 'Q',
-    /** Reference message */
-    R = 'R',
-    /** Free text message */
-    F = 'F'
-}
 /**
  * Whiteflag message specification each message type
  */
@@ -119,7 +84,7 @@ class WfCoreMessage {
      * Creates new Whiteflag message from a binary buffer
      * @function fromBinary
      * @param message a binary buffer with the encoded message
-     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
@@ -142,11 +107,12 @@ class WfCoreMessage {
         if (encryption !== MSG_NOENCRYPT) {
             if (!ikm) throw new Error('Missing encryption key');
             if (!account) throw new Error('Missing orginator account');
+            const binAddress = await account.getBinAddress();
             buffer = await decryptMessage(
                 message as BinaryBuffer,
                 encryption as WfCryptoMethod,
                 ikm as Uint8Array<ArrayBuffer>,
-                account.getBinaryAddress() as Uint8Array<ArrayBuffer>,
+                binAddress as Uint8Array<ArrayBuffer>,
                 iv as Uint8Array<ArrayBuffer>,
                 version as WfVersion
             );
@@ -193,7 +159,7 @@ class WfCoreMessage {
     /**
      * Creates new Whiteflag message from a hexadecimal encoded string
      * @param message  atring with the hexadecimal encoded message
-     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
      * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
      * @param iv the hexadecimal initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
@@ -212,7 +178,7 @@ class WfCoreMessage {
     /**
      * Creates new Whiteflag message from a binary encoded message
      * @param message a Uint8Array with the binary encoded message
-     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
@@ -297,7 +263,7 @@ class WfCoreMessage {
     /**
      * Encodes the message, making the contents final
      * @function encode
-     * @param account the blockchain account with which the message is sent, required to derrive the encryption key if the message is encrypted
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is to be encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns this Whitedlag message object with the encoded message
@@ -327,11 +293,12 @@ class WfCoreMessage {
             if (this.header['EncryptionIndicator'] !== MSG_NOENCRYPT) {
                 if (!ikm) throw new Error('Missing encryption key');
                 if (!account) throw new Error('Missing orginator account');
+                const binAddress = await account.getBinAddress();
                 this.binary = await encryptMessage(
                     this.binary, 
                     this.header['EncryptionIndicator'] as WfCryptoMethod,
                     ikm as Uint8Array<ArrayBuffer>,
-                    account.getBinaryAddress() as Uint8Array<ArrayBuffer>,
+                    binAddress as Uint8Array<ArrayBuffer>,
                     iv as Uint8Array<ArrayBuffer>,
                     this.header['Version'] as WfVersion
                 );
@@ -796,7 +763,7 @@ function checkMsgBody(body: WfMsgBody, type: WfMsgType, version = WfVersion.v1):
  * @param version the Whiteflag protocol version
  * @returns an array of validation errors
  */
-function checkFields(segment: (WfMsgHeader | WfMsgBody), segSpec: any, version = WfVersion.v1): string[] {
+function checkFields(segment: WfMsgHeader | WfMsgBody, segSpec: any, version = WfVersion.v1): string[] {
     let errors: string[] = [];
     for (const field of Object.keys(segSpec)) {
         /* Check if field exists */

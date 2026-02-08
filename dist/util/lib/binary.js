@@ -1,5 +1,5 @@
 'use strict';
-export { BinaryBuffer, cropBits, shiftRight, shiftLeft };
+export { BinaryBuffer, cropBits, shiftRight, shiftLeft, zeroise };
 import { isHex, hexToU8a, u8aToHex } from "./encoding.js";
 const BYTELENGTH = 8;
 class BinaryBuffer {
@@ -224,4 +224,7 @@ function shiftLeft(u8array, shift) {
         buffer[byteIndex] |= ((0xFF & u8array[byteIndex + 1] & mask) >>> (BYTELENGTH - mod));
     }
     return cropBits(buffer, -(shift % BYTELENGTH));
+}
+function zeroise(u8array) {
+    return u8array.fill(0);
 }

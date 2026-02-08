@@ -14,7 +14,6 @@ export {
     deriveKey
 } from './lib/cipher.ts';
 export {
-    generateEcdhKeypair,
     deriveEcdhSecret
 } from './lib/ecdh.ts';
 export {
@@ -23,11 +22,20 @@ export {
     hmac
 } from './lib/hash.ts';
 export {
-    WfCryptoKey,
-    WfCryptoKeyPair,
-    WfKeyAlgorithm,
-    createKeypair,
+    ExtCryptoKey,
+    ExtCryptoKeyPair,
+    ExtKeyAlgorithm,
+    createKeyPair,
+    createExtKeyPair,
+    generateEcdhKeyPair,
+    generateSignKeyPair,
     createAesKey,
     createHmacKey,
-    createEcdhPubkey
+    createEcdhPubkey,
+    createSignPubkey
 } from './lib/keys.ts';
+export {
+    SignAlgorithm,
+    sign,
+    verify
+} from './lib/sign.ts';

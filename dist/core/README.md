@@ -20,32 +20,39 @@ This description provides a generic overview of the WFJSL core package.
 Please see the [WFJSL TypeDoc documentation](https://js.whiteflagprotocol.org/typedoc)
 for a detailed description of all classes and functions.
 
-## Blockchains, Accounts, and Originators
+## Originators and Accounts
 
-The Whiteflag Protocol works on top of one or more blockchains. While
-Whiteflag is blockchain-agnostic, the protocol requires some information about
-the underlying blockchain to function correctly. An originator is a person or
-organization sending Whiteflag messages.
-
-An originator may use one or more blockchain accounts to send messages. Some
+An originator is a person or organization sending Whiteflag messages. An
+originator may use one or more blockchain accounts to send messages. Some
 blockchains lack the concept of an account, whereas Whiteflag assumes an
 identifiable originator that has an account on a blockchain. An account for
 Whiteflag is nothing else than a key pair for signing blockchain transactions,
 with some related information, e.g. an address, balance etc.
 
-The `account` and `blockchain` modules define the following interfaces to
-represent blockchains, originators and accounts:
+The `account` and `originator` modules define the following classes to
+represent accounts and originators:
 
-| Interface      | Purpose                                                                                           |
-|----------------|---------------------------------------------------------------------------------------------------|
-| `WfBlockchain` | an abstraction of a blockchain class that contains the blockchain-specific parameters and methods |
-| `WfAccount`    | an abstraction of a blockchain account class to hold the address and key pair                     |
-| `WfOriginator` | an abstraction of an originator class that contains the name and accounts of an organization      |
+| Class          | Purpose                                                                                |
+|----------------|----------------------------------------------------------------------------------------|
+| `WfOriginator` | representation of an originator that contains its name and accounts of an organization |
+| `WfAccount`    | representation of a blockchain account that holds its address and key pair             |
 
 ## Authentication
 
-The `authentication` module contains the classes and functions for the
-authentication of originator accounts.
+The `authentication` module contains the classes functions for the
+authentication of Whiteflag accounts on a blockchain. The module defines the
+`WfSignature` class, which extends the `Jws` class from the [`@whiteflagprotocol/util`](https://www.npmjs.com/package/@whiteflagprotocol/util)
+packages, to represent Whiteflag signatures used in authentication method 1.
+
+The following authentication functions are available:
+
+| Function                | Purpose                                                                  |
+|-------------------------|--------------------------------------------------------------------------|
+| `createAuthSignature`   | Creates a Whiteflag authentication signature for authentication method 1 |
+| `createAuthToken`       | Creates a Whiteflag authentication token for authentication method 2     |
+| `validateAuthSignature` | Checks a Whiteflag authentication signature for validation errors        |
+| `isValidAuthSignature`  | Checks if a Whiteflag authentication signature is valid                  |
+| `isValidAuthToken`      | Checks if a Whiteflag authentication token is valid                      |
 
 ## Whiteflag messages
 
@@ -96,7 +103,7 @@ Both validation functions may be used for both plain JavaScript objects and
 objects of the `WfCoreMessage` class. The encryption and decryption functions
 work only on binary encoded messages provided as a `BinaryBuffer`.
 
-## Whiteflag encoding
+## Whiteflag Message Encoding and Decoding
 
 The `codec` module provides the encoding and decoding for each field in
 a Whiteflag message i.a.w. the Whiteflag specification. The available field

@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module util/arrays
- * @summary Whiteflag JS utility functions for arrays
+ * @summary Whiteflag JS arrays utility module
  */
 export {
     isArray,
@@ -11,7 +11,7 @@ export {
 };
 
 /* Module imports */
-import { isObject, objectHas } from "./objects.ts";
+import { objectHas } from "./objects.ts";
 
 /* MODULE FUNCTIONS */
 /**
@@ -27,11 +27,11 @@ function isArray(arr: any): boolean {
  * Checks if two arrays contain equal values
  * @param arr1 the first array
  * @param arr2 the second array
- * @returns true if values are equal, else false
+ * @returns true if arrays and values are equal, else false
  */
 function arrayEquals(arr1: any, arr2: any): boolean {
-    /* Basic checks */
     try {
+        /* Basic checks */
         const a1 = Array.from(arr1);
         const a2 = Array.from(arr2);
         if (a1.length !== a2.length) return false;
@@ -47,21 +47,21 @@ function arrayEquals(arr1: any, arr2: any): boolean {
     }
 }
 /**
- * Gets single property from an array of objects
+ * Gets the values of single property from an array of objects
  * @function pluck
  * @param arr array of objects
  * @param key object property name
  * @returns an array with the values of the objects' property
  */
 function arrayPluck(arr: Array<any>, key: string): Array<any> {
-    if (!isArray(arr)) throw new TypeError('Argument 1 is not an array');
+    if (!isArray(arr)) throw new TypeError('Argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key)) return obj[key];
     }).filter(element => element !== undefined);
 };
 
 /**
- * Gets single subobject property from an array of objects
+ * Gets the values of single subobject property from an array of objects
  * @function plucksub
  * @param arr array of objects
  * @param key object property name
@@ -69,7 +69,7 @@ function arrayPluck(arr: Array<any>, key: string): Array<any> {
  * @returns an array with the values of the objects' subproperty
  */
 function arrayPluckSub(arr: Array<any>, key: string, subkey: string): Array<any> {
-    if (!isArray(arr)) throw new TypeError('Argument 1 is not an array');
+    if (!isArray(arr)) throw new TypeError('Argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key)) return obj[key][subkey];
     }).filter(element => element !== undefined);

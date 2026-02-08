@@ -1,6 +1,6 @@
 /**
  * @module core/codec
- * @summary Whiteflag JS core message field encoding and decoding module
+ * @summary Whiteflag JS core encoding and decoding module
  */
 export { WfCodec, encodeField, decodeField, isValidValue };
 import { WfVersion } from '@whiteflagprotocol/common';

@@ -1,7 +1,6 @@
 /**
  * @module crypto/authentication
- * @summary Whiteflag JS cryptographic authentication functions
- * @todo Test crypto auth module
+ * @summary Whiteflag JS cryptographic authentication module
  */
 export { deriveToken };
 import { WfVersion, WfAuthMethod } from '@whiteflagprotocol/common';

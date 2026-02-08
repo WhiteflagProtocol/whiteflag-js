@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/cipher
- * @summary Whiteflag JS encryption and decryption functions
+ * @summary Whiteflag JS encryption and decryption module
  */
 export {
     encrypt,
@@ -11,10 +11,9 @@ export {
 
 /* Dependencies */
 import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
-import { hexToU8a, noNumber } from '@whiteflagprotocol/util';
+import { hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
 
 /* Module imports */
-import { zeroise } from './common.ts';
 import { hkdf } from './hash.ts';
 import { createAesKey } from './keys.ts';
 

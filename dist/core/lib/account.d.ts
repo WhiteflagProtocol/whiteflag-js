@@ -2,58 +2,81 @@
  * @module core/account
  * @summary Whiteflag JS core account module
  */
-export { WfAccount, WfOriginator };
-import { WfBlockchain } from './blockchain.ts';
+export { WfAccount };
+import { Blockchain } from '@whiteflagprotocol/common';
+/** A blockchain address in the encoding specified for that blockchain */
+export type Address = string;
 /**
  * The account used by an originator to send Whiteflag messages
- * @interface WfAccount
+ * @class WfAccount
  * @wfversion v1-draft.7
  * @wfreference 2.4.1.2 Originator and Account
- * @remarks This interface is an abstraction of a blockchain account class.
+ * @remarks This class represents a blockchain account.
  * Note that some blockchains lack the concept of an account, whereas
- * Whiteflag assumes an identifiable originator that has an account on
- * a blockchain. An account for Whiteflag is nothing else than a key pair
+ * Whiteflag assumes an identifiable originator that has one or more accounts
+ * on a blockchain. An account for Whiteflag is nothing else than a key pair
  * for signing blockchain transactions, with some related information,
  * e.g. an address, balance etc.
  */
-interface WfAccount {
+declare class WfAccount {
+    #private;
+    /** The blockchain of the account */
+    blockchain: Blockchain;
+    /** The address of the account */
+    readonly address: Address;
+    /** The public key of the account */
+    readonly publicKey: Uint8Array | null;
     /**
-     * The blockchain of the account
+     * Constructor to create a blockchain account
+     * @param blockchain the blockchain of which this is an account
+     * @param address the address of the account
+     * @param publicKey the public key of the account
+     * @param privateKey the private key of the account
      */
-    blockchain: WfBlockchain;
+    constructor(blockchain: Blockchain, address: Address, publicKey?: Uint8Array, privateKey?: Uint8Array);
     /**
-     * The address of the account
+     * Creates a new account from the blockchain address
+     * @param blockchain the blockchain of which this is an account
+     * @param address the address of the account
+     * @returns the newly created blockchain account
      */
-    address: string;
+    static fromAddress(blockchain: Blockchain, address: Address): Promise<WfAccount>;
     /**
-     * Provides the binary blockchain address
+     * Creates a new account from the public key
+     * @param blockchain the blockchain of which this is an account
+     * @param {Uint8Array} [publicKey] the public key of the account
+     * @returns the newly created blockchain account
      */
-    getBinaryAddress(): Uint8Array;
+    static fromPublicKey(blockchain: Blockchain, publicKey: Uint8Array): Promise<WfAccount>;
+    /**
+     * Creates a new account from an existing key pair
+     * @param blockchain the blockchain of which this is an account
+     * @param secret a secret as used by the blockchain to create a keypair from
+     * @returns the newly created blockchain account
+     */
+    static fromSecret(blockchain: Blockchain, secret?: string): Promise<WfAccount>;
+    /**
+     * Creates a new account by generating a key pair
+     * @param blockchain the blockchain of which this is an account
+     * @returns the newly created blockchain account
+     */
+    static create(blockchain: Blockchain): Promise<WfAccount>;
+    /**
+     * Provides the binary address of the account
+     * @returns the binary address
+     */
+    getBinAddress(): Promise<Uint8Array>;
     /**
      * Signs data with the account's private key
+     * @param data the binary data to sign
+     * @returns the binary signature
      */
-    sign(data: Uint8Array): Uint8Array;
+    createSignature(data: Uint8Array): Promise<Uint8Array>;
     /**
      * Verifies signature with the account's public key
+     * @param data the binary data that has been signed
+     * @param signature the binary signature
+     * @returns true if the signature is valid, else false
      */
-    verify(data: Uint8Array, signature: Uint8Array): boolean;
-}
-/**
- * The organisation or person sending Whiteflag messages
- * @interface WfOriginator
- * @wfversion v1-draft.7
- * @wfreference 2.4.1.2 Originator and Account
- * @remarks This interface is an abstraction of an originator class.
- * An originator is a Whiteflag participant that sends Whiteflag messages
- * on a blockchain. An originator may use multiple blockchain accounts.
- */
-interface WfOriginator {
-    /**
-     * The name of the originator
-     */
-    name: string;
-    /**
-     * The blockchain accounts used by the originator
-     */
-    accounts: WfAccount[];
+    verifySignature(data: Uint8Array, signature: Uint8Array): Promise<boolean>;
 }

@@ -22,7 +22,7 @@ function arrayEquals(arr1, arr2) {
 }
 function arrayPluck(arr, key) {
     if (!isArray(arr))
-        throw new TypeError('Argument 1 is not an array');
+        throw new TypeError('Argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key))
             return obj[key];
@@ -31,7 +31,7 @@ function arrayPluck(arr, key) {
 ;
 function arrayPluckSub(arr, key, subkey) {
     if (!isArray(arr))
-        throw new TypeError('Argument 1 is not an array');
+        throw new TypeError('Argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key))
             return obj[key][subkey];

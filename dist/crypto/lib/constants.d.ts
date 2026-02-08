@@ -1,0 +1,22 @@
+/**
+ * @module crypto/constants
+ * @summary Whiteflag JS cryptographic constants module
+ */
+export declare const BYTELENGTH = 8;
+export declare const RAWKEY = "raw";
+export declare const EXTRACTABLE = true;
+export declare const NOTEXTRACTABLE = false;
+export declare const DEFAULT_HASHALG = "SHA-256";
+export declare const DEFAULT_HASHLEN = 32;
+export declare const DEFAULT_ENCRYPTALG = "AES-CTR";
+export declare const DEFAULT_ECDHCURVE = "brainpoolP256r1";
+export declare const HEXENCODING = "hex";
+export declare const ECDH = "ECDH";
+export declare const ECDSA = "ECDSA";
+export declare const Ed25519 = "Ed25519";
+export declare const ES256_CURVE = "P-256";
+export declare const HMAC = "HMAC";
+export declare const RSA_SSA_PSS = "RSA-PSS";
+export declare const RSA_SSA_PKCS1 = "RSASSA-PKCS1-v1_5";
+export declare const RSA_MODLENGTH = 4096;
+export declare const RSA_PUBEXP: Uint8Array<ArrayBuffer>;

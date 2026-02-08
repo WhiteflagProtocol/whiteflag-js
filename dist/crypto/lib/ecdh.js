@@ -1,23 +1,22 @@
 'use strict';
-export { generateEcdhKeypair, deriveEcdhSecret };
+export { deriveEcdhSecret };
 import { createECDH } from 'node:crypto';
 import { hexToU8a } from '@whiteflagprotocol/util';
-import { WfCryptoKey, createKeypair } from "./keys.js";
-const ECDHALG = 'ECDH';
-const ECDHCURVE = 'brainpoolP256r1';
-const HEXENCODING = 'hex';
-async function generateEcdhKeypair() {
-    const ecdh = createECDH(ECDHCURVE);
-    const ecdhAlgorithm = {
-        name: ECDHALG,
-        namedCurve: ECDHCURVE,
-    };
-    const rawPublicKey = ecdh.generateKeys(HEXENCODING, 'compressed');
-    const rawPrivateKey = ecdh.getPrivateKey(HEXENCODING);
-    return createKeypair(new WfCryptoKey(hexToU8a(rawPrivateKey), 'private', ecdhAlgorithm, ['deriveBits', 'deriveKey']), new WfCryptoKey(hexToU8a(rawPublicKey), 'public', ecdhAlgorithm, ['deriveBits', 'deriveKey']));
-}
-async function deriveEcdhSecret(keypair, pubkey) {
-    const ecdh = createECDH(ECDHCURVE);
+import { ECDH, DEFAULT_ECDHCURVE, HEXENCODING } from "./constants.js";
+async function deriveEcdhSecret(keypair, pubkey, curve = DEFAULT_ECDHCURVE) {
+    if (pubkey?.type !== 'public')
+        throw new TypeError(`Invalid public key`);
+    if (keypair?.privateKey?.type !== 'private')
+        throw new TypeError(`Key pair contains invalid private key`);
+    if (pubkey?.algorithm?.name !== ECDH)
+        throw TypeError(`Public key algorithm is not for ${ECDH} secret negotiation`);
+    if (keypair?.privateKey?.algorithm?.name !== ECDH)
+        throw TypeError(`Private key algorithm is not for ${ECDH} secret negotiation`);
+    if (pubkey?.algorithm?.namedCurve !== curve)
+        throw Error(`Public key does not support the ${curve} curve`);
+    if (keypair?.privateKey?.algorithm?.namedCurve !== curve)
+        throw Error(`Private key does not support the ${curve} curve`);
+    const ecdh = createECDH(curve);
     ecdh.setPrivateKey(keypair.privateKey.toHex(), HEXENCODING);
     return hexToU8a(ecdh.computeSecret(pubkey.toHex(), HEXENCODING, HEXENCODING));
 }

@@ -1,28 +1,13 @@
 'use strict';
-export { WfMsgType, WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
-import { WfCryptoMethod, WfVersion, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
-import { encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
+export { WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
+import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
 import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
+import { encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
 import { decodeField, encodeField, isValidValue } from "./codec.js";
 import msgSpec_v1 from '../static/v1/wf-msg-structure.json' with { type: 'json' };
 const EMPTYPSTRING = '';
 const MSG_PREFIX = 'WF';
 const MSG_NOENCRYPT = '0';
-var WfMsgType;
-(function (WfMsgType) {
-    WfMsgType["A"] = "A";
-    WfMsgType["K"] = "K";
-    WfMsgType["T"] = "T";
-    WfMsgType["P"] = "P";
-    WfMsgType["D"] = "D";
-    WfMsgType["S"] = "S";
-    WfMsgType["E"] = "E";
-    WfMsgType["I"] = "I";
-    WfMsgType["M"] = "M";
-    WfMsgType["Q"] = "Q";
-    WfMsgType["R"] = "R";
-    WfMsgType["F"] = "F";
-})(WfMsgType || (WfMsgType = {}));
 const MSGSPEC = compileMsgSpec();
 class WfCoreMessage {
     type;
@@ -56,7 +41,8 @@ class WfCoreMessage {
                 throw new Error('Missing encryption key');
             if (!account)
                 throw new Error('Missing orginator account');
-            buffer = await decryptMessage(message, encryption, ikm, account.getBinaryAddress(), iv, version);
+            const binAddress = await account.getBinAddress();
+            buffer = await decryptMessage(message, encryption, ikm, binAddress, iv, version);
         }
         let type = extractHeaderField(buffer, 'MessageCode');
         if (!checkType(type)) {
@@ -167,7 +153,8 @@ class WfCoreMessage {
                     throw new Error('Missing encryption key');
                 if (!account)
                     throw new Error('Missing orginator account');
-                this.binary = await encryptMessage(this.binary, this.header['EncryptionIndicator'], ikm, account.getBinaryAddress(), iv, this.header['Version']);
+                const binAddress = await account.getBinAddress();
+                this.binary = await encryptMessage(this.binary, this.header['EncryptionIndicator'], ikm, binAddress, iv, this.header['Version']);
             }
             this.final = true;
         }

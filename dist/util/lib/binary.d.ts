@@ -1,8 +1,8 @@
 /**
  * @module util/binary
- * @summary Whiteflag JS binary buffer class
+ * @summary Whiteflag JS binary buffer module
  */
-export { BinaryBuffer, cropBits, shiftRight, shiftLeft };
+export { BinaryBuffer, cropBits, shiftRight, shiftLeft, zeroise };
 /**
  * A class representing a binary buffer
  * @class BinaryBuffer
@@ -218,3 +218,10 @@ declare function shiftRight(u8array: Uint8Array, shift: number): Uint8Array;
  * @returns a new Uint8Array with the left shifted bits
  */
 declare function shiftLeft(u8array: Uint8Array, shift: number): Uint8Array;
+/**
+ * Basic zeroisation function
+ * @function zeroise
+ * @param u8array typed array to zeroise
+ * @returns the zeroised typed array
+ */
+declare function zeroise(u8array: Uint8Array): Uint8Array;

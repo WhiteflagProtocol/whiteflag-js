@@ -1,13 +1,14 @@
 'use strict';
 /**
  * @module util/binary
- * @summary Whiteflag JS binary buffer class
+ * @summary Whiteflag JS binary buffer module
  */
 export {
     BinaryBuffer,
     cropBits,
     shiftRight,
-    shiftLeft
+    shiftLeft,
+    zeroise
 };
 
 /* Module imports */
@@ -457,4 +458,13 @@ function shiftLeft(u8array: Uint8Array, shift: number): Uint8Array {
         buffer[byteIndex] |= ((0xFF & u8array[byteIndex + 1] & mask) >>> (BYTELENGTH - mod));
     }
     return cropBits(buffer, -(shift % BYTELENGTH));
+}
+/**
+ * Basic zeroisation function
+ * @function zeroise
+ * @param u8array typed array to zeroise
+ * @returns the zeroised typed array
+ */
+function zeroise(u8array: Uint8Array): Uint8Array {
+    return u8array.fill(0);
 }

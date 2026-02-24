@@ -40,14 +40,14 @@ interface Blockchain {
      */
     getBinAddress(address: string): Promise<Uint8Array>;
     /**
-     * Requests a signature using the blockchain's signatrue algorithm
+     * Requests a signature using the blockchain's signature algorithm
      * @param data the binary data to sign
      * @param privateKey the raw private key of the account to sign the data with
      * @returns the binary signature
      */
     requestSignature(data: Uint8Array, privateKey: Uint8Array): Promise<Uint8Array>;
     /**
-     * Verifies a signature using the blockchain's signatrue algorithm
+     * Verifies a signature using the blockchain's signature algorithm
      * @param data the binary data that has been signed
      * @param signature the binary signature
      * @param publicKey the raw binary public key of the account used to create the signature

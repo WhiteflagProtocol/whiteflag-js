@@ -9,5 +9,6 @@
  * projects implementing Whiteflag.
  */
 export { WfMessage, WfMetaHeader } from './lib/message.ts';
-export { Blockchain, WfVersion, WfMsgType, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
+export { Blockchain, WfVersion, WfMsgType, WfError, WfErrorCode } from '@whiteflagprotocol/common';
 export { WfAccount, WfOriginator } from '@whiteflagprotocol/core';
+export { KeyStoreCtrl } from '@whiteflagprotocol/crypto';

@@ -17,10 +17,13 @@ export {
     Blockchain,
     WfVersion,
     WfMsgType,
-    WfProtocolError,
+    WfError,
     WfErrorCode
 } from '@whiteflagprotocol/common';
 export {
     WfAccount,
     WfOriginator
 } from '@whiteflagprotocol/core';
+export {
+    KeyStoreCtrl
+} from '@whiteflagprotocol/crypto';

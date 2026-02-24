@@ -2,6 +2,9 @@
 /**
  * @module core/codec
  * @summary Whiteflag JS message field encoding and decoding tests
+ * @remarks Due to Web Crypto API restrictions, these tests use a
+ * specific implementation of the `Account` class, instead of the
+ * `WfAccount` from `@hiteflagprotocol/core`.
  */
 
 /* Test framework */

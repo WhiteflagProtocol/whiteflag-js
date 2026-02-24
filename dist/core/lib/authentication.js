@@ -1,6 +1,6 @@
 'use strict';
 export { WfSignature, createAuthSignature, createAuthToken, isValidAuthSignature, validateAuthSignature, isValidAuthToken };
-import { WfVersion, WfAuthMethod, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
+import { WfVersion, WfAuthMethod, WfError, WfErrorCode } from '@whiteflagprotocol/common';
 import { Jws, arrayEquals, b64uToU8a, u8aToB64u, stringToU8a } from '@whiteflagprotocol/util';
 import { deriveToken } from '@whiteflagprotocol/crypto';
 class WfSignature extends Jws {
@@ -23,13 +23,13 @@ async function createAuthSignature(originator, account, url) {
     const data = authSignature.getBinSignInput();
     const signature = u8aToB64u(await account.createSignature(data));
     if (!authSignature.setSignature(signature).isSigned()) {
-        throw new WfProtocolError(`Could not create authentication signature for account ${account.address}`, null, WfErrorCode.SIGNATURE);
+        throw new WfError(`Could not create authentication signature for account ${account.address}`, null, WfErrorCode.SIGNATURE);
     }
     return authSignature;
 }
 async function isValidAuthSignature(signature, account, url) {
-    const result = await validateAuthSignature(signature, account, url);
-    if (result.length > 0)
+    const errors = await validateAuthSignature(signature, account, url);
+    if (errors.length > 0)
         return false;
     return true;
 }

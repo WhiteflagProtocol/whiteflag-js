@@ -2,7 +2,27 @@
  * @module common/crypto
  * @summary Whiteflag JS common authentication and encryption definitions module
  */
-export { WfAuthMethod, WfCryptoMethod };
+export { WfKeyType, WfAuthMethod, WfCryptoMethod };
+/**
+ * Cryptograhpic keys and secret usages
+ * @enum WfKeyPurpose
+ */
+declare enum WfKeyType {
+    /** Blockchain account private key */
+    ACCOUNT_PRIVATEKEY = "ACCOUNT_PRIVATEKEY",
+    /** Negotiated secret for encryption method 1 */
+    ENCRYPT_ECDH = "ENCRYPTION_1_ECDH_NEGOTIATED_KEY",
+    /** Pre-shared secret for encryption method 2*/
+    ENCRYPT_PSK = "ENCRYPTION_2_PRESHARED_KEY",
+    /** Pre-shared secret for Authentication method 2 */
+    AUTH_PSS = "AUTH_2_PRESHARED_SECRET",
+    /** Negotiated shared secret for Authentication method 2 */
+    AUTH_ECDH = "AUTH_2_ECDH_NEGOTIATED_SECRET",
+    /** ECDH private key for encryption key negotiation */
+    ECDH_ENCRYPT = "ECDH_ENCRYPTION_PRIVATEKEY",
+    /** ECDH private key for authentication secret negotiation */
+    ECDH_AUTH = "ECDH_AUTHENTICATION_PRIVATEKEY"
+}
 /**
  * Whiteflag authentication methods, defining the authentication methods
  * for Whiteflag accounts as specified by the Whiteflag standard

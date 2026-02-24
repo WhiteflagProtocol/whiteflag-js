@@ -1,6 +1,6 @@
 'use strict';
 export { WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
-import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
+import { WfVersion, WfMsgType, WfCryptoMethod, WfError, WfErrorCode } from '@whiteflagprotocol/common';
 import { BinaryBuffer, hexToU8a, isString } from '@whiteflagprotocol/util';
 import { encrypt, decrypt, deriveKey } from '@whiteflagprotocol/crypto';
 import { decodeField, encodeField, isValidValue } from "./codec.js";
@@ -28,25 +28,25 @@ class WfCoreMessage {
         let buffer = message;
         const { prefix, version, encryption } = extractUnencryptedHeader(buffer);
         if (!checkPrefix(prefix)) {
-            throw new WfProtocolError(`Message has no ${MSG_PREFIX} prefix`, null, WfErrorCode.FORMAT);
+            throw new WfError(`Message has no ${MSG_PREFIX} prefix`, null, WfErrorCode.FORMAT);
         }
         if (!checkVersion(version)) {
-            throw new WfProtocolError(`Undefined protocol version: ${version}`, null, WfErrorCode.FORMAT);
+            throw new WfError(`Undefined protocol version: ${version}`, null, WfErrorCode.FORMAT);
         }
         if (!checkEncryption(encryption)) {
-            throw new WfProtocolError(`Undefined encryption method: ${encryption}`, null, WfErrorCode.ENCRYPTION);
+            throw new WfError(`Undefined encryption method: ${encryption}`, null, WfErrorCode.ENCRYPTION);
         }
         if (encryption !== MSG_NOENCRYPT) {
             if (!ikm)
                 throw new Error('Missing encryption key');
             if (!account)
-                throw new Error('Missing orginator account');
+                throw new Error('Missing originator account');
             const binAddress = await account.getBinAddress();
             buffer = await decryptMessage(message, encryption, ikm, binAddress, iv, version);
         }
         let type = extractHeaderField(buffer, 'MessageCode');
         if (!checkType(type)) {
-            throw new WfProtocolError(`Undefined message type: ${type}`, null, WfErrorCode.FORMAT);
+            throw new WfError(`Undefined message type: ${type}`, null, WfErrorCode.FORMAT);
         }
         const wfMessage = new this(type, version, message);
         return wfMessage.decode(buffer);
@@ -54,18 +54,18 @@ class WfCoreMessage {
     static async fromObject(message) {
         const errors = validateMessage(message);
         if (errors.length > 0)
-            throw new WfProtocolError('Invalid message', errors, WfErrorCode.FORMAT);
+            throw new WfError('Invalid message', errors, WfErrorCode.FORMAT);
         const header = message.MessageHeader;
         const body = message.MessageBody;
         const wfMessage = new this(header['MessageCode'], header['Version']);
         for (const field of Object.keys(header)) {
             if (!wfMessage.set(field, header[field])) {
-                throw new WfProtocolError(`Header field ${field} could not be set`, null, WfErrorCode.FORMAT);
+                throw new WfError(`Header field ${field} could not be set`, null, WfErrorCode.FORMAT);
             }
         }
         for (const field of Object.keys(body)) {
             if (!wfMessage.set(field, body[field])) {
-                throw new WfProtocolError(`Body field ${field} could not be set`, null, WfErrorCode.FORMAT);
+                throw new WfError(`Body field ${field} could not be set`, null, WfErrorCode.FORMAT);
             }
         }
         return wfMessage;
@@ -125,7 +125,7 @@ class WfCoreMessage {
             if (errors.length === 0)
                 errors = this.validate();
             if (errors.length > 0) {
-                throw new WfProtocolError(`Cannot decode ${this.type} message`, errors, WfErrorCode.FORMAT);
+                throw new WfError(`Cannot decode ${this.type} message`, errors, WfErrorCode.FORMAT);
             }
             this.final = true;
         }
@@ -135,7 +135,7 @@ class WfCoreMessage {
         if (!this.final) {
             const errors = this.validate();
             if (errors.length > 0) {
-                throw new WfProtocolError('Cannot encode message', errors, WfErrorCode.FORMAT);
+                throw new WfError('Cannot encode message', errors, WfErrorCode.FORMAT);
             }
             for (const field of Object.keys(this.header)) {
                 const encoding = MSGSPEC[this.type][this.version].header[field].encoding;
@@ -152,7 +152,7 @@ class WfCoreMessage {
                 if (!ikm)
                     throw new Error('Missing encryption key');
                 if (!account)
-                    throw new Error('Missing orginator account');
+                    throw new Error('Missing originator account');
                 const binAddress = await account.getBinAddress();
                 this.binary = await encryptMessage(this.binary, this.header['EncryptionIndicator'], ikm, binAddress, iv, this.header['Version']);
             }

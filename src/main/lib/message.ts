@@ -46,7 +46,7 @@ class WfMessage extends WfCoreMessage {
      * @function fromJSON
      * @param message a JSON string with a Whiteflag message
      * @returns a new Whiteflag message
-     * @throws {WfProtocolError} if message could not be created
+     * @throws {WfError} if message could not be created
      */
     public static async fromJSON(message: string): Promise<WfMessage> {
         const wfMessage = await this.fromObject(JSON.parse(message));

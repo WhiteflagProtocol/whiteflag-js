@@ -1,8 +1,9 @@
 /**
  * @module util/encoding
  * @summary Whiteflag JS encoding and data conversions utility module
+ * @todo Implement the new Uint8Array.fromBase64()/toBase64() and Uint8Array.fromHex()/toHex() in future versions
  */
-export { isBase58, isBase64, isBase64u, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB58, u8aToB64u, u8aToHex, u8aToString, };
+export { isBase58, isBase64, isBase64u, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64ToU8a, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToString, };
 /** A string with base58 encoded data */
 export type Base58 = string;
 /** A string with base64 encoded data */
@@ -63,6 +64,13 @@ declare function b58ToU8a(b58Str: Base58): Uint8Array<ArrayBuffer>;
  */
 declare function b64ToB64u(b64Str: Base64): Base64url;
 /**
+ * Creates a byte array from a base64 encoded string
+ * @function b64ToU8a
+ * @param b64Str a base64url encoded string
+ * @returns an 8-bit unsigned integer typed array
+ */
+declare function b64ToU8a(b64Str: Base64url): Uint8Array<ArrayBuffer>;
+/**
  * Convert base64url to base64
  * @function b64uToB64
  * @param b64uStr a base64url encoded string
@@ -89,7 +97,7 @@ declare function b64uToString(b64uStr: Base64url): string;
  * @param b64uStr a base64url encoded string
  * @returns an 8-bit unsigned integer typed array
  */
-declare function b64uToU8a(b64uStr: Base64url): Uint8Array;
+declare function b64uToU8a(b64uStr: Base64url): Uint8Array<ArrayBuffer>;
 /**
  * Creates a base64url encoded string from a hexadecimal string
  * @function hexToB64u
@@ -139,6 +147,13 @@ declare function stringToU8a(charStr: string): Uint8Array<ArrayBuffer>;
  * @returns a base58 encoded string
  */
 declare function u8aToB58(u8array: Uint8Array): Base58;
+/**
+ * Creates a base64 encoded string from a byte array
+ * @function u8aToB64
+ * @param u8array an 8-bit unsigned integer typed array
+ * @returns a base64 encoded string
+ */
+declare function u8aToB64(u8array: Uint8Array): Base64url;
 /**
  * Creates a base64url encoded string from a byte array
  * @function u8aToB64u

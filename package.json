@@ -38,7 +38,7 @@
         "@whiteflagprotocol/util": "file:./dist/util"
     },
     "devDependencies": {
-        "@types/node": "^25.0.10",
+        "@types/node": "^25.5.0",
         "copyfiles": "latest",
         "mocha": "^11.7.5",
         "npm-run-all": "latest",
@@ -58,5 +58,8 @@
         "build:test": "mocha --recursive --sort --check-leaks --reporter dot",
         "build:docs": "npm run docs",
         "build": "npm-run-all build:*"
+    },
+    "engines": {
+        "node": ">=22"
     }
 }

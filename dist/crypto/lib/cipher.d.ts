@@ -21,7 +21,7 @@ declare function encrypt(message: Uint8Array<ArrayBuffer>, method: WfCryptoMetho
  * @function decrypt
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption
- * @param message the message to be decyrpted
+ * @param message the message to be decrypted
  * @param method the Whiteflag encryption method
  * @param key the encryption key
  * @param iv the initialisation vector, if required for the method

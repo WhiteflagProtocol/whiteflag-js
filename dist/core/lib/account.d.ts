@@ -4,6 +4,7 @@
  */
 export { WfAccount };
 import { Blockchain } from '@whiteflagprotocol/common';
+import { Hex } from '@whiteflagprotocol/util';
 /** A blockchain address in the encoding specified for that blockchain */
 export type Address = string;
 /**
@@ -21,46 +22,51 @@ export type Address = string;
 declare class WfAccount {
     #private;
     /** The blockchain of the account */
-    blockchain: Blockchain;
+    readonly blockchain: Blockchain;
     /** The address of the account */
     readonly address: Address;
     /** The public key of the account */
-    readonly publicKey: Uint8Array | null;
+    readonly publicKey: Uint8Array;
     /**
      * Constructor to create a blockchain account
      * @param blockchain the blockchain of which this is an account
      * @param address the address of the account
      * @param publicKey the public key of the account
-     * @param privateKey the private key of the account
+     * @param privateKeyId the key store identifier of the private key of the account
      */
-    constructor(blockchain: Blockchain, address: Address, publicKey?: Uint8Array, privateKey?: Uint8Array);
+    constructor(blockchain: Blockchain, address: Address, publicKey?: Uint8Array, privateKeyId?: Hex);
     /**
      * Creates a new account from the blockchain address
      * @param blockchain the blockchain of which this is an account
      * @param address the address of the account
      * @returns the newly created blockchain account
      */
-    static fromAddress(blockchain: Blockchain, address: Address): Promise<WfAccount>;
+    static fromAddress(blockchain: Blockchain, address: Address): Promise<any>;
     /**
      * Creates a new account from the public key
      * @param blockchain the blockchain of which this is an account
-     * @param {Uint8Array} [publicKey] the public key of the account
+     * @param publicKey the public key of the account
      * @returns the newly created blockchain account
      */
-    static fromPublicKey(blockchain: Blockchain, publicKey: Uint8Array): Promise<WfAccount>;
+    static fromPublicKey(blockchain: Blockchain, publicKey: Uint8Array): Promise<any>;
     /**
      * Creates a new account from an existing key pair
      * @param blockchain the blockchain of which this is an account
      * @param secret a secret as used by the blockchain to create a keypair from
      * @returns the newly created blockchain account
      */
-    static fromSecret(blockchain: Blockchain, secret?: string): Promise<WfAccount>;
+    static fromSecret(blockchain: Blockchain, secret?: string): Promise<any>;
     /**
      * Creates a new account by generating a key pair
      * @param blockchain the blockchain of which this is an account
      * @returns the newly created blockchain account
      */
-    static create(blockchain: Blockchain): Promise<WfAccount>;
+    static create(blockchain: Blockchain): Promise<any>;
+    /**
+     * Checks if this account is own account
+     * @returns true if the account has a private key, else false
+     */
+    isSelf(): boolean;
     /**
      * Provides the binary address of the account
      * @returns the binary address

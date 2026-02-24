@@ -2,6 +2,7 @@
 /**
  * @module util/encoding
  * @summary Whiteflag JS encoding and data conversions utility module
+ * @todo Implement the new Uint8Array.fromBase64()/toBase64() and Uint8Array.fromHex()/toHex() in future versions
  */
 export {
     isBase58,
@@ -11,6 +12,7 @@ export {
     noHexPrefix,
     b58ToU8a,
     b64ToB64u,
+    b64ToU8a,
     b64uToB64,
     b64uToHex,
     b64uToString,
@@ -22,6 +24,7 @@ export {
     stringToHex,
     stringToU8a,
     u8aToB58,
+    u8aToB64,
     u8aToB64u,
     u8aToHex,
     u8aToString,
@@ -30,10 +33,10 @@ export {
 /* Constants */
 const EMPTYSTR = '';
 const NOSEPARATOR = EMPTYSTR;
-const HEXBYTELENGTH = 2;
 const BYTELENGTH = 8;
-const HEXRADIX = 16;
 const BASE58RADIX = 58;
+const HEXRADIX = 16;
+const HEXBYTELENGTH = 2;
 const HEXPREFIX = '0x';
 const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 const BASE64_CHARS = 'A-Za-z0-9+/';
@@ -157,6 +160,15 @@ function b64ToB64u(b64Str: Base64): Base64url {
         .replace(/\//g, '_');
 }
 /**
+ * Creates a byte array from a base64 encoded string
+ * @function b64ToU8a
+ * @param b64Str a base64url encoded string
+ * @returns an 8-bit unsigned integer typed array
+ */
+function b64ToU8a(b64Str: Base64url): Uint8Array<ArrayBuffer> {
+    return stringToU8a(atob(b64Str));
+}
+/**
  * Convert base64url to base64
  * @function b64uToB64
  * @param b64uStr a base64url encoded string
@@ -196,7 +208,7 @@ function b64uToString(b64uStr: Base64url): string {
  * @param b64uStr a base64url encoded string
  * @returns an 8-bit unsigned integer typed array
  */
-function b64uToU8a(b64uStr: Base64url): Uint8Array {
+function b64uToU8a(b64uStr: Base64url): Uint8Array<ArrayBuffer> {
     return stringToU8a(b64uToString(b64uStr));
 }
 /**
@@ -303,6 +315,15 @@ function u8aToB58(u8array: Uint8Array): Base58 {
     /* Add leading zero's and return result */
     while (lead--) b58Str = BASE58_CHARS[0] + b58Str;
     return b58Str;
+}
+/**
+ * Creates a base64 encoded string from a byte array
+ * @function u8aToB64
+ * @param u8array an 8-bit unsigned integer typed array
+ * @returns a base64 encoded string
+ */
+function u8aToB64(u8array: Uint8Array): Base64url {
+    return btoa(u8aToString(u8array));
 }
 /**
  * Creates a base64url encoded string from a byte array

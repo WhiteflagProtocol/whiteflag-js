@@ -48,20 +48,22 @@ binary representation, e.g. `appendHex(...)` or `insertU8a(...)`.
 The `encoding` module provides generic functions to convert data
 from one encoding to another.
 
-| Encoding    | Description                                                   | Converts to                             |
-|-------------|---------------------------------------------------------------|-----------------------------------------|
-| Base58      | a string with a 58-character binary-to-text encoding          | UInt8Array                              |
-| Base64      | a string with a 64-character binary-to-text encoding          | Base64url                               |
-| Base64url   | a string with a URL-safe 64-character binary-to-text encoding | Base64, Hexadecimal, String, UInt8Array |
-| Hexadecimal | a string with a hexadecimal representation of a binary        | Base64url, String, UInt8Array           |
-| Text        | a string with UTF-8 characters                                | Base64url, Hexadecimal, UInt8Array      |
-| UInt8Array  | an array of bytes representing a binary encoding              | Base58, Base64url, Hexadecimal, String  |
+| Encoding    | Description                                                   | Converts to                                  |
+|-------------|---------------------------------------------------------------|----------------------------------------------|
+| Base58      | a string with a 58-character binary-to-text encoding          | UInt8Array                                   |
+| Base64      | a string with a 64-character binary-to-text encoding          | Base64url, UInt8Array                        |
+| Base64url   | a string with a URL-safe 64-character binary-to-text encoding | Base64, Hexadecimal, Text, UInt8Array        |
+| Hexadecimal | a string with a hexadecimal representation of binary data     | Base64url, Text, UInt8Array                  |
+| Text        | a string with UTF-8 characters                                | Base64url, Hexadecimal, UInt8Array           |
+| UInt8Array  | an array of bytes representing a binary encoding              | Base58, Base64, Base64url, Hexadecimal, Text |
 
 For example `hexToB64u(...)` creates a base64url encoded string from a
 hexadecimal string. The module also provides some additional helper functions
 for different data encodings:
 
-* `isBase58(...)` checks if a string is base58 encoded
+* `isObject(...)` checks if something is an object
+* `isString(...)` checks if something is a string
+* `isBas584(...)` checks if a string is base58 encoded
 * `isBase64(...)` checks if a string is base64 encoded
 * `isBase64u(...)` checks if a string is base64url encoded
 * `isHex(...)` checks if a string is hexadecimal encoded
@@ -107,5 +109,7 @@ manipulation:
 * `arrayPluck(array, key)` puts the values of a property identified by `key` from each object in an array in a new array
 * `arrayPluckSub(array, key, subkey)` puts the values of a subproperty from each object in an array in a new array
 * `objectHas(object, key)` checks if an object has a property identified by `key`
-* `objToB64u(object)` encodes a plain JavaScript object as a Base64url string
-* `b64uToObj(string)` converts a Base64url encoded object into a plain JavaScript object
+* `objToB64u(object)` encodes a plain JavaScript object as a Base64url encoded JSON string
+* `objToU8a(object)` encodes a plain JavaScript object as a byte array of a JSON string
+* `b64uToObj(string)` converts a Base64url encoded JSON string into a plain JavaScript object
+* `u8aToObj(u8array)` converts a byte array of a JSON string into a plain JavaScript object

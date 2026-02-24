@@ -1,7 +1,10 @@
 'use strict';
 /**
  * @module core/authentication
- * @summary  Whiteflag JS core authentication tests
+ * @summary Whiteflag JS core authentication tests
+ * @remarks Due to Web Crypto API restrictions, these tests use a
+ * specific implementation of the `Account` class, instead of the
+ * `WfAccount` from `@hiteflagprotocol/core`.
  */
 
 /* Test framework */

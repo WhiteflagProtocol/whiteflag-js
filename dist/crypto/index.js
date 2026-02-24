@@ -4,4 +4,7 @@ export { encrypt, decrypt, deriveKey } from "./lib/cipher.js";
 export { deriveEcdhSecret } from "./lib/ecdh.js";
 export { hkdf, hash, hmac } from "./lib/hash.js";
 export { ExtCryptoKey, createKeyPair, createExtKeyPair, generateEcdhKeyPair, generateSignKeyPair, createAesKey, createHmacKey, createEcdhPubkey, createSignPubkey } from "./lib/keys.js";
+export { KeyStoreAccess, KeyStoreCtrl, getWfKeyId } from "./lib/keystore.js";
+export { random } from "./lib/random.js";
 export { SignAlgorithm, sign, verify } from "./lib/sign.js";
+export { WfVersion, WfKeyType, WfAuthMethod, WfCryptoMethod } from '@whiteflagprotocol/common';

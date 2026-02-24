@@ -35,7 +35,21 @@ export {
     createSignPubkey
 } from './lib/keys.ts';
 export {
+    KeyStoreAccess,
+    KeyStoreCtrl,
+    getWfKeyId
+} from './lib/keystore.ts';
+export {
+    random
+} from './lib/random.ts';
+export {
     SignAlgorithm,
     sign,
     verify
 } from './lib/sign.ts';
+export {
+    WfVersion,
+    WfKeyType,
+    WfAuthMethod,
+    WfCryptoMethod
+} from '@whiteflagprotocol/common';

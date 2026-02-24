@@ -9,3 +9,5 @@ export { WfSignature, createAuthSignature, createAuthToken, validateAuthSignatur
 export { WfCodec, encodeField, decodeField, isValidValue } from './lib/codec.ts';
 export { WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage } from './lib/message.ts';
 export { WfOriginator } from './lib/originator.ts';
+export { WfVersion, WfMsgType, WfAuthMethod, WfCryptoMethod } from '@whiteflagprotocol/common';
+export { BinaryBuffer } from '@whiteflagprotocol/util';

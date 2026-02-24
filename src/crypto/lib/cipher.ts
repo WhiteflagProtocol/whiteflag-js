@@ -16,12 +16,10 @@ import { hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
 /* Module imports */
 import { hkdf } from './hash.ts';
 import { createAesKey } from './keys.ts';
+import { BYTELENGTH } from './constants.ts';
 
 /* Whiteflag specification */
 import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'json' };
-
-/* Constants */
-const BYTELENGTH = 8;
 
 /* MODULE DECLARATIONS */
 /**
@@ -64,7 +62,7 @@ async function encrypt(message: Uint8Array<ArrayBuffer>,
  * @function decrypt
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption
- * @param message the message to be decyrpted
+ * @param message the message to be decrypted
  * @param method the Whiteflag encryption method
  * @param key the encryption key
  * @param iv the initialisation vector, if required for the method

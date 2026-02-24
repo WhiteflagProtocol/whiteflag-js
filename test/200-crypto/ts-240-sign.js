@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/sign
- * @summary Whiteflag JS cryptographic signing functions
+ * @summary Whiteflag JS cryptographic signing tests
  */
 
 /* Test framework */

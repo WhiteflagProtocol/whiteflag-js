@@ -15,7 +15,7 @@ import { hexToU8a } from '@whiteflagprotocol/util';
 import { ExtCryptoKey, ExtCryptoKeyPair } from './keys.ts';
 import {
     ECDH,
-    DEFAULT_ECDHCURVE,
+    DEFAULT_WF_ECDHCURVE,
     HEXENCODING
 } from './constants.ts';
 
@@ -27,8 +27,8 @@ import {
  * @param pubkey the other's public key
  * @returns a shared secret
  */
-async function deriveEcdhSecret(keypair: ExtCryptoKeyPair, pubkey: ExtCryptoKey, curve: string = DEFAULT_ECDHCURVE): Promise<Uint8Array<ArrayBuffer>> {
-    /* Check keys */
+async function deriveEcdhSecret(keypair: ExtCryptoKeyPair, pubkey: ExtCryptoKey, curve: string = DEFAULT_WF_ECDHCURVE): Promise<Uint8Array<ArrayBuffer>> {
+    /* Check provided keys */
     if (pubkey?.type !== 'public') throw new TypeError(`Invalid public key`);
     if (keypair?.privateKey?.type !== 'private') throw new TypeError(`Key pair contains invalid private key`);
     if (pubkey?.algorithm?.name !== ECDH) throw TypeError(`Public key algorithm is not for ${ECDH} secret negotiation`)
@@ -36,7 +36,7 @@ async function deriveEcdhSecret(keypair: ExtCryptoKeyPair, pubkey: ExtCryptoKey,
     if (pubkey?.algorithm?.namedCurve !== curve) throw Error(`Public key does not support the ${curve} curve`)
     if (keypair?.privateKey?.algorithm?.namedCurve !== curve) throw Error(`Private key does not support the ${curve} curve`)
 
-    /* Calculate seceret */
+    /* Calculate seceret for the specified curve */
     const ecdh = createECDH(curve);
     ecdh.setPrivateKey(keypair.privateKey.toHex(), HEXENCODING);
     return hexToU8a(ecdh.computeSecret(pubkey.toHex(), HEXENCODING, HEXENCODING));

@@ -32,3 +32,12 @@ export {
 export {
     WfOriginator
 } from './lib/originator.ts';
+export {
+    WfVersion,
+    WfMsgType,
+    WfAuthMethod,
+    WfCryptoMethod
+} from '@whiteflagprotocol/common';
+export {
+    BinaryBuffer
+} from '@whiteflagprotocol/util';

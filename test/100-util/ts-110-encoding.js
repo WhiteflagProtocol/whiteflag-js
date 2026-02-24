@@ -16,6 +16,7 @@ import {
     isHex,
     b58ToU8a,
     b64ToB64u,
+    b64ToU8a,
     b64uToB64,
     b64uToHex,
     b64uToString,
@@ -27,6 +28,7 @@ import {
     stringToHex,
     stringToU8a,
     u8aToB58,
+    u8aToB64,
     u8aToB64u,
     u8aToHex,
     u8aToString
@@ -39,7 +41,7 @@ import testVector from './data/tv-110-encoding.json' with { type: 'json' };
 testCase('Test case 110: Util encoding module', function() {
     const testVectorU8a = Uint8Array.from(testVector['0'].Uint8Array);
     testCase('Character string encoding', function() {
-        assertion(' 1a. should correctly convert to UInt8Array', function(done) {
+        assertion(' 1a. should correctly convert to byte array', function(done) {
             const u8array = stringToU8a(testVector['0'].string);
             deepStrictEqual(u8array, testVectorU8a);
             return done();
@@ -64,7 +66,7 @@ testCase('Test case 110: Util encoding module', function() {
             strictEqual(isBase58(testVector['0'].base58), true);
             return done();
         });
-        assertion(' 2c. should correctly convert to UInt8Array', function(done) {
+        assertion(' 2c. should correctly convert to byte array', function(done) {
             const u8array = b58ToU8a(testVector['0'].base58);
             deepStrictEqual(u8array, testVectorU8a);
             return done();
@@ -84,6 +86,11 @@ testCase('Test case 110: Util encoding module', function() {
             deepStrictEqual(b64uString, testVector['0'].base64url);
             return done();
         });
+        assertion(' 3d. should correctly convert to byte array', function(done) {
+            const u8array = b64ToU8a(testVector['0'].base64);
+            deepStrictEqual(u8array, testVectorU8a);
+            return done();
+        });
     });
     testCase('Base64URL encoding', function() {
         assertion(' 4a. should correctly identify non-base64url string', function(done) {
@@ -94,73 +101,78 @@ testCase('Test case 110: Util encoding module', function() {
             strictEqual(isBase64u(testVector['0'].base64url), true);
             return done();
         });
-        assertion(' 5a. should correctly convert to UInt8Array', function(done) {
+        assertion(' 4c. should correctly convert to byte array', function(done) {
             const u8array = b64uToU8a(testVector['0'].base64url);
             deepStrictEqual(u8array, testVectorU8a);
             return done();
         });
-        assertion(' 5b. should correctly convert to standard string', function(done) {
+        assertion(' 4d. should correctly convert to character string', function(done) {
             const charString = b64uToString(testVector['0'].base64url);
             deepStrictEqual(charString, testVector['0'].string);
             return done();
         });
-        assertion(' 5c. should correctly convert to hexadecimal string', function(done) {
+        assertion(' 4e. should correctly convert to hexadecimal string', function(done) {
             const hexString = b64uToHex(testVector['0'].base64url);
             deepStrictEqual(hexString, testVector['0'].hex);
             return done();
         });
-        assertion(' 5d. should correctly convert to base64 string', function(done) {
+        assertion(' 4f. should correctly convert to base64 string', function(done) {
             const b64String = b64uToB64(testVector['0'].base64url);
             deepStrictEqual(b64String, testVector['0'].base64);
             return done();
         });
     });   
     testCase('Hexadecimal encoding', function() {
-        assertion(' 6a. should correctly identify non-hexadecimal string', function(done) {
+        assertion(' 5a. should correctly identify non-hexadecimal string', function(done) {
             strictEqual(isHex(testVector['0'].string), false);
             strictEqual(isHex(testVector['0'].base64), false);
             return done();
         });
-        assertion(' 6b. should correctly identify hexadecimal string', function(done) {
+        assertion(' 5b. should correctly identify hexadecimal string', function(done) {
             strictEqual(isHex(testVector['0'].hex), true);
             strictEqual(isHex(testVector['0'].hexp), true);
             return done();
         });
-        assertion(' 7a. should correctly convert to UInt8Array', function(done) {
+        assertion(' 5c. should correctly convert to byte array', function(done) {
             const u8array = hexToU8a(testVector['0'].hexp);
             deepStrictEqual(u8array, testVectorU8a);
             return done();
         });
-        assertion(' 7b. should correctly convert to standard string', function(done) {
+        assertion(' 5d. should correctly convert to character string', function(done) {
             const charString = hexToString(testVector['0'].hex);
             deepStrictEqual(charString, testVector['0'].string);
             return done();
         });
-        assertion(' 7c. should correctly convert to base4url string', function(done) {
+        assertion(' 5e. should correctly convert to base4url string', function(done) {
             const b64uString = hexToB64u(testVector['0'].hex);
             deepStrictEqual(b64uString, testVector['0'].base64url);
             return done();
         });
     });
     testCase('Binary encoding', function() {
-        assertion(' 8a. should correctly convert to hexadecimal string', function(done) {
+        assertion(' 6a. should correctly convert to hexadecimal string', function(done) {
             const hexString = u8aToHex(testVectorU8a);
             deepStrictEqual(hexString, testVector['0'].hex);
             return done();
         });
-        assertion(' 8b. should correctly convert to standard string', function(done) {
+        assertion(' 6b. should correctly convert to character string', function(done) {
             const charString = u8aToString(testVectorU8a);
             deepStrictEqual(charString, testVector['0'].string);
             return done();
         });
-        assertion(' 8c. should correctly convert to base64url string', function(done) {
-            const b64uString = u8aToB64u(testVectorU8a);
-            deepStrictEqual(b64uString, testVector['0'].base64url);
-            return done();
-        });
-        assertion(' 8d. should correctly convert to base58 string', function(done) {
+        assertion(' 6c. should correctly convert to base58 string', function(done) {
             const b58String = u8aToB58(testVectorU8a);
             deepStrictEqual(b58String, testVector['0'].base58);
+            return done();
+        });
+        assertion(' 6d. should correctly convert to base64 string', function(done) {
+            const b64String = u8aToB64(testVectorU8a);
+            deepStrictEqual(b64String, testVector['0'].base64);
+            return done();
+        });
+        assertion(' 6e. should correctly convert to base64url string', function(done) {
+            const b64uString = u8aToB64u(testVectorU8a);
+            deepStrictEqual(b64uString, testVector['0'].base64url);
             return done();
         });
     });

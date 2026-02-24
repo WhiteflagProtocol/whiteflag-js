@@ -9,12 +9,14 @@ export {
     Blockchain
 } from './lib/blockchain.ts';
 export {
+    WfKeyType,
     WfAuthMethod,
     WfCryptoMethod
 } from './lib/crypto.ts';
 export {
     WfErrorCode,
-    WfProtocolError
+    WfError,
+    handleError
 } from './lib/errors.ts';
 export {
     WfMsgType

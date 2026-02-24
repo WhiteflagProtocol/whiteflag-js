@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/hash
- * @summary Whiteflag JS hashing functions tests
+ * @summary Whiteflag JS hashing tests
  */
 
 /* Test framework */

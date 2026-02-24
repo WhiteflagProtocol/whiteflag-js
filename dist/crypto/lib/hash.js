@@ -1,11 +1,9 @@
 'use strict';
 export { hkdf, hash, hmac };
-import { zeroise } from '@whiteflagprotocol/util';
 import { createHmacKey } from "./keys.js";
 import { HMAC, DEFAULT_HASHALG, DEFAULT_HASHLEN } from "./constants.js";
 async function hkdf(ikm, salt, info, keylen) {
     const prk = await hmac(salt, ikm);
-    zeroise(ikm);
     const okm = new Uint8Array(keylen);
     const t = new Uint8Array(DEFAULT_HASHLEN);
     let offset = 0;

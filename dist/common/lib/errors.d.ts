@@ -1,15 +1,14 @@
 /**
  * @module common/errors
  * @summary Whiteflag JS common error module
- * @document docs/md/errors.md
  */
-export { WfProtocolError, WfErrorCode, catchedError };
+export { WfError, WfErrorCode, handleError };
 /**
- * Error class for Whiteflag protocol and message errors
- * @class ProtocolError
- * @extends {DomainError}
+ * Error class for Whiteflag errors
+ * @class WfError
+ * @extends Error
  */
-declare class WfProtocolError extends Error {
+declare class WfError extends Error {
     /** The Whiteflag protocol error code */
     code: string;
     /** Underlying causes of the error */
@@ -18,24 +17,28 @@ declare class WfProtocolError extends Error {
      * Constructor for protocol errors
      * @param message a human readable error message
      * @param causes underlying errors causing this error
-     * @param code constant identifying the error
+     * @param code the code identifying the Whiteflag error type
      */
-    constructor(message: string, causes: any, code?: WfErrorCode);
+    constructor(message: string, causes: Error | Array<string> | string | null, code?: WfErrorCode);
 }
 /**
- * Defines Whiteflag protocol errors
+ * Defines Whiteflag protocol error types
  * @enum WfErrorCode
  */
 declare enum WfErrorCode {
+    /** Generic Whiteflag error */
+    GENERIC = "WF_GENERIC_ERROR",
     /** Generic Whiteflag protocol error */
     PROTOCOL = "WF_PROTOCOL_ERROR",
-    /** Incorrect or missingWhiteflag message meta data */
+    /** Whiteflag account error */
+    ACCOUNT = "WF_ACCOUNT_ERROR",
+    /** Incorrect or missing Whiteflag message meta data */
     METAHEADER = "WF_METAHEADER_ERROR",
     /** Whiteflag message format error */
     FORMAT = "WF_FORMAT_ERROR",
     /** Whiteflag message reference error */
     REFERENCE = "WF_REFERENCE_ERROR",
-    /** Whiteflag message authentication error */
+    /** Whiteflag authentication error */
     AUTHENTICATION = "WF_AUTH_ERROR",
     /** Whiteflag signature error */
     SIGNATURE = "WF_SIGN_ERROR",
@@ -43,9 +46,10 @@ declare enum WfErrorCode {
     ENCRYPTION = "WF_ENCRYPTION_ERROR"
 }
 /**
- * Processes a catched error in a type safe manner
- * @param msg a generic message to use if no specific error message
- * @param err the error to handle
- * @returns a new error object
+ * Handles a catched error as a Whiteflag error in a type safe manner
+ * @param err the catched error to handle
+ * @param message a new error message
+ * @param code the code identifying the Whiteflag error type
+ * @throws a new error object
  */
-declare function catchedError(msg?: string, err?: any): WfProtocolError;
+declare function handleError(err: any, message?: string, code?: WfErrorCode): any;

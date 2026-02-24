@@ -8,7 +8,12 @@ export {
 };
 
 /* Dependencies */
-import { Blockchain, WfErrorCode, WfProtocolError } from '@whiteflagprotocol/common';
+import { Blockchain,WfKeyType, WfError,  WfErrorCode, handleError } from '@whiteflagprotocol/common';
+import { Hex } from '@whiteflagprotocol/util';
+import { getWfKeyId, KeyStoreAccess } from '@whiteflagprotocol/crypto';
+
+/* Module constants */
+const keystore = KeyStoreAccess.getInstance();
 
 /* MODULE DECLARATIONS */
 /** A blockchain address in the encoding specified for that blockchain */
@@ -29,13 +34,13 @@ class WfAccount {
     /* CLASS PROPERTIES */
 
     /** The blockchain of the account */
-    public blockchain: Blockchain;
+    readonly blockchain: Blockchain;
     /** The address of the account */
-    public readonly address: Address;
+    readonly address: Address;
     /** The public key of the account */
-    public readonly publicKey: Uint8Array | null = null;
+    readonly publicKey: Uint8Array = new Uint8Array(0);
     /** The private key of the account */
-    readonly #privateKey: Uint8Array | null = null;
+    readonly #privateKeyId: Hex = '';
 
     /* CONSTRUCTOR */
     /**
@@ -43,15 +48,20 @@ class WfAccount {
      * @param blockchain the blockchain of which this is an account
      * @param address the address of the account
      * @param publicKey the public key of the account
-     * @param privateKey the private key of the account
+     * @param privateKeyId the key store identifier of the private key of the account
      */
-    constructor(blockchain: Blockchain, address: Address, publicKey?: Uint8Array, privateKey?: Uint8Array) {
-        if (!blockchain) throw new TypeError('Cannot create an account without a blockchain');
-        if (!address) throw new TypeError('Cannot create an account without an address');
+    constructor(blockchain: Blockchain, address: Address, publicKey?: Uint8Array, privateKeyId?: Hex) {
+        /* Check required parameters */
+        if (!blockchain) throw new TypeError('Missing blockchain');
+        if (!address) throw new TypeError('Missing address');
+
+        /* Set required properties */
         this.blockchain = blockchain;
         this.address = address;
+
+        /* Set optional properties */
         if (publicKey) this.publicKey = publicKey;
-        if (privateKey) this.#privateKey = privateKey;
+        if (privateKeyId) this.#privateKeyId = privateKeyId;
     }
 
     /* STATIC FACTORY METHODS */
@@ -62,17 +72,29 @@ class WfAccount {
      * @returns the newly created blockchain account
      */
     static async fromAddress(blockchain: Blockchain, address: Address) {
-        return new WfAccount(blockchain, address);
+        let account: WfAccount;
+        try {
+            account = new WfAccount(blockchain, address);
+        } catch(err) {
+            return handleError(err, 'Cannot create account from address', WfErrorCode.ACCOUNT);
+        }
+        return account;
     }
     /**
      * Creates a new account from the public key
      * @param blockchain the blockchain of which this is an account
-     * @param {Uint8Array} [publicKey] the public key of the account
+     * @param publicKey the public key of the account
      * @returns the newly created blockchain account
      */
     static async fromPublicKey(blockchain: Blockchain, publicKey: Uint8Array) {
-        const address = await blockchain.deriveAddress(publicKey);
-        return new WfAccount(blockchain, address, publicKey);
+        let account: WfAccount;
+        try {
+            const address = await blockchain.deriveAddress(publicKey);
+            account =  new WfAccount(blockchain, address, publicKey);
+        } catch(err) {
+            return handleError(err, 'Cannot create account from public key', WfErrorCode.ACCOUNT);
+        }
+        return account;
     }
     /**
      * Creates a new account from an existing key pair
@@ -81,11 +103,26 @@ class WfAccount {
      * @returns the newly created blockchain account
      */
     static async fromSecret(blockchain: Blockchain, secret?: string) {
-        const keypair = await blockchain.createKeypair(secret);
-        const privateKey = keypair[0];
-        const publicKey = keypair[1];
-        const address = await blockchain.deriveAddress(publicKey);
-        return new WfAccount(blockchain, address, publicKey, privateKey);
+        let account: WfAccount;
+        try {
+            /* Generate key pair */
+            const keypair = await blockchain.createKeypair(secret);
+
+            /* Public key and address */
+            const publicKey = keypair[1];
+            const address = await blockchain.deriveAddress(publicKey);
+
+            /* Handle private key */
+            const privateKey = new Uint8Array(keypair[0]);
+            const privateKeyId = await getPrivateKeyId(address);
+            await storePrivateKey(privateKeyId, privateKey);
+
+            /* Create account */
+            account = new WfAccount(blockchain, address, publicKey, privateKeyId);
+        } catch(err) {
+            return handleError(err, 'Cannot create new account', WfErrorCode.ACCOUNT);
+        }
+        return account;
     }
     /**
      * Creates a new account by generating a key pair
@@ -98,6 +135,13 @@ class WfAccount {
 
     /* PUBLIC CLASS METHODS */
     /**
+     * Checks if this account is own account
+     * @returns true if the account has a private key, else false
+     */
+    isSelf(): boolean {
+        return (this.#privateKeyId.length > 0);
+    }
+    /**
      * Provides the binary address of the account
      * @returns the binary address
      */
@@ -109,9 +153,16 @@ class WfAccount {
      * @param data the binary data to sign
      * @returns the binary signature
      */
-    createSignature(data: Uint8Array): Promise<Uint8Array> {
-        if (!this.#privateKey) throw new WfProtocolError(`No private key avaible to create signature for account ${this.address}`, null, WfErrorCode.SIGNATURE);
-        return this.blockchain.requestSignature(data, this.#privateKey);
+    async createSignature(data: Uint8Array): Promise<Uint8Array> {
+        if (!this.#privateKeyId) throw new WfError(`No private key avaible to create signature for account ${this.address}`, null, WfErrorCode.SIGNATURE);
+        let signature: Uint8Array;
+        try {
+            const privateKey = await getPrivateKey(this.#privateKeyId);
+            signature = await this.blockchain.requestSignature(data, privateKey);
+        } catch(err) {
+            return handleError(err, `Cannot create signature for account ${this.address}`, WfErrorCode.SIGNATURE);
+        }
+        return signature;
     }
     /**
      * Verifies signature with the account's public key
@@ -119,8 +170,42 @@ class WfAccount {
      * @param signature the binary signature
      * @returns true if the signature is valid, else false
      */
-    verifySignature(data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        if (!this.publicKey) throw new WfProtocolError(`No public key avaible to verify signature for account ${this.address}`, null, WfErrorCode.SIGNATURE);
+    async verifySignature(data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        if (!this.publicKey) throw new WfError(`No public key avaible to verify signature for account ${this.address}`, null, WfErrorCode.SIGNATURE);
         return this.blockchain.verifySignature(data, signature, this.publicKey);
     }
+}
+
+/* PRIVATE FUNCTIONS */
+/**
+ * Gets the key identifier of the private key
+ * @private
+ * @param address the address of the account
+ * @returns the private key identifier
+ */
+async function getPrivateKeyId(address: Address): Promise<Hex> {
+    return getWfKeyId(WfKeyType.ACCOUNT_PRIVATEKEY, address);
+}
+/**
+ * Retrieves the private key from the key store
+ * @private
+ * @param privateKeyId the private key identifier
+ * @returns the private key
+ */
+async function getPrivateKey(privateKeyId: Hex): Promise<Uint8Array> {
+    const privateKey = await keystore.getKey(privateKeyId);
+    if (privateKey === null) throw new Error('Key store did not return private key');
+    return privateKey;
+}
+/**
+ * Stores the private key in the key store
+ * @private
+ * @param privateKeyId the private key identifier
+ * @param privateKey the private key
+ * @returns true if key is successfully stored, else false
+ */
+async function storePrivateKey(privateKeyId: Hex, privateKey: Uint8Array<ArrayBuffer>): Promise<boolean> {
+    const stored = await keystore.upsertKey(privateKeyId, privateKey);
+    if (!stored) throw new Error('Key store did not store private key');
+    return stored;
 }

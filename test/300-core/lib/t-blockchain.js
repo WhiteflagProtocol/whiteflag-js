@@ -77,7 +77,7 @@ export class Blockchain {
         return stringToU8a(address);
     }
     /**
-     * Requests a signature using the blockchain's signatrue algorithm
+     * Requests a signature using the blockchain's signature algorithm
      * @param {Uint8Array} data the binary data to sign
      * @param {CryptoKeyPair} keypair the private key of the account to sign the data with
      * @returns {Promise} resolves to the binary signature
@@ -87,7 +87,7 @@ export class Blockchain {
         return new Uint8Array(signature);
     }
     /**
-     * Verifies a signature using the blockchain's signatrue algorithm
+     * Verifies a signature using the blockchain's signature algorithm
      * @param {Uint8Array} data the binary data that has been signed
      * @param {Uint8Array} signature the binary signature
      * @param {CryptoKey} publicKey the binary public key of the account used to create the signature

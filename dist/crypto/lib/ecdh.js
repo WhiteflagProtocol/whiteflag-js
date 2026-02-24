@@ -2,8 +2,8 @@
 export { deriveEcdhSecret };
 import { createECDH } from 'node:crypto';
 import { hexToU8a } from '@whiteflagprotocol/util';
-import { ECDH, DEFAULT_ECDHCURVE, HEXENCODING } from "./constants.js";
-async function deriveEcdhSecret(keypair, pubkey, curve = DEFAULT_ECDHCURVE) {
+import { ECDH, DEFAULT_WF_ECDHCURVE, HEXENCODING } from "./constants.js";
+async function deriveEcdhSecret(keypair, pubkey, curve = DEFAULT_WF_ECDHCURVE) {
     if (pubkey?.type !== 'public')
         throw new TypeError(`Invalid public key`);
     if (keypair?.privateKey?.type !== 'private')

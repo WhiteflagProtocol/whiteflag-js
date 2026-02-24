@@ -78,7 +78,7 @@ ECDH secret negotiation with the `ecdh` module:
 Because the Web Crypto API does not support the RFC 5639 Brainpool curves,
 the module uses the Node.js cryptography module instead.
 
-## Digital signatures
+## Digital Signatures
 
 The Whiteflag cryptography package provides the following functions for
 creating and verifying digital signatures:
@@ -96,6 +96,13 @@ signature algorithms:
 * `PS256`: RSASSA-PSS using SHA-256 (RFC 3447)
 * `ES256`: ECDSA using P-256 and SHA-256 (FIPS 186-5)
 * `Ed25519`: EdDSA based on Curve25519 (RFC 8032)
+
+## Random Number Generation
+
+The `random` module provides the `random()` function, which returns a byte
+array of 32 random bytes, or of another length if specified. Random numbers
+are, among other things, used as initialization vectors for AES Counter Mode
+(CTR) and Galois/Counter Mode (GCM) ciphers.
 
 ## Cryptographic Keys
 
@@ -126,3 +133,42 @@ module provides the following extensions to the Web Crypto API:
 | `ExtCryptoKey`     | Class implementing the of the `CryptoKey` interface to represent a cryptographic key                 |
 | `ExtCryptoKeyPair` | Interface extending the `CryptoKeyPair` interface for `ExtCryptoKey` objects                         |
 | `ExtKeyAlgorithm`  | Interface extending the `KeyAlgortihm` interface to allow keys for additional algorithms and curves  |
+
+## Cryptographic Keystore
+
+Classes that need to use cryptographic keys and other secrets store the actual
+key in the Whiteflag keystore, and only hold a key identifier to retrieve it.
+The Whiteflag keystore is provided by the `keystore` module. The actual
+keystore is not directly accessible. Therefore, the module provides two
+singleton classes that control and provide access to the keystore:
+
+| Class            | Purpose                                                               |
+|------------------|-----------------------------------------------------------------------|
+| `KeyStoreAccess` | Singleton class to upsert, retrieve and remove keys from the keystore |
+| `KeyStoreCtrl`   | Singleton class to control access to the cryptographic keystore       |
+
+The following functions are available on the keystore access object that
+is returned by `KeyStoreAccess.getInstance()`:
+
+* `getKey(kid)` to retrieve the key identified by `kid`
+* `upsertKey(kid, key)` to store the key identified by `kid`
+* `removeKey(kid)` to remove the key identified by `kid`
+
+The hexadecimal key identifier `kid` may be any unique value, but it assumed
+to be the hash of the Whiteflag key type combined with a unique identifier as
+created by the `getWfKeyId(type, info)` function of the `keystore` module. The
+key type is defined by the `WfKeyType` enum from the `@whiteflagprotocol/common`
+package. The unique identifier is typically the blockchain address of the
+account associated with the key.
+
+The keystore control object returned by `KeyStoreCtrl.getInstance()` allows
+setting the master encryption key, and import and export the keystore data
+with the following functions:
+
+* `setMasterKey(...)` sets the master encryption key to access the (keys in the) keystore
+* `import(...)` imports the encrypted serialized keystore data, overwriting the current keystore
+* `export()` exports the encrypted serialized keystore data
+
+In order to prevent tampering with the key store after any initialization, the
+key store control may be sealed. Once sealed, it cannot be unsealed and only
+exports are possible.

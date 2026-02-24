@@ -7,7 +7,7 @@
         "allowImportingTsExtensions": true,
         "rewriteRelativeImportExtensions": true,
         "strict": true,
-        "noImplicitUseStrict": false,
+        "noImplicitThis": true,
         "declaration": false,
         "removeComments": true,
         "rootDir": "./src",
@@ -19,7 +19,7 @@
             "@whiteflagprotocol/main": ["./src/main"],
             "@whiteflagprotocol/util": ["./src/util"],
         },
-        "noImplicitThis": true,
+        "types": ["node"]
     },
     "include": ["./src/**/*"]
 }

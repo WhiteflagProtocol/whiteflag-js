@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module crypto/cipher
- * @summary Whiteflag JS encryption and decryption functions tests
+ * @summary Whiteflag JS encryption and decryption tests
  */
 
 /* Test framework */

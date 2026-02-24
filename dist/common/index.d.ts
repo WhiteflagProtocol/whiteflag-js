@@ -5,7 +5,7 @@
  * @primaryExport
  */
 export { Blockchain } from './lib/blockchain.ts';
-export { WfAuthMethod, WfCryptoMethod } from './lib/crypto.ts';
-export { WfErrorCode, WfProtocolError } from './lib/errors.ts';
+export { WfKeyType, WfAuthMethod, WfCryptoMethod } from './lib/crypto.ts';
+export { WfErrorCode, WfError, handleError } from './lib/errors.ts';
 export { WfMsgType } from './lib/message.ts';
 export { WfVersion } from './lib/versions.ts';

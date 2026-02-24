@@ -29,7 +29,7 @@ declare class WfMessage extends WfCoreMessage {
      * @function fromJSON
      * @param message a JSON string with a Whiteflag message
      * @returns a new Whiteflag message
-     * @throws {WfProtocolError} if message could not be created
+     * @throws {WfError} if message could not be created
      */
     static fromJSON(message: string): Promise<WfMessage>;
     /**

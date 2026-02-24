@@ -4,8 +4,8 @@ import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
 import { hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
 import { hkdf } from "./hash.js";
 import { createAesKey } from "./keys.js";
+import { BYTELENGTH } from "./constants.js";
 import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'json' };
-const BYTELENGTH = 8;
 const PARAMS = compileCryptoParams();
 async function encrypt(message, method, key, iv, version = WfVersion.v1) {
     switch (method) {

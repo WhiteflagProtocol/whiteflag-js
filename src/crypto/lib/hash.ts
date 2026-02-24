@@ -24,11 +24,11 @@ import {
 /**
  * Hash-based Key Derivation Function using SHA-256 i.a.w. RFC 5869
  * @function hkdf
- * @param ikm input key material
- * @param salt salt
- * @param info info
+ * @param ikm the input key material
+ * @param salt the salt for key
+ * @param info optional information to bind the key
  * @param keylen output key length in octets
- * @returns generated key
+ * @returns the generated key
  */
 async function hkdf(ikm: Uint8Array<ArrayBuffer>,
                     salt: Uint8Array<ArrayBuffer>,
@@ -37,7 +37,6 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
                 ): Promise<Uint8Array<ArrayBuffer>> {
     /* Step 1. HKDF-Extract(salt, IKM) -> PRK */
     const prk = await hmac(salt, ikm);
-    zeroise(ikm);
 
     /* Step 2. HKDF-Expand(PRK, info, L) -> OKM */
     const okm = new Uint8Array(keylen);
@@ -68,7 +67,7 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
 /**
  * Basic hashing function
  * @function hash
- * @param data data to hash
+ * @param data the data to hash
  * @param length the required output length in octets; default is 32
  * @param algorithm the hash algorithm to be used; default is SHA-256
  * @returns the hash value

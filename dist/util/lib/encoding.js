@@ -1,11 +1,11 @@
 'use strict';
-export { isBase58, isBase64, isBase64u, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB58, u8aToB64u, u8aToHex, u8aToString, };
+export { isBase58, isBase64, isBase64u, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64ToU8a, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToString, };
 const EMPTYSTR = '';
 const NOSEPARATOR = EMPTYSTR;
-const HEXBYTELENGTH = 2;
 const BYTELENGTH = 8;
-const HEXRADIX = 16;
 const BASE58RADIX = 58;
+const HEXRADIX = 16;
+const HEXBYTELENGTH = 2;
 const HEXPREFIX = '0x';
 const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 const BASE64_CHARS = 'A-Za-z0-9+/';
@@ -69,6 +69,9 @@ function b64ToB64u(b64Str) {
         .replace(/=/g, EMPTYSTR)
         .replace(/\+/g, '-')
         .replace(/\//g, '_');
+}
+function b64ToU8a(b64Str) {
+    return stringToU8a(atob(b64Str));
 }
 function b64uToB64(b64uStr) {
     let b64Str = b64uStr
@@ -149,6 +152,9 @@ function u8aToB58(u8array) {
     while (lead--)
         b58Str = BASE58_CHARS[0] + b58Str;
     return b58Str;
+}
+function u8aToB64(u8array) {
+    return btoa(u8aToString(u8array));
 }
 function u8aToB64u(u8array) {
     return stringToB64u(u8aToString(u8array));

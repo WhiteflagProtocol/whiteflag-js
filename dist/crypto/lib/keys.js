@@ -3,7 +3,7 @@ export { ExtCryptoKey, createKeyPair, createExtKeyPair, generateEcdhKeyPair, gen
 import { createECDH } from 'node:crypto';
 import { hexToU8a, u8aToHex } from "@whiteflagprotocol/util";
 import { getSignParams, SignAlgorithm } from "./sign.js";
-import { BYTELENGTH, HEXENCODING, RAWKEY, EXTRACTABLE, NOTEXTRACTABLE, DEFAULT_ECDHCURVE, DEFAULT_ENCRYPTALG, DEFAULT_HASHALG, ECDH, HMAC } from "./constants.js";
+import { BYTELENGTH, HEXENCODING, RAWKEY, EXTRACTABLE, NOTEXTRACTABLE, DEFAULT_WF_ECDHCURVE, DEFAULT_WF_ENCRYPTALG, DEFAULT_HASHALG, ECDH, HMAC } from "./constants.js";
 class ExtCryptoKey {
     rawKey;
     type;
@@ -40,7 +40,7 @@ function createKeyPair(privateKey, publicKey) {
 function createExtKeyPair(privateKey, publicKey) {
     return createKeyPair(privateKey, publicKey);
 }
-async function generateEcdhKeyPair(curve = DEFAULT_ECDHCURVE) {
+async function generateEcdhKeyPair(curve = DEFAULT_WF_ECDHCURVE) {
     const ecdh = createECDH(curve);
     const ecdhAlgorithm = {
         name: ECDH,
@@ -58,7 +58,7 @@ async function generateSignKeyPair(alg = SignAlgorithm.ES256) {
         throw new TypeError('Generated key pair is missing public key');
     return keyPair;
 }
-async function createAesKey(rawKey, algorithm = DEFAULT_ENCRYPTALG) {
+async function createAesKey(rawKey, algorithm = DEFAULT_WF_ENCRYPTALG) {
     const aesAlgorithm = {
         name: algorithm,
         length: rawKey.length * BYTELENGTH
@@ -72,7 +72,7 @@ async function createHmacKey(rawKey, algorithm = DEFAULT_HASHALG) {
     };
     return crypto.subtle.importKey(RAWKEY, rawKey.buffer, hmacAlgorithm, NOTEXTRACTABLE, ['sign']);
 }
-async function createEcdhPubkey(rawKey, curve = DEFAULT_ECDHCURVE) {
+async function createEcdhPubkey(rawKey, curve = DEFAULT_WF_ECDHCURVE) {
     const ecdhAlgorithm = {
         name: ECDH,
         namedCurve: curve,

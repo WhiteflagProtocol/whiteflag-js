@@ -29,8 +29,8 @@ import {
     RAWKEY,
     EXTRACTABLE,
     NOTEXTRACTABLE,
-    DEFAULT_ECDHCURVE,
-    DEFAULT_ENCRYPTALG,
+    DEFAULT_WF_ECDHCURVE,
+    DEFAULT_WF_ENCRYPTALG,
     DEFAULT_HASHALG,
     ECDH,
     HMAC
@@ -149,7 +149,7 @@ function createExtKeyPair(privateKey: ExtCryptoKey, publicKey: ExtCryptoKey): Ex
  * @function generateEcdhKeyPair
  * @returns a new ECDH key pair
  */
-async function generateEcdhKeyPair(curve: string = DEFAULT_ECDHCURVE): Promise<ExtCryptoKeyPair> {
+async function generateEcdhKeyPair(curve: string = DEFAULT_WF_ECDHCURVE): Promise<ExtCryptoKeyPair> {
     const ecdh = createECDH(curve);
     const ecdhAlgorithm = {
             name: ECDH,
@@ -196,7 +196,7 @@ async function generateSignKeyPair(alg = SignAlgorithm.ES256): Promise<CryptoKey
  * @returns the AES enrcyption key
  */
 async function createAesKey(rawKey: Uint8Array<ArrayBuffer>,
-                            algorithm: string = DEFAULT_ENCRYPTALG
+                            algorithm: string = DEFAULT_WF_ENCRYPTALG
                         ): Promise<CryptoKey> {
     const aesAlgorithm: AesKeyAlgorithm = {
         name: algorithm as string,
@@ -240,7 +240,7 @@ async function createHmacKey(rawKey: Uint8Array<ArrayBuffer>,
  * @returns the ECDH public key
  */
 async function createEcdhPubkey(rawKey: Uint8Array<ArrayBuffer>,
-                                curve: string = DEFAULT_ECDHCURVE
+                                curve: string = DEFAULT_WF_ECDHCURVE
                             ): Promise<ExtCryptoKey> {
     const ecdhAlgorithm: ExtKeyAlgorithm = {
         name: ECDH,

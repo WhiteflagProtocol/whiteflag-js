@@ -1,6 +1,6 @@
 'use strict';
-export { isString, isObject, objectHas, objToB64u, b64uToObj };
-import { stringToB64u, b64uToString } from "./encoding.js";
+export { isString, isObject, objectHas, objToB64u, objToU8a, b64uToObj, u8aToObj };
+import { stringToB64u, stringToU8a, b64uToString, u8aToString } from "./encoding.js";
 function isString(str) {
     return (typeof str === 'string' || str instanceof String);
 }
@@ -15,4 +15,10 @@ function objToB64u(obj) {
 }
 function b64uToObj(base64u) {
     return JSON.parse(b64uToString(base64u));
+}
+function objToU8a(obj) {
+    return stringToU8a(JSON.stringify(obj));
+}
+function u8aToObj(u8array) {
+    return JSON.parse(u8aToString(u8array));
 }

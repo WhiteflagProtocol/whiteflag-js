@@ -35,27 +35,27 @@ parameters and methods, required by different Whiteflag classes and functions.
 The `message` module defines the Whiteflag message types with the
 `WfMsgType` enum.
 
-## Authentication and Encryption Methods
+## Authentication and Encryption Methods, and Cryptographic Key Types
 
-The `crypto` module defines two enums:
+The `crypto` module defines three enums:
 
+* the `WfKeyType` enum defines the different cryptographic keys and secrets used by the Whiteflag protocol
 * the `WfAuthMethods` enum defines the authentication methods specified by the Whiteflag protocol
 * the `WfCryptoMethods` enum defines the encryption methods specified by the Whiteflag protocol
 
 ## Whiteflag Errors
 
-In addition to the standard JavaScript `Error` class, WFJSL provides an
-additional error class for Whiteflag protocol errors: the `WfProtocolError`
-class for the handling of Whiteflag message format and protocol errors
-consistently.
+In addition to the standard JavaScript generic `Error` class, WFJSL provides
+an additional error class for Whiteflag protocol errors: the `WfError` class
+for the handling of Whiteflag processing, message format and protocol errors.
 
 ### Example
 
-To use the `WfProtocolError` class, define a new error
+To use the `WfError` class, define a new error
 as follows:
 
 ```javascript
-err = new WfProtocolError(message, causes, code);
+err = new WfError(message, causes, code);
 ```
 
 with the following arguments:
@@ -67,7 +67,7 @@ with the following arguments:
 ### Error codes
 
 To use the `WfErrorCode` enum defines the following error codes
-used by the `WfProtocolError` class:
+used by the `WfError` class:
 
 * `WF_PROTOCOL_ERROR`: generic Whiteflag protocol error (default)
 * `WF_METAHEADER_ERROR`: incorrect Whiteflag message metadata

@@ -1,16 +1,20 @@
 'use strict';
-export { isBase58, isBase64, isBase64u, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64ToU8a, b64uToB64, b64uToHex, b64uToString, b64uToU8a, hexToB64u, hexToString, hexToU8a, stringToB64u, stringToHex, stringToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToString, };
+export { isBase58, isBase64, isBase64u, isByteArray, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64ToHex, b64ToStr, b64ToU8a, b64uToB64, b64uToHex, b64uToStr, b64uToU8a, hexToB64, hexToB64u, hexToStr, hexToU8a, strToB64, strToB64u, strToHex, strToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToStr, };
+import { Buffer } from 'node:buffer';
 const EMPTYSTR = '';
 const NOSEPARATOR = EMPTYSTR;
 const BYTELENGTH = 8;
-const BASE58RADIX = 58;
+const UTF8 = 'utf8';
+const HEXENCODING = 'hex';
 const HEXRADIX = 16;
 const HEXBYTELENGTH = 2;
 const HEXPREFIX = '0x';
+const HEX_CHARS = 'a-fA-F0-9';
+const BASE58RADIX = 58;
 const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const BASE64ENCODING = 'base64';
 const BASE64_CHARS = 'A-Za-z0-9+/';
 const BASE64U_CHARS = 'A-Za-z0-9_-';
-const HEX_CHARS = 'a-fA-F0-9';
 const REGEX_BASE58 = new RegExp(`^(?:[${BASE58_CHARS}]+)$`);
 const REGEX_BASE64 = new RegExp(`^(?:[${BASE64_CHARS}]{4})*(?:[${BASE64_CHARS}]{2}==|[${BASE64_CHARS}]{3}=)?$`);
 const REGEX_BASE64U = new RegExp(`^(?:[${BASE64U_CHARS}]+)$`);
@@ -27,6 +31,11 @@ function isBase64u(str) {
     if (str === EMPTYSTR)
         return true;
     return REGEX_BASE64U.test(str);
+}
+function isByteArray(buffer) {
+    if (buffer instanceof Uint8Array)
+        return true;
+    return false;
 }
 function isHex(str) {
     return REGEX_HEXSTRING.test(str);
@@ -70,8 +79,14 @@ function b64ToB64u(b64Str) {
         .replace(/\+/g, '-')
         .replace(/\//g, '_');
 }
+function b64ToHex(b64Str) {
+    return Buffer.from(b64Str, BASE64ENCODING).toString(HEXENCODING);
+}
+function b64ToStr(b64Str) {
+    return Buffer.from(b64Str, BASE64ENCODING).toString(UTF8);
+}
 function b64ToU8a(b64Str) {
-    return stringToU8a(atob(b64Str));
+    return new Uint8Array(Buffer.from(b64Str, BASE64ENCODING));
 }
 function b64uToB64(b64uStr) {
     let b64Str = b64uStr
@@ -89,19 +104,22 @@ function b64uToB64(b64uStr) {
     return b64Str;
 }
 function b64uToHex(b64uStr) {
-    return stringToHex(b64uToString(b64uStr));
+    return b64ToHex(b64uToB64(b64uStr));
 }
-function b64uToString(b64uStr) {
-    return atob(b64uToB64(b64uStr));
+function b64uToStr(b64uStr) {
+    return b64ToStr(b64uToB64(b64uStr));
 }
 function b64uToU8a(b64uStr) {
-    return stringToU8a(b64uToString(b64uStr));
+    return b64ToU8a(b64uToB64(b64uStr));
+}
+function hexToB64(hexStr) {
+    return Buffer.from(hexStr, HEXENCODING).toString(BASE64ENCODING);
 }
 function hexToB64u(hexStr) {
-    return u8aToB64u(hexToU8a(hexStr));
+    return b64ToB64u(hexToB64(hexStr));
 }
-function hexToString(hexStr) {
-    return u8aToString(hexToU8a(hexStr));
+function hexToStr(hexStr) {
+    return u8aToStr(hexToU8a(hexStr));
 }
 function hexToU8a(hexStr) {
     const hex = noHexPrefix(hexStr);
@@ -111,10 +129,13 @@ function hexToU8a(hexStr) {
     }
     return u8array;
 }
-function stringToB64u(charStr) {
-    return b64ToB64u(btoa(charStr));
+function strToB64(charStr) {
+    return Buffer.from(charStr, UTF8).toString(BASE64ENCODING);
 }
-function stringToHex(charStr) {
+function strToB64u(charStr) {
+    return b64ToB64u(strToB64(charStr));
+}
+function strToHex(charStr) {
     let hexStr = EMPTYSTR;
     for (let i = 0; i < charStr.length; i++) {
         hexStr += charStr
@@ -123,7 +144,7 @@ function stringToHex(charStr) {
     }
     return hexStr.toLowerCase();
 }
-function stringToU8a(charStr) {
+function strToU8a(charStr) {
     return Uint8Array.from(charStr, char => char.charCodeAt(0));
 }
 function u8aToB58(u8array) {
@@ -154,10 +175,10 @@ function u8aToB58(u8array) {
     return b58Str;
 }
 function u8aToB64(u8array) {
-    return btoa(u8aToString(u8array));
+    return Buffer.from(u8array).toString(BASE64ENCODING);
 }
 function u8aToB64u(u8array) {
-    return stringToB64u(u8aToString(u8array));
+    return b64ToB64u(u8aToB64(u8array));
 }
 function u8aToHex(u8array) {
     let hexArray = [];
@@ -168,6 +189,6 @@ function u8aToHex(u8array) {
     }
     return hexArray.join(NOSEPARATOR).toLowerCase();
 }
-function u8aToString(u8array) {
+function u8aToStr(u8array) {
     return String.fromCharCode(...u8array);
 }

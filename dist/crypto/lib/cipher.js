@@ -1,5 +1,5 @@
 'use strict';
-export { encrypt, decrypt, deriveKey };
+export { encryptMsg, decryptMsg, deriveKey };
 import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
 import { hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
 import { hkdf } from "./hash.js";
@@ -7,7 +7,7 @@ import { createAesKey } from "./keys.js";
 import { BYTELENGTH } from "./constants.js";
 import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'json' };
 const PARAMS = compileCryptoParams();
-async function encrypt(message, method, key, iv, version = WfVersion.v1) {
+async function encryptMsg(message, method, key, iv, version = WfVersion.v1) {
     switch (method) {
         case WfCryptoMethod.ECDH:
         case WfCryptoMethod.PSK: {
@@ -19,7 +19,7 @@ async function encrypt(message, method, key, iv, version = WfVersion.v1) {
         }
     }
 }
-async function decrypt(message, method, key, iv, version = WfVersion.v1) {
+async function decryptMsg(message, method, key, iv, version = WfVersion.v1) {
     switch (method) {
         case WfCryptoMethod.ECDH:
         case WfCryptoMethod.PSK: {

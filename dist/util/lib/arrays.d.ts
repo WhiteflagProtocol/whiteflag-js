@@ -2,24 +2,38 @@
  * @module util/arrays
  * @summary Whiteflag JS arrays utility module
  */
-export { isArray, arrayEquals, arrayPluck, arrayPluckSub };
+export { isArray, arrayEquals, arrayFind, arrayIncludes, arrayPluck, arrayPluckSub };
 /**
  * Checks if something is an array
- * @function isArray
  * @param arr something that might be an array
- * @returns true if array, else false
+ * @returns `true` if array, else `false`
  */
 declare function isArray(arr: any): boolean;
 /**
  * Checks if two arrays contain equal values
  * @param arr1 the first array
  * @param arr2 the second array
- * @returns true if arrays and values are equal, else false
+ * @returns `true` if arrays and values are equal, else `false`
  */
 declare function arrayEquals(arr1: any, arr2: any): boolean;
 /**
+ * Gets the first object matching a key-value pair from an array of objects
+ * @param arr array of objects
+ * @param key object property name
+ * @param value the value to match
+ * @returns the requested object
+ */
+declare function arrayFind(arr: Array<any>, key: string, value: any): any;
+/**
+ * Checks if an object matching a key-value pair exists in an array of objects
+ * @param arr array of objects
+ * @param key object property name
+ * @param value the value to match
+ * @returns `true` if object exists, else `false`
+ */
+declare function arrayIncludes(arr: Array<any>, key: string, value: any): boolean;
+/**
  * Gets the values of single property from an array of objects
- * @function pluck
  * @param arr array of objects
  * @param key object property name
  * @returns an array with the values of the objects' property
@@ -27,7 +41,6 @@ declare function arrayEquals(arr1: any, arr2: any): boolean;
 declare function arrayPluck(arr: Array<any>, key: string): Array<any>;
 /**
  * Gets the values of single subobject property from an array of objects
- * @function plucksub
  * @param arr array of objects
  * @param key object property name
  * @param subkey subobject property name

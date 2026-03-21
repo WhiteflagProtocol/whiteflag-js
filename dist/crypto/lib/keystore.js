@@ -1,32 +1,37 @@
 'use strict';
 export { KeyStoreCtrl, KeyStoreAccess, getWfKeyId };
-import { handleError } from '@whiteflagprotocol/common';
-import { sleep } from '@whiteflagprotocol/util';
-import { isHex, isBase64u, noHexPrefix, b64ToU8a, b64uToObj, hexToU8a, objToB64u, objToU8a, stringToU8a, u8aToHex, u8aToB64, u8aToObj } from "@whiteflagprotocol/util";
+import { WfRuntimeError, handleError } from '@whiteflagprotocol/common';
+import { Mutex } from '@whiteflagprotocol/util';
+import { isBase64u, isByteArray } from '@whiteflagprotocol/util';
+import { b64uToU8a, hexToU8a, mapToU8a, strToU8a, u8aToB64u, u8aToMap } from '@whiteflagprotocol/util';
 import { hash, hkdf } from "./hash.js";
-import { createAesKey } from "./keys.js";
-import { random } from "./random.js";
-import { AES_GCM, AES_GCM_IVLENGTH, AES_GCM_TAGLENGTH, BYTELENGTH } from "./constants.js";
-const KEYID_LENGTH = 16;
+import { generateDEK, encryptData, decryptData } from "./encrypt.js";
 const KEY_LENGTH = 32;
+const KEYID_LENGTH = 16;
 const MEK_DEFAULT = hexToU8a('7134c1d69c028774749d908b225538962e02b60d34dff85bafad4f06619d092c');
 const MEK_SALT = hexToU8a('33a4cff8ca686550b82765ffaf69003b6be657aed9d97982790e9c334cc6cfbe');
 const DEK_SALT = hexToU8a('9a4e59814a4ff35c144b69497662be365992853082f4e28f1b69e68adbc187dc');
 const KEK_SALT = hexToU8a('524a64503fab03b4af21537fb85080e4c8b281f3a870885293c12f00b6c50f25');
-const MEK_INFO = 'MEK-WfKeyStore';
-const DEK_INFO = 'DEK-WfKeyStore';
-const LOCK_SLEEPTIME = 50;
+const MEK_INFO = strToU8a('MEK-WfKeyStore');
+const DEK_INFO = strToU8a('DEK-WfKeyStore');
 let _masterKey = MEK_DEFAULT;
 let _keyStore = new Map();
 let _ctrlSeal = false;
-let _mutex = 0;
+let _mutex = new Mutex();
 class KeyStoreCtrl {
+    static #sit = Symbol('KeyStoreCtrl');
     static #instance;
-    constructor() { Object.freeze(this); }
+    constructor(sit) {
+        if (sit !== KeyStoreCtrl.#sit) {
+            throw new WfRuntimeError('Cannot directly instantiate Whiteflag keystore control');
+        }
+        Object.freeze(this);
+    }
     static getInstance() {
-        if (!KeyStoreCtrl.#instance)
-            KeyStoreCtrl.#instance = new KeyStoreCtrl();
-        return KeyStoreCtrl.#instance;
+        if (!this.#instance) {
+            this.#instance = new KeyStoreCtrl(this.#sit);
+        }
+        return this.#instance;
     }
     seal() {
         _ctrlSeal = true;
@@ -35,41 +40,38 @@ class KeyStoreCtrl {
     isSealed() {
         return _ctrlSeal;
     }
-    async setMasterKey(rawKey) {
+    async setMasterKey(masterKey) {
         if (this.isSealed())
             return false;
-        if (!isHex(rawKey))
-            throw new TypeError('Provided keystore master key is not hexdecimal encoded');
+        if (!isByteArray(masterKey))
+            throw new TypeError('Provided master key is not an 8-bit unsigned integer typed array');
         let keyStore;
         try {
-            await lock();
-            const newMek = await generateMEK(MEK_INFO, hexToU8a(rawKey));
-            keyStore = await recryptData(newMek);
+            await _mutex.lock();
+            const mek = await generateMEK(masterKey);
+            keyStore = await recryptData(mek);
             _keyStore = keyStore;
-            _masterKey = newMek;
+            _masterKey = mek;
         }
         catch (err) {
             return handleError(err, 'Could not re-encrypt keys with new master key');
         }
         finally {
-            unlock();
+            _mutex.unlock();
         }
         return true;
     }
     ;
-    async import(data) {
+    async import(ekdo) {
         if (this.isSealed())
             return false;
-        if (!isBase64u(data))
-            throw new TypeError('Provided keystore data is not base64url encoded');
         let results;
         let keyStore;
         try {
-            await lock();
-            const dek = await generateDEK();
-            const encrypted = b64uToObj(data);
-            const decrypted = await decryptData(dek, encrypted);
-            keyStore = new Map(u8aToObj(decrypted));
+            await _mutex.lock();
+            const dek = await generateDEK(_masterKey, DEK_INFO, DEK_SALT);
+            const data = await decryptData(dek, ekdo);
+            keyStore = u8aToMap(data);
             const batch = [];
             for (const [kid, ekdo] of keyStore) {
                 const kek = await generateKEK(kid);
@@ -79,106 +81,85 @@ class KeyStoreCtrl {
             results = await Promise.all(batch);
         }
         catch (err) {
-            return handleError(err, 'Could not import key store');
+            return handleError(err, 'Could not import keystore');
         }
         finally {
-            unlock();
+            _mutex.unlock();
         }
         return results.every(result => result);
     }
     async export() {
-        let encrypted;
+        let ekdo;
         try {
-            await lock();
-            const dek = await generateDEK();
-            const data = objToU8a(Array.from(_keyStore));
-            encrypted = await encryptData(dek, data);
+            await _mutex.lock();
+            const dek = await generateDEK(_masterKey, DEK_INFO, DEK_SALT);
+            const data = mapToU8a(_keyStore);
+            ekdo = await encryptData(dek, data);
         }
         catch (err) {
-            return handleError(err, 'Could not export key store');
+            return handleError(err, 'Could not export keystore');
         }
         finally {
-            unlock();
+            _mutex.unlock();
         }
-        return objToB64u(encrypted);
+        return ekdo;
     }
 }
 class KeyStoreAccess {
+    static #sit = Symbol('KeyStoreAccess');
     static #instance;
-    constructor() { Object.freeze(this); }
+    constructor(sit) {
+        if (sit !== KeyStoreAccess.#sit) {
+            throw new WfRuntimeError('Cannot directly instantiate Whiteflag keystore access object');
+        }
+        Object.freeze(this);
+    }
     static getInstance() {
-        if (!KeyStoreAccess.#instance)
-            KeyStoreAccess.#instance = new KeyStoreAccess();
+        if (!KeyStoreAccess.#instance) {
+            KeyStoreAccess.#instance = new KeyStoreAccess(this.#sit);
+        }
         return KeyStoreAccess.#instance;
     }
     async getKey(kid) {
         try {
-            await track();
+            await _mutex.track();
             return await getKey(kid);
             ;
         }
         finally {
-            untrack();
+            _mutex.untrack();
         }
     }
     async upsertKey(kid, key) {
         try {
-            await track();
-            return await upsertKey(kid, key);
+            await _mutex.track();
+            await upsertKey(kid, key);
+            return kid;
         }
         finally {
-            untrack();
+            _mutex.untrack();
         }
     }
     async removeKey(kid) {
         try {
-            await track();
+            await _mutex.track();
             return await removeKey(kid);
-            ;
         }
         finally {
-            untrack();
+            _mutex.untrack();
         }
     }
 }
 async function getWfKeyId(type, info, length = KEYID_LENGTH) {
-    const kid = await hash(stringToU8a(type + info), length);
-    return u8aToHex(kid);
+    const kid = await hash(strToU8a(type + info), length);
+    return u8aToB64u(kid);
 }
-async function lock() {
-    await tracked();
-    return _mutex = -1;
-}
-function unlock() {
-    return _mutex = 0;
-}
-async function locked() {
-    while (_mutex < 0)
-        await sleep(LOCK_SLEEPTIME);
-    return _mutex;
-}
-async function track() {
-    await locked();
-    return _mutex++;
-}
-function untrack() {
-    return _mutex--;
-}
-async function tracked() {
-    while (_mutex !== 0)
-        await sleep(LOCK_SLEEPTIME);
-    return _mutex;
-}
-async function generateMEK(info = MEK_INFO, mek) {
-    return hkdf(mek, MEK_SALT, stringToU8a(info), KEY_LENGTH);
-}
-async function generateDEK(info = DEK_INFO, mek = _masterKey) {
-    const rawDEK = await hkdf(mek, DEK_SALT, stringToU8a(info), KEY_LENGTH);
-    return createAesKey(rawDEK, AES_GCM);
+async function generateMEK(mek) {
+    return hkdf(mek, MEK_SALT, MEK_INFO, KEY_LENGTH);
 }
 async function generateKEK(kid, mek = _masterKey) {
-    const rawKEK = await hkdf(mek, KEK_SALT, hexToU8a(kid), KEY_LENGTH);
-    return createAesKey(rawKEK, AES_GCM);
+    const info = b64uToU8a(kid);
+    return generateDEK(mek, info, KEK_SALT);
 }
 async function getKey(kid) {
     const id = checkKeyId(kid);
@@ -190,7 +171,7 @@ async function getKey(kid) {
         return decryptData(kek, ekdo);
     }
     catch (err) {
-        return handleError(err, 'Could not decrypt key in key store');
+        return handleError(err, 'Could not decrypt key in keystore');
     }
 }
 async function upsertKey(kid, key) {
@@ -202,38 +183,12 @@ async function upsertKey(kid, key) {
         return true;
     }
     catch (err) {
-        return handleError(err, 'Could not upsert key in key store');
+        return handleError(err, 'Could not upsert key in keystore');
     }
 }
 async function removeKey(kid) {
     const id = checkKeyId(kid);
     return _keyStore.delete(id);
-}
-async function encryptData(key, plain) {
-    let encrypted;
-    const iv = random(AES_GCM_IVLENGTH / BYTELENGTH);
-    try {
-        encrypted = await crypto.subtle.encrypt(getAesParameters(iv), key, plain);
-    }
-    catch (err) {
-        return handleError(err, 'Key store encryption error');
-    }
-    const data = new Uint8Array(encrypted);
-    return {
-        iv: u8aToB64(iv),
-        data: u8aToB64(data)
-    };
-}
-async function decryptData(key, ekdo) {
-    let decrypted;
-    const iv = b64ToU8a(ekdo.iv);
-    try {
-        decrypted = await crypto.subtle.decrypt(getAesParameters(iv), key, b64ToU8a(ekdo.data));
-    }
-    catch (err) {
-        return handleError(err, 'Key store decryption error');
-    }
-    return new Uint8Array(decrypted);
 }
 async function recryptData(newMek) {
     let keyStore = new Map();
@@ -246,15 +201,8 @@ async function recryptData(newMek) {
     }
     return keyStore;
 }
-function getAesParameters(iv) {
-    return {
-        name: AES_GCM,
-        iv: iv.buffer,
-        tagLength: AES_GCM_TAGLENGTH
-    };
-}
 function checkKeyId(kid) {
-    if (!isHex(kid))
-        throw new TypeError('Provided key identifier is not hexdecimal encoded');
-    return noHexPrefix(kid);
+    if (!isBase64u(kid))
+        throw new TypeError('Provided key identifier is not Base64url encoded');
+    return kid;
 }

@@ -1,7 +1,13 @@
 'use strict';
-export { ignore, sleep, timeout, noNumber, noString };
+export { Timeout, ignore, sleep, timeout, noNumber, noString };
 const DEFAULT_TIMEOUT = 1000;
-function ignore() { }
+class Timeout extends Error {
+    constructor(message) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
+function ignore(...args) { }
 async function sleep(timeout = DEFAULT_TIMEOUT) {
     return new Promise((resolve) => setTimeout(resolve, timeout));
 }
@@ -11,17 +17,17 @@ async function timeout(promise, timeout = DEFAULT_TIMEOUT) {
             .then((data) => { return resolve(data); })
             .catch((err) => { return reject(err); });
         setTimeout(() => {
-            return reject(new Error(`Timeout after ${timeout} ms`));
+            return reject(new Timeout(`Timeout after ${timeout} ms`));
         }, timeout);
     });
 }
 function noNumber(descr) {
     if (descr)
-        throw new SyntaxError(`Missing parameter (number): ${descr}`);
-    throw new SyntaxError('Missing parameter (number)');
+        throw new ReferenceError(`Missing parameter (number): ${descr}`);
+    throw new ReferenceError('Missing parameter (number)');
 }
 function noString(descr) {
     if (descr)
-        throw new SyntaxError(`Missing parameter (string): ${descr}`);
-    throw new SyntaxError('Missing parameter (string)');
+        throw new ReferenceError(`Missing parameter (string): ${descr}`);
+    throw new ReferenceError('Missing parameter (string)');
 }

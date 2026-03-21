@@ -10,7 +10,7 @@ export {
 };
 
 /* Dependencies */
-import { hexToB64u, hexToU8a, zeroise } from '@whiteflagprotocol/util';
+import { ByteArray } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { createHmacKey } from './keys.ts';
@@ -23,18 +23,17 @@ import {
 /* MODULE FUNCTIONS */
 /**
  * Hash-based Key Derivation Function using SHA-256 i.a.w. RFC 5869
- * @function hkdf
  * @param ikm the input key material
  * @param salt the salt for key
  * @param info optional information to bind the key
  * @param keylen output key length in octets
  * @returns the generated key
  */
-async function hkdf(ikm: Uint8Array<ArrayBuffer>,
-                    salt: Uint8Array<ArrayBuffer>,
-                    info: Uint8Array<ArrayBuffer>,
+async function hkdf(ikm: ByteArray,
+                    salt: ByteArray,
+                    info: ByteArray,
                     keylen: number
-                ): Promise<Uint8Array<ArrayBuffer>> {
+                ): Promise<ByteArray> {
     /* Step 1. HKDF-Extract(salt, IKM) -> PRK */
     const prk = await hmac(salt, ikm);
 
@@ -66,32 +65,30 @@ async function hkdf(ikm: Uint8Array<ArrayBuffer>,
 }
 /**
  * Basic hashing function
- * @function hash
  * @param data the data to hash
  * @param length the required output length in octets; default is 32
  * @param algorithm the hash algorithm to be used; default is SHA-256
  * @returns the hash value
  */
-async function hash(data: Uint8Array<ArrayBuffer>,
+async function hash(data: ByteArray,
                     length: number = DEFAULT_HASHLEN,
                     algorithm: AlgorithmIdentifier = DEFAULT_HASHALG
-                ): Promise<Uint8Array<ArrayBuffer>> {
+                ): Promise<ByteArray> {
     /* Create hash */
     const h = await crypto.subtle.digest(algorithm, data);
     return new Uint8Array(h, 0, length);
 }
 /**
  * Hash-Based Message Authentication Code function
- * @function hmac
  * @param rawKey the raw HMAC key
  * @param message the message to authenticate
  * @param algorithm the hash algorithm to be used; default is SHA-256
  * @returns the message authentication code
  */
-async function hmac(rawKey: Uint8Array<ArrayBuffer>,
-                    message: Uint8Array<ArrayBuffer>,
+async function hmac(rawKey: ByteArray,
+                    message: ByteArray,
                     algorithm = DEFAULT_HASHALG
-                ): Promise<Uint8Array<ArrayBuffer>> {
+                ): Promise<ByteArray> {
     const key = await createHmacKey(rawKey, algorithm);
     const mac = await crypto.subtle.sign(HMAC, key, message.buffer);
     return new Uint8Array(mac);

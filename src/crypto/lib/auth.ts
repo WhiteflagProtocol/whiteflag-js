@@ -9,7 +9,7 @@ export {
 
 /* Dependencies */
 import { WfVersion, WfAuthMethod } from '@whiteflagprotocol/common';
-import { hexToU8a, noNumber, noString } from '@whiteflagprotocol/util';
+import { ByteArray, hexToU8a, noNumber, noString } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { hkdf } from './hash.ts';
@@ -26,7 +26,6 @@ const PARAMS = compileAuthParams();
 /* MODULE FUNCTIONS */
 /**
  * Derives the authentication token based on the Whiteflag authentication method
- * @function deriveToken
  * @wfversion v1-draft.7
  * @wfreference 5.2.3 Encryption Key and Authentication Token Derivation
  * @param secret the shared authentication secret
@@ -35,9 +34,9 @@ const PARAMS = compileAuthParams();
  * @param version the Whiteflag protocol version
  * @returns the authentication token
  */
-async function deriveToken(secret: Uint8Array<ArrayBuffer>,
+async function deriveToken(secret: ByteArray,
                            method: WfAuthMethod,
-                           info: Uint8Array<ArrayBuffer>,
+                           info: ByteArray,
                            version = WfVersion.v1
                         ): Promise<Uint8Array> {
     /* Derive token based on authentication method */
@@ -57,16 +56,15 @@ async function deriveToken(secret: Uint8Array<ArrayBuffer>,
 
 /* PRIVATE MODULE DECLARATIONS */
 /**
- * Defines an object with authentication parameters
+ * Authentication parameters of the Whiteflag specification
  * @private
- * @interface WfAuthParams
  */
 interface WfAuthParams {
     [key: string]: {                // Authentication method
         [key: string]: {            // Whiteflag version
-            $description: string,   // Description of the authentication method
-            tokenLength?: number,   // Byte length of the authentication token
-            salt?: string           // Salt for HKDF token generation
+            $description: string;   // Description of the authentication method
+            tokenLength?: number;   // Byte length of the authentication token
+            salt?: string;          // Salt for HKDF token generation
         }
     }
 }

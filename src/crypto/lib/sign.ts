@@ -10,6 +10,9 @@ export {
     getSignParams
 };
 
+/* Dependecies */
+import { ByteArray } from '@whiteflagprotocol/util';
+
 /* Module imports */
 import {
     DEFAULT_HASHALG,
@@ -25,7 +28,6 @@ import {
 /* MODULE DECLARATIONS */
 /**
  * Supported digital signature algorithms
- * @enum SignAlgorithm
  */
 enum SignAlgorithm {
     /** RSASSA-PKCS1-v1_5 using SHA-256 (RFC 3447) */
@@ -41,13 +43,12 @@ enum SignAlgorithm {
 /* MODULE FUNCTIONS */
 /**
  * Creates a digital signature
- * @function sign
  * @param data the data to be signed
- * @param keypair the keypair with which to sign the data
+ * @param keypair the key pair with which to sign the data
  * @param alg the digital signature algorithm
  * @returns the digital signature
  */
-async function sign(data: Uint8Array<ArrayBuffer>,
+async function sign(data: ByteArray,
                     keypair: CryptoKeyPair,
                     alg: SignAlgorithm
                 ): Promise<ArrayBuffer> {
@@ -55,15 +56,14 @@ async function sign(data: Uint8Array<ArrayBuffer>,
 }
 /**
  * Verifies a digital signature
- * @function verify
  * @param data the data that has been signed
  * @param signature the digital signature
  * @param publicKey the public key corresponding to the private key used for signing the data
  * @param alg the digital signature algorithm
- * @returns true if signature is valid, else false
+ * @returns `true` if signature is valid, else `false`
  */
-async function verify(data: Uint8Array<ArrayBuffer>,
-                      signature: Uint8Array<ArrayBuffer>,
+async function verify(data: ByteArray,
+                      signature: ByteArray,
                       publicKey: CryptoKey,
                       alg: SignAlgorithm
                     ): Promise<boolean> {

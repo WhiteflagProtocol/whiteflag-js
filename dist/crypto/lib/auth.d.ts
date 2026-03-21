@@ -4,9 +4,9 @@
  */
 export { deriveToken };
 import { WfVersion, WfAuthMethod } from '@whiteflagprotocol/common';
+import { ByteArray } from '@whiteflagprotocol/util';
 /**
  * Derives the authentication token based on the Whiteflag authentication method
- * @function deriveToken
  * @wfversion v1-draft.7
  * @wfreference 5.2.3 Encryption Key and Authentication Token Derivation
  * @param secret the shared authentication secret
@@ -15,4 +15,4 @@ import { WfVersion, WfAuthMethod } from '@whiteflagprotocol/common';
  * @param version the Whiteflag protocol version
  * @returns the authentication token
  */
-declare function deriveToken(secret: Uint8Array<ArrayBuffer>, method: WfAuthMethod, info: Uint8Array<ArrayBuffer>, version?: WfVersion): Promise<Uint8Array>;
+declare function deriveToken(secret: ByteArray, method: WfAuthMethod, info: ByteArray, version?: WfVersion): Promise<Uint8Array>;

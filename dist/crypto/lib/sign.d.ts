@@ -3,9 +3,9 @@
  * @summary Whiteflag JS cryptographic signatures module
  */
 export { sign, verify, SignAlgorithm, getSignParams };
+import { ByteArray } from '@whiteflagprotocol/util';
 /**
  * Supported digital signature algorithms
- * @enum SignAlgorithm
  */
 declare enum SignAlgorithm {
     /** RSASSA-PKCS1-v1_5 using SHA-256 (RFC 3447) */
@@ -19,23 +19,21 @@ declare enum SignAlgorithm {
 }
 /**
  * Creates a digital signature
- * @function sign
  * @param data the data to be signed
- * @param keypair the keypair with which to sign the data
+ * @param keypair the key pair with which to sign the data
  * @param alg the digital signature algorithm
  * @returns the digital signature
  */
-declare function sign(data: Uint8Array<ArrayBuffer>, keypair: CryptoKeyPair, alg: SignAlgorithm): Promise<ArrayBuffer>;
+declare function sign(data: ByteArray, keypair: CryptoKeyPair, alg: SignAlgorithm): Promise<ArrayBuffer>;
 /**
  * Verifies a digital signature
- * @function verify
  * @param data the data that has been signed
  * @param signature the digital signature
  * @param publicKey the public key corresponding to the private key used for signing the data
  * @param alg the digital signature algorithm
- * @returns true if signature is valid, else false
+ * @returns `true` if signature is valid, else `false`
  */
-declare function verify(data: Uint8Array<ArrayBuffer>, signature: Uint8Array<ArrayBuffer>, publicKey: CryptoKey, alg: SignAlgorithm): Promise<boolean>;
+declare function verify(data: ByteArray, signature: ByteArray, publicKey: CryptoKey, alg: SignAlgorithm): Promise<boolean>;
 /**
  * Returns a Web Crypto API algorithm object
  * @private

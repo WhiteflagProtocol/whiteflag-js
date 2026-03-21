@@ -17,9 +17,14 @@ This description provides a generic overview of the WFJSL utility package.
 Please see the [WFJSL TypeDoc documentation](https://js.whiteflagprotocol.org/typedoc)
 for a detailed description of all classes and functions.
 
+## Types
+
+The `util/types` module defines the data types used by utilities and other
+packages, including types aliases to identify the use of strings.
+
 ## BinaryBuffer class
 
-The `binary` module of the Whiteflag utility package provides the
+The `util/binary` module of the Whiteflag utility package provides the
 `BinaryBuffer` class. Objects of this class represent a binary encoded piece
 of data, e.g. a Whiteflag message, that can be manipulated at bit level.
 
@@ -43,18 +48,26 @@ Public methods to manipulate a binary buffer:
 Some of these functions have an equivalent that allow to use a different
 binary representation, e.g. `appendHex(...)` or `insertU8a(...)`.
 
+## Data items and collections
+
+The `DataItem` class of the `util/data` module is a generic class to hold a
+plain JavaScript data object. It provides a unique identifier for each object
+and (de)serialization functions. The `DataCollection` class is to hold data
+items of the same type and provides function to (de)serialize the collection
+as a whole.
+
 ## Data conversions
 
-The `encoding` module provides generic functions to convert data
+The `util/encoding` module provides generic functions to convert data
 from one encoding to another.
 
 | Encoding    | Description                                                   | Converts to                                  |
 |-------------|---------------------------------------------------------------|----------------------------------------------|
 | Base58      | a string with a 58-character binary-to-text encoding          | UInt8Array                                   |
-| Base64      | a string with a 64-character binary-to-text encoding          | Base64url, UInt8Array                        |
+| Base64      | a string with a 64-character binary-to-text encoding          | Base64url, Hexadecimal, Text, UInt8Array     |
 | Base64url   | a string with a URL-safe 64-character binary-to-text encoding | Base64, Hexadecimal, Text, UInt8Array        |
-| Hexadecimal | a string with a hexadecimal representation of binary data     | Base64url, Text, UInt8Array                  |
-| Text        | a string with UTF-8 characters                                | Base64url, Hexadecimal, UInt8Array           |
+| Hexadecimal | a string with a hexadecimal representation of binary data     | Base64, Base64url, Text, UInt8Array          |
+| Text        | a string with UTF-8 characters                                | Base64, Base64url, Hexadecimal, UInt8Array   |
 | UInt8Array  | an array of bytes representing a binary encoding              | Base58, Base64, Base64url, Hexadecimal, Text |
 
 For example `hexToB64u(...)` creates a base64url encoded string from a
@@ -72,8 +85,8 @@ for different data encodings:
 ## JSON Web Signature (JWS)
 
 Whiteflag uses JSON Web Signatures (JWS). To create, sign and convert JWSs
-the `jws` module provides a common `Jws` class to other Whiteflag packages.
-Once a JWS is signed, it cannot be changed.
+the `util/jws` module provides a common `Jws` class to other Whiteflag
+packages. Once a JWS is signed, it cannot be changed.
 
 Static methods to create a binary buffer:
 
@@ -99,17 +112,35 @@ Public methods to get the JWS in different formats:
 
 ## Arrays and Objects
 
-The `arrays` and `objects` modules provide functions for easy array and object
-manipulation:
+The `util/arrays` and `util/objects` modules provide functions for easy
+array and object manipulation.
+
+Functions to check an object:
 
 * `isArray(...)` checks if something is an array
 * `isObject(...)` checks if something is an object
 * `isString(...)` checks if something is a string
+* `objectHas(object, key)` checks if an object has a property identified by `key`
+
+Function to copy objects:
+
+* `deepCopy(object)` provides a deep copy of an object, including Arrays, Maps, Sets and Dates
+
+Functions to work with arrays and arrays of objects:
+
 * `arrayEquals(array1, array2)` checks if arrays 1 and 2 contain equal values
 * `arrayPluck(array, key)` puts the values of a property identified by `key` from each object in an array in a new array
 * `arrayPluckSub(array, key, subkey)` puts the values of a subproperty from each object in an array in a new array
-* `objectHas(object, key)` checks if an object has a property identified by `key`
+
+Functions to convert to and from objects, including serialization functions:
+
+* `objToJson(object)` creates a JSON string from an object
+* `objToMap(object)` creates a map from an object
+* `objToB64(object)` encodes a plain JavaScript object as a Base64 encoded JSON string
 * `objToB64u(object)` encodes a plain JavaScript object as a Base64url encoded JSON string
 * `objToU8a(object)` encodes a plain JavaScript object as a byte array of a JSON string
+* `jsonToObj(string)` creates an object from a JSON string
+* `mapToObj(map)` creates an object from a map
+* `b64ToObj(string)` converts a Base64 encoded JSON string into a plain JavaScript object
 * `b64uToObj(string)` converts a Base64url encoded JSON string into a plain JavaScript object
 * `u8aToObj(u8array)` converts a byte array of a JSON string into a plain JavaScript object

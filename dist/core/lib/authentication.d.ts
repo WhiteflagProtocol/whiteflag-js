@@ -3,12 +3,12 @@
  * @summary Whiteflag JS core authentication module
  */
 export { WfSignature, createAuthSignature, createAuthToken, isValidAuthSignature, validateAuthSignature, isValidAuthToken };
-import { Jws } from '@whiteflagprotocol/util';
+import { Blockchain } from '@whiteflagprotocol/common';
+import { Jws, JwsPayload } from '@whiteflagprotocol/util';
 import { WfAccount } from './account.ts';
 import { WfOriginator } from './originator.ts';
 /**
- * A class representing a Whiteflag authentication signature
- * @class WfSignature
+ * A Whiteflag authentication signature
  * @wfversion v1-draft.7
  * @wfreference 5.1.2.1 Method 1: URL Validation
  * @remarks Whiteflag uses JSON Web Signatures (JWS) as the structure for
@@ -19,37 +19,38 @@ import { WfOriginator } from './originator.ts';
 declare class WfSignature extends Jws {
     /**
      * Creates a new Whiteflag authentication signature
-     * @param account the blockchain account to create the signature for
-     * @param orgname the name of the originator
-     * @param url the url where the signature will be available
-     * @param extpubkey the extended public key for key derivation
+     * @param signAlgorithm the name or identifier of the signature algorithm of the blockchain
+     * @param payload the payload with `orgname`, `url` and optionally `extpubkey` i.a.w. the Whiteflag specification
      */
-    static create(account: WfAccount, orgname: String, url: URL, extpubkey?: string): WfSignature;
+    static create(signAlgorithm: string, payload: JwsPayload): WfSignature;
 }
 /**
  * Creates a Whiteflag authentication signature for authentication method 1
- * @param originator the originator to be authenticated
+ * @param blockchain the blockchain for which the account is authenticated
  * @param account the account used by the originator
+ * @param originator the originator to be authenticated
  * @param url the URL used to publish the authentication signature
  * @returns a JWS used as the Whiteflag authentication signature
  */
-declare function createAuthSignature(originator: WfOriginator, account: WfAccount, url: URL): Promise<WfSignature>;
+declare function createAuthSignature(blockchain: Blockchain, account: WfAccount, originator: WfOriginator, url: URL): Promise<WfSignature>;
 /**
  * Checks if a Whiteflag authentication signature is valid
+ * @param blockchain the blockchain for which the account is authenticated
+ * @param account the account used by the originator
  * @param signature the Whiteflag authentication signature to validate
- * @param account the account used by the originator to be authenticated
  * @param url the url the signature has been obtained from
- * @returns true if signature is valid, else false
+ * @returns `true` if signature is valid, else `false`
  */
-declare function isValidAuthSignature(signature: WfSignature, account: WfAccount, url: URL): Promise<boolean>;
+declare function isValidAuthSignature(blockchain: Blockchain, account: WfAccount, signature: WfSignature, url: URL): Promise<boolean>;
 /**
  * Checks a Whiteflag authentication signature for validation errors
+ * @param blockchain the blockchain for which the account is authenticated
+ * @param account the account used by the originator
  * @param signature the Whiteflag authentication signature to validate
- * @param account the account used by the originator to be authenticated
  * @param url the url the signature has been obtained from
  * @returns an array of validation errors
  */
-declare function validateAuthSignature(signature: WfSignature, account: WfAccount, url: URL): Promise<string[]>;
+declare function validateAuthSignature(blockchain: Blockchain, account: WfAccount, signature: WfSignature, url: URL): Promise<string[]>;
 /**
  * Creates a Whiteflag authentication token for authentication method 2
  * @param account the account to be authenticated
@@ -62,6 +63,6 @@ declare function createAuthToken(account: WfAccount, secret: Uint8Array): Promis
  * @param token the Whiteflag authentication token to validate
  * @param account the account to be authenticated
  * @param secret the shared secret used to authenticate
- * @returns true if token is valid, else false
+ * @returns `true` if token is valid, else `false`
  */
 declare function isValidAuthToken(token: Uint8Array, account: WfAccount, secret: Uint8Array): Promise<boolean>;

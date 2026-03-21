@@ -3,7 +3,8 @@ export { WfCodec, encodeField, decodeField, isValidValue };
 import { WfVersion } from '@whiteflagprotocol/common';
 import { BinaryBuffer } from '@whiteflagprotocol/util';
 import fieldSpec_v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
-const NOCHAR = '';
+const EMPTYSTR = '';
+const NOCHAR = EMPTYSTR;
 const HEXRADIX = 16;
 const BYTELENGTH = 8;
 const QUADBIT = 4;
@@ -115,7 +116,7 @@ function encodeBin(binStr) {
 function decodeBin(buffer) {
     const bitLength = buffer.length;
     const byteArray = buffer.toU8a();
-    let binStr = '';
+    let binStr = EMPTYSTR;
     for (let bitIndex = 0; bitIndex < bitLength; bitIndex++) {
         const byteCursor = Math.floor(bitIndex / BYTELENGTH);
         const bitPosition = bitIndex % BYTELENGTH;
@@ -141,7 +142,7 @@ function encodeBDX(bdxString) {
 function decodeBDX(buffer) {
     const bitLength = buffer.length - (buffer.length % QUADBIT);
     const byteArray = buffer.extractU8a(0, bitLength);
-    let bdxString = '';
+    let bdxString = EMPTYSTR;
     for (let bitIndex = 0; bitIndex < bitLength; bitIndex += BYTELENGTH) {
         const byteCursor = Math.floor(bitIndex / BYTELENGTH);
         const byte = (byteArray[byteCursor] >> QUADBIT) & 0xF;
@@ -210,7 +211,7 @@ function decodeLatLong(buffer) {
     if (buffer.extractU8a(0, 1)[0] === 0x00) {
         return '-' + latlongStr;
     }
-    throw new SyntaxError('Invalid latlong encoding');
+    throw new TypeError('Invalid latlong encoding');
 }
 function decodeLat(buffer) {
     const value = decodeLatLong(buffer);

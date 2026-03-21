@@ -28,7 +28,7 @@ for a detailed description of all classes and functions.
 ## Hashing
 
 The Whiteflag cryptography package provides three hashing functions
-with the `hash` module:
+with the `crypto/hash` module:
 
 | Function | Purpose                                                                   |
 |----------|---------------------------------------------------------------------------|
@@ -45,8 +45,17 @@ functionality as required.
 
 ## Encryption
 
-The Whiteflag cryptography package provides the following functions for
-message encryption with the `cipher` module:
+The Whiteflag cryptography package provides the `crypto/encrypt` module for
+basic data encryption and decryption, e.g. for secure storage of data and key.
+
+| Function      | Purpose                                                        |
+|---------------|----------------------------------------------------------------|
+| `encryptData` | Encrypts binary data using AES-256-GCM                         |
+| `decryptData` | Decrypts binary data using AES-256-GCM                         |
+| `generateDEK` | Generates the data encryption key from a master encryption key |
+
+Message encryption in accordance with the Whiteflag specification is performed
+by the following functions of the `crypto/cipher` module:
 
 | Function    | Purpose                                                                               |
 |-------------|---------------------------------------------------------------------------------------|
@@ -58,7 +67,7 @@ The `encrypt` and `decrypt` functions take a binary encoded Whiteflag message,
 along with a number of encryption parameters such as the encryption key, to
 perform the encryption and decryption of messages.
 
-The `deriveKey` function uses the `hkdf` function from the `hash` module
+The `deriveKey` function uses the `hkdf` function from the `crypto/hash` module
 with the input key material, information parameter, salt, and key length for
 the encryption method, to generate the Web Crypto API encryption key to be
 used with the `encrypt` and `decrypt` functions i.a.w. the Whiteflag standard.
@@ -68,12 +77,13 @@ The Whiteflag encryption methods are defined by the `WfCryptoMethod` enum.
 ## Elliptic-curve Diffie–Hellman
 
 The Whiteflag cryptography package provides the following functions for
-ECDH secret negotiation with the `ecdh` module:
+ECDH secret negotiation with the `crypto/ecdh` module:
 
-| Function              | Purpose                                                    |
-|-----------------------|------------------------------------------------------------|
-| `generateEcdhKeyPair` | Generates a new ECDH key pair                              |
-| `deriveEcdhSecret`    | Generates a shared secret from a key pair and a public key |
+| Function                 | Purpose                                                                      |
+|--------------------------|------------------------------------------------------------------------------|
+| `generateEcdhRawKeyPair` | Generates a new ECDH key pair                                                |
+| `deriveEcdhRawSecret`    | Generates a shared secret from a raw private and public key                  |
+| `deriveEcdhSecret`       | Generates a shared secret from a Web Crypto API-like key pair and public key |
 
 Because the Web Crypto API does not support the RFC 5639 Brainpool curves,
 the module uses the Node.js cryptography module instead.
@@ -99,16 +109,16 @@ signature algorithms:
 
 ## Random Number Generation
 
-The `random` module provides the `random()` function, which returns a byte
-array of 32 random bytes, or of another length if specified. Random numbers
-are, among other things, used as initialization vectors for AES Counter Mode
-(CTR) and Galois/Counter Mode (GCM) ciphers.
+The `crypto/random` module provides the `random()` function, which returns a
+byte array of 32 random bytes, or of another length if specified. Random
+numbers are, among other things, used as initialization vectors for
+AES Counter Mode (CTR) and Galois/Counter Mode (GCM) ciphers.
 
 ## Cryptographic Keys
 
 The cryptographic functions of the Whiteflag cryptography package use key
-objects rather than raw binary keys. The following functions of the `keys`
-module create the appropriate key objects from raw keys:
+objects rather than raw binary keys. The following functions of the
+`crypto/keys` module create the appropriate key objects from raw keys:
 
 | Function              | Purpose                                             |
 |-----------------------|-----------------------------------------------------|
@@ -125,8 +135,8 @@ extension of the first one to allow algorithms and curves that are currently
 not supported by the Web Crypto API, such as the RFC 5639 Brainpool curves.
 
 To allow for cryptographic algorithms and curves that are not supported by the
-Web Crypto API, while adhering to the API for interoperability, the `keys`
-module provides the following extensions to the Web Crypto API:
+Web Crypto API, while adhering to the API for interoperability, the
+`crypto/keys` module provides the following extensions to the Web Crypto API:
 
 | Class / Interface  | Purpose                                                                                              |
 |--------------------|------------------------------------------------------------------------------------------------------|
@@ -134,11 +144,17 @@ module provides the following extensions to the Web Crypto API:
 | `ExtCryptoKeyPair` | Interface extending the `CryptoKeyPair` interface for `ExtCryptoKey` objects                         |
 | `ExtKeyAlgorithm`  | Interface extending the `KeyAlgortihm` interface to allow keys for additional algorithms and curves  |
 
+The extended keys can be created and used with the following functions:
+
+* `createExtKey(...)` creates an extended Web Crypto API-like cryptographic key object
+* `useExtKey(key)` uses the raw binary key of an extended Web Crypto API-like key object (only internally)
+* `exportExtKey(key)` exports the raw binary key of an extended Web Crypto API-like key, if the key is extractable
+
 ## Cryptographic Keystore
 
 Classes that need to use cryptographic keys and other secrets store the actual
 key in the Whiteflag keystore, and only hold a key identifier to retrieve it.
-The Whiteflag keystore is provided by the `keystore` module. The actual
+The Whiteflag keystore is provided by the `crypto/keystore` module. The actual
 keystore is not directly accessible. Therefore, the module provides two
 singleton classes that control and provide access to the keystore:
 
@@ -156,8 +172,8 @@ is returned by `KeyStoreAccess.getInstance()`:
 
 The hexadecimal key identifier `kid` may be any unique value, but it assumed
 to be the hash of the Whiteflag key type combined with a unique identifier as
-created by the `getWfKeyId(type, info)` function of the `keystore` module. The
-key type is defined by the `WfKeyType` enum from the `@whiteflagprotocol/common`
+created by the `getWfKeyId(type, info)` function of the `crypto/keystore` module.
+The key type is defined by the `WfKeyType` enum from the `@whiteflagprotocol/common`
 package. The unique identifier is typically the blockchain address of the
 account associated with the key.
 

@@ -4,46 +4,15 @@
  * @summary Whiteflag JS common error module
  */
 export {
-    WfError,
     WfErrorCode,
+    WfProtocolError,
+    WfRuntimeError,
     handleError
 };
 
 /* MODULE DECLARATIONS */
 /**
- * Error class for Whiteflag errors
- * @class WfError
- * @extends Error
- */
-class WfError extends Error {
-    /* CLASS PROPERTIES */
-    
-    /** The Whiteflag protocol error code */
-    public code: string;
-    /** Underlying causes of the error */
-    public causes: string[];
-
-    /**
-     * Constructor for protocol errors
-     * @param message a human readable error message
-     * @param causes underlying errors causing this error
-     * @param code the code identifying the Whiteflag error type
-     */
-    constructor(message: string, causes: Error | Array<string> | string | null, code: WfErrorCode = WfErrorCode.GENERIC) {
-        super(message);
-        this.name = this.constructor.name;
-        this.code = code;
-
-        /* Process causes */
-        this.causes = [];
-        if (Array.isArray(causes)) this.causes = causes;
-        if (causes instanceof Error) this.causes = [ causes.message ];
-        if (typeof causes === 'string') this.causes = [ causes ];
-    }
-}
-/**
  * Defines Whiteflag protocol error types
- * @enum WfErrorCode
  */
 enum WfErrorCode {
     /** Generic Whiteflag error */
@@ -65,18 +34,84 @@ enum WfErrorCode {
     /** Whiteflag encryption error */
     ENCRYPTION = 'WF_ENCRYPTION_ERROR'
 }
+/**
+ * Error class for Whiteflag protocol exception
+ * @extends Error
+ * @remarks This error class is used in cases where the provided data or some
+ * other external event does not comply with the Whiteflag specification. This
+ * is ususually a situation caused by wrong or missing data, or invalid data
+ * from the blockchain. It should be handled by the application.
+ */
+class WfProtocolError extends Error {
+    /* CLASS PROPERTIES */
+    /** The Whiteflag protocol error code */
+    public code: string;
+    /** Underlying causes of the error */
+    public causes: string[] = [];
+
+    /**
+     * Constructs Whiteflag protocol errors
+     * @param message a human readable error message
+     * @param reasons underlying error(s) causing this error
+     * @param code the code identifying the Whiteflag error type
+     */
+    constructor(message: string, reasons?: Error | Array<string> | string | null, code: WfErrorCode = WfErrorCode.GENERIC) {
+        /* Call parent constructor and set properties */
+        if (reasons && reasons instanceof Error) {
+            super(message, { cause: reasons });
+        } else {
+            super(message);
+        }
+        this.name = this.constructor.name;
+        this.code = code;
+
+        /* Process reasons */
+        if (Array.isArray(reasons)) this.causes = reasons;
+        if (reasons instanceof Error) this.causes = [ reasons.message ];
+        if (typeof reasons === 'string') this.causes = [ reasons ];
+    }
+}
+/**
+ * Error class for Whiteflag JS runtime errors
+ * @extends Error
+ * @remarks This error class is used in cases where the Whiteflag JS is
+ * incorrectly used. This is usually an indication of a programming error
+ * that requires further debugging. An example is an underlying `TypeError`.
+ */
+class WfRuntimeError extends Error {
+    /**
+     * Constructs Whiteflag JS runtime errors
+     * @param message a human readable error message
+     * @param reason underlying error causing this error
+     */
+    constructor(message: string, reason?: Error) {
+        /* Call parent constructor and set properties */
+        if (reason && reason instanceof Error) {
+            super(message, { cause: reason });
+        } else {
+            super(message);
+        }
+        this.name = this.constructor.name;
+    }
+}
 
 /* MODULE FUNCTIONS */
 /**
  * Handles a catched error as a Whiteflag error in a type safe manner
  * @param err the catched error to handle
- * @param message a new error message
+ * @param msg a new error message
  * @param code the code identifying the Whiteflag error type
  * @throws a new error object
  */
-function handleError(err: any, message?: string, code?: WfErrorCode): any {
-    let causes: string[] = [];
-
+function handleError(err: any, msg?: string, code?: WfErrorCode): any {
+    /* Create new error message */
+    let message: string;
+    if (msg) {
+        message = `${msg}: ${err?.message}`
+    } else {
+        message = err?.message || 'Unspecified error occured';
+    }
+    /* Handle error according to type */
     switch (true) {
         case err instanceof EvalError:
         case err instanceof ReferenceError:
@@ -84,32 +119,20 @@ function handleError(err: any, message?: string, code?: WfErrorCode): any {
             /* Fundamental errors are thrown as is */
             throw err;
         }
-        case err instanceof AggregateError: {
-            /* Each error is added as a cause */
-            if (!message) message = err.message;
-            err.errors.forEach(error => {
-                causes.push(error.message);
-            });
-            break;
-        }
-        case err instanceof WfError: {
-            /* Just take over causes and code if none specified */
-            causes = err.causes;
+        case err instanceof WfProtocolError: {
+            /* Throw new error with updated details*/
+            let reasons: string[] = err.causes;
+            if (msg) reasons.push(err.message);
             if (!code) code = err.code as WfErrorCode;
-            /* Fallthrough */
+            throw new WfProtocolError(message, reasons, code);
         }
-        case err instanceof Error:
-            /* If error message specified, add old one to causes */
-            if (message) {
-                causes.push(err.message);
-                message = `${message}: ${err.message}`
-            } else {
-                message = err.message;
-            }
-            break;
-        default:
-            if (!message) message = 'Invalid Error object thrown';
-            throw new Error(message);
+        case err instanceof Error: {
+            /* Throw new error with updated message */
+            throw new WfRuntimeError(message, err);
+        }
+        default: {
+            if (!message) message = 'Unspecified error occured';
+            throw new WfRuntimeError(message);
+        }
     }
-    throw new WfError(message, causes, code);
 }

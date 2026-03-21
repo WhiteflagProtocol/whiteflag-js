@@ -1,0 +1,21 @@
+{
+    "$description": "Data objects for testing",
+    "1": {
+        "data": {
+            "key1": 1234,
+            "key2": {
+                "nested": "string"
+            }
+        },
+        "serialized": "eyJrZXkxIjoxMjM0LCJrZXkyIjp7Im5lc3RlZCI6InN0cmluZyJ9fQ"
+    },
+    "2": {
+        "data": {
+            "key1": "a string",
+            "key2": true,
+            "key3": {
+                "number": 7890
+            }
+        }
+    }
+}

@@ -13,9 +13,41 @@ This description provides a generic overview of the Whiteflag main package.
 Please refer to the [WFJSL TypeDoc documentation](../typedoc) for a detailed
 description of all classes and functions.
 
-## Whiteflag message class
+## Blockchain layer
 
-The Whiteflag message class `WfMessage` defined in the `main` module
+The blockchain layer is represented by the `WfBlockchainLayer` class defined
+by the `main/blockchain` module. The blockchain layer provides access to
+one or more underlying blockchains used to send and receive Whiteflag messages.
+
+## Whiteflag protocol
+
+The `WfEventEmitter` singleton class defined by the `main/events` module is
+the event emitter for Whiteflag protocol events, such as a received message,
+a discovered or authenticated originator, etc. This allows different parts of
+a Whiteflag application to notify and transfer data to other parts. Therefore,
+this is the main interface for dynamic interaction with the Whiteflag protocol.
+The `WfEvents` enum defines all events and their associated data.
+
+```javascript
+let events = WfEventEmitter.getInstance();
+events.on('message:validated', furtherMsgHandler);
+```
+
+The `WfState` singleton class defined by the `main/state` module keeps track
+of the protocol state. As such, it holds all known accounts, originators,
+cryptographic keys and blockchain status. The state should be initialized
+using `WfState.init(...)` providing a master encryption key and, optionally,
+the previously saved state. The state can be exported (e.g. to store) using the
+`WfState.export()` function.
+
+```javascript
+WfState.init(masterKey, savedState);
+state = await WfState.readyInstance();
+```
+
+## Whiteflag messages
+
+The Whiteflag message class `WfMessage` defined in the `main/message` module
 represents a Whiteflag message.
 
 This class extends the core Whiteflag message class `WfCoreMessage` by adding
@@ -29,8 +61,8 @@ factory method. For example, creating a new FreeText message (message
 code `F`) and set the `Text` field, may be done as follows:
 
 ```javascript
-let wfMessage = new WfMessage('F');
-wfMessage.set('Text', 'Example text to be sent with the FreeText message');
+let message = new WfMessage('F');
+message.set('Text', 'Example text to be sent with the FreeText message');
 ```
 
 The `encode()` method encodes the message. It automatically verifies the fields

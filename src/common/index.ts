@@ -3,24 +3,31 @@
  * @module common
  * @summary Whiteflag JS common definitions
  * @document docs/md/packages.md
- * @primaryExport
+ * @remarks This package provides the common declarations and definitions that
+ *  other packages depend upon. This is to prevent any mutual or circular
+ * dependencies. Therefore, this package is not intended to be used directly by
+ * implementations of Whiteflag; instead, the `@whiteflagprotocol/main`
+ * package should be used.
  */
 export {
-    Blockchain
+    Address,
+    Blockchain,
+    BlockListener,
+    BlockchainConfigData,
+    BlockchainStatusData,
+    TransactionData
 } from './lib/blockchain.ts';
 export {
-    WfKeyType,
-    WfAuthMethod,
-    WfCryptoMethod
-} from './lib/crypto.ts';
-export {
+    WfRuntimeError,
+    WfProtocolError,
     WfErrorCode,
-    WfError,
     handleError
 } from './lib/errors.ts';
 export {
-    WfMsgType
-} from './lib/message.ts';
-export {
-    WfVersion
-} from './lib/versions.ts';
+    WfVersion,
+    WfMsgType,
+    WfKeyType,
+    WfAuthMethod,
+    WfCryptoMethod
+} from './lib/protocol.ts';
+

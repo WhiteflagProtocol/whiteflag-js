@@ -18,7 +18,8 @@ import { BinaryBuffer } from '@whiteflagprotocol/util';
 import fieldSpec_v1 from '../static/v1/wf-field-encoding.json' with { type: 'json' };
 
 /* Constants */
-const NOCHAR = '';
+const EMPTYSTR = '';
+const NOCHAR = EMPTYSTR;
 const HEXRADIX = 16;
 const BYTELENGTH = 8;
 const QUADBIT = 4;
@@ -27,7 +28,6 @@ const QUADBIT = 4;
 /**
  * Whiteflag field encodings, defining the encoding of Whiteflag
  * message fields as defined by the Whiteflag specification
- * @enum WfCodec
  * @wfversion v1-draft.7
  * @wfreference 4.1.2 Message Encoding
  */
@@ -57,7 +57,6 @@ const FIELDS = compileFieldCodecs();
 /* MODULE FUNCTIONS */
 /**
  * Encodes a Whiteflag message field
- * @function encodeField
  * @wfversion v1-draft.7
  * @wfreference 4.1.2 Message Encoding, 4.1.3 Message Compression
  * @param value the message field value
@@ -101,7 +100,6 @@ function encodeField(value: string, codec: WfCodec, version = WfVersion.v1): Bin
 }
 /**
  * Decodes a Whiteflag message field
- * @function decodeField
  * @wfversion v1-draft.7
  * @wfreference 4.1.2 Message Encoding, 4.1.3 Message Compression
  * @param buffer a binary buffer with the encoded field
@@ -146,28 +144,26 @@ function decodeField(buffer: BinaryBuffer, codec: WfCodec, version = WfVersion.v
 }
 /**
  * Checks if the field value is valid
- * @function isValidValue
  * @param value the field value
  * @param codec the field encoding
  * @param version the Whiteflag protocol version
- * @returns true if valid, else false
+ * @returns `true` if valid, else `false`
  */
-function isValidValue(value: string, codec: WfCodec, version = WfVersion.v1): boolean {
+function isValidValue(value: any, codec: WfCodec, version = WfVersion.v1): boolean {
     return FIELDS[codec][version].regex.test(value);
 }
 
 /* PRIVATE MODULE DECLARATIONS */
 /**
- * Defines an object with field encoding definitions
+ * Field encoding definitions of the Whiteflag specification
  * @private
- * @interface WfFieldEncoding
  */
 interface WfFieldEncoding {
     [key: string]: {            // Field type
         [key: string]: {        // Whiteflag version
-            length: number,     // Field length, or 0 if variable
-            pattern: string,    // Regular expresssion pattern
-            regex: RegExp       // Regular expression for field value verification
+            length: number;     // Field length, or 0 if variable
+            pattern: string;    // Regular expresssion pattern
+            regex: RegExp;      // Regular expression for field value verification
         }
     }
 }
@@ -219,12 +215,12 @@ function encodeBin(binStr: string): BinaryBuffer {
  * to a field string with the binary value
  * @private
  * @param buffer a binary buffer with the encoded field
- * @return a string with the decoded binary field value
+ * @returns a string with the decoded binary field value
  */
 function decodeBin(buffer: BinaryBuffer): string {
     const bitLength = buffer.length;
     const byteArray = buffer.toU8a();
-    let binStr: string = '';
+    let binStr: string = EMPTYSTR;
 
     /* Loop strough bits of binary buffer */
     for (let bitIndex = 0; bitIndex < bitLength; bitIndex++) {
@@ -264,12 +260,12 @@ function encodeBDX(bdxString: string): BinaryBuffer {
  * to a field string with the (hexa)decimal value
  * @private
  * @param buffer a binary buffer with the encoded field
- * @return a string with the decoded (hexa)decimal field value
+ * @returns a string with the decoded (hexa)decimal field value
  */
 function decodeBDX(buffer: BinaryBuffer): string {
     const bitLength = buffer.length - (buffer.length % QUADBIT);
     const byteArray = buffer.extractU8a(0, bitLength);
-    let bdxString: string = '';
+    let bdxString: string = EMPTYSTR;
 
     /* Loop through the bits in the binary buffer */
     for (let bitIndex = 0; bitIndex < bitLength; bitIndex += BYTELENGTH) {
@@ -312,7 +308,7 @@ function encodeUTF(utfString: string): BinaryBuffer {
  * to a field string with UTF8 text
  * @private
  * @param buffer a binary buffer with the encoded field
- * @return a string with the decoded UTF8 text field value
+ * @returns a string with the decoded UTF8 text field value
  */
 function decodeUTF(buffer: BinaryBuffer): string {
     const bitLength = buffer.length - (buffer.length % BYTELENGTH);
@@ -414,7 +410,7 @@ function decodeLatLong(buffer: BinaryBuffer): string {
     if (buffer.extractU8a(0,1)[0] === 0x00) {
         return '-' + latlongStr;
     }
-    throw new SyntaxError('Invalid latlong encoding');
+    throw new TypeError('Invalid latlong encoding');
 }
 /**
  * Decodes a binary buffer with the compressed encoded latitude field

@@ -3,10 +3,9 @@
  * @summary Whiteflag JS cryptographic constants module
  */
 export declare const BYTELENGTH = 8;
+export declare const HEXBYTELENGTH = 2;
 export declare const HEXENCODING = "hex";
-export declare const RAWKEY = "raw";
-export declare const EXTRACTABLE = true;
-export declare const NOTEXTRACTABLE = false;
+export declare const BASE36RADIX = 36;
 export declare const AES_CTR = "AES-CTR";
 export declare const AES_GCM = "AES-GCM";
 export declare const ECDH = "ECDH";

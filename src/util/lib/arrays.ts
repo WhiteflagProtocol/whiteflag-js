@@ -6,19 +6,20 @@
 export {
     isArray,
     arrayEquals,
+    arrayFind,
+    arrayIncludes,
     arrayPluck,
     arrayPluckSub
 };
 
 /* Module imports */
-import { objectHas } from "./objects.ts";
+import { objectHas } from './objects.ts';
 
 /* MODULE FUNCTIONS */
 /**
  * Checks if something is an array
- * @function isArray
  * @param arr something that might be an array
- * @returns true if array, else false
+ * @returns `true` if array, else `false`
  */
 function isArray(arr: any): boolean {
     return Array.isArray(arr);
@@ -27,7 +28,7 @@ function isArray(arr: any): boolean {
  * Checks if two arrays contain equal values
  * @param arr1 the first array
  * @param arr2 the second array
- * @returns true if arrays and values are equal, else false
+ * @returns `true` if arrays and values are equal, else `false`
  */
 function arrayEquals(arr1: any, arr2: any): boolean {
     try {
@@ -47,29 +48,52 @@ function arrayEquals(arr1: any, arr2: any): boolean {
     }
 }
 /**
+ * Gets the first object matching a key-value pair from an array of objects
+ * @param arr array of objects
+ * @param key object property name
+ * @param value the value to match
+ * @returns the requested object
+ */
+function arrayFind(arr: Array<any>, key: string, value: any): any {
+    if (!isArray(arr)) throw new TypeError('First argument is not an array');
+    return arr.find(obj => {
+        return objectHas(obj, key) && obj[key] === value;
+    });
+}
+/**
+ * Checks if an object matching a key-value pair exists in an array of objects
+ * @param arr array of objects
+ * @param key object property name
+ * @param value the value to match
+ * @returns `true` if object exists, else `false`
+ */
+function arrayIncludes(arr: Array<any>, key: string, value: any): boolean {
+    if (!isArray(arr)) throw new TypeError('First argument is not an array');
+    return arr.some(obj => {
+        return objectHas(obj, key) && obj[key] === value;
+    });
+}
+/**
  * Gets the values of single property from an array of objects
- * @function pluck
  * @param arr array of objects
  * @param key object property name
  * @returns an array with the values of the objects' property
  */
 function arrayPluck(arr: Array<any>, key: string): Array<any> {
-    if (!isArray(arr)) throw new TypeError('Argument is not an array');
+    if (!isArray(arr)) throw new TypeError('First argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key)) return obj[key];
     }).filter(element => element !== undefined);
-};
-
+}
 /**
  * Gets the values of single subobject property from an array of objects
- * @function plucksub
  * @param arr array of objects
  * @param key object property name
  * @param subkey subobject property name
  * @returns an array with the values of the objects' subproperty
  */
 function arrayPluckSub(arr: Array<any>, key: string, subkey: string): Array<any> {
-    if (!isArray(arr)) throw new TypeError('Argument is not an array');
+    if (!isArray(arr)) throw new TypeError('First argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key)) return obj[key][subkey];
     }).filter(element => element !== undefined);

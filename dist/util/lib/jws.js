@@ -1,7 +1,8 @@
 'use strict';
 export { Jws };
-import { isBase64u, stringToU8a } from "./encoding.js";
-import { isObject, isString, objToB64u, b64uToObj } from "./objects.js";
+import { isBase64u, strToU8a } from "./encoding.js";
+import { isObject, isString, deepCopy, objToB64u, b64uToObj, jsonToObj } from "./objects.js";
+const EMPTYSTR = '';
 const JWSSEPARATOR = '.';
 const REGEX_JWS_FLAT = /e[yw][A-Za-z0-9-_]+/;
 const REGEX_JWS_COMPACT = /e[yw][A-Za-z0-9-_]+\.(e[yw][A-Za-z0-9-_]+\.)?[A-Za-z0-9-_]+/;
@@ -12,27 +13,27 @@ var JwsFormat;
     JwsFormat["FULL"] = "JWS_FULL";
 })(JwsFormat || (JwsFormat = {}));
 class Jws {
-    protected = { alg: '' };
-    payload = { iat: 0 };
-    signature = '';
-    constructor(header, payload, signature = '') {
+    protected = Object.create(null);
+    payload = Object.create(null);
+    signature = EMPTYSTR;
+    constructor(header, payload, signature = EMPTYSTR) {
         if (!isObject(header))
             throw TypeError('Provided JWS protected header is not an object');
         if (!isObject(payload))
             throw TypeError('Provided JWS payload is not an object');
         if (!isBase64u(signature))
             throw new TypeError('Signature is not base64url encoded');
-        this.protected = header;
-        this.payload = payload;
+        this.protected = deepCopy(header);
+        this.payload = deepCopy(payload);
         this.signature = signature;
         if (signature)
             Object.freeze(this);
     }
     static fromPayload(payload) {
-        return new Jws({}, payload, '');
+        return new Jws(Object.create(null), payload, EMPTYSTR);
     }
     static fromJSON(jws) {
-        return this.fromObject(JSON.parse(jws));
+        return this.fromObject(jsonToObj(jws));
     }
     static fromObject(jws) {
         switch (jwsType(jws)) {
@@ -55,13 +56,13 @@ class Jws {
             throw new TypeError('Invalid compact serialized JWS string');
         }
         const jwsArray = jws.split(JWSSEPARATOR);
-        let header = {};
+        let header = Object.create(null);
         if (jwsArray.length > 0)
             header = b64uToObj(jwsArray[0]);
-        let payload = {};
+        let payload = Object.create(null);
         if (jwsArray.length > 1)
             payload = b64uToObj(jwsArray[1]);
-        let signature = '';
+        let signature = EMPTYSTR;
         if (jwsArray.length > 2)
             signature = jwsArray[2];
         return new Jws(header, payload, signature);
@@ -76,7 +77,7 @@ class Jws {
         return objToB64u(this.protected) + JWSSEPARATOR + objToB64u(this.payload);
     }
     getBinSignInput() {
-        return stringToU8a(this.getSignInput());
+        return strToU8a(this.getSignInput());
     }
     setSignAlgorithm(algorithm) {
         if (this.isSigned())
@@ -93,7 +94,7 @@ class Jws {
         if (!isBase64u(signature)) {
             throw new TypeError('Signature is not base64url encoded');
         }
-        if (signature === '') {
+        if (signature === EMPTYSTR) {
             throw new TypeError('Cannot sign with an empty signature');
         }
         this.signature = signature;

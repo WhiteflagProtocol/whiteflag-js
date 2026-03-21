@@ -2,11 +2,18 @@
  * @module main/message
  * @summary Whiteflag JS main message module
  */
-export { WfMessage, WfMetaHeader };
-import { WfAccount, WfCoreMessage } from '@whiteflagprotocol/core';
+export { WfMessage, WfMessageData, WfMetaHeader };
+import { WfAccount, WfCoreMessage, WfCoreMessageData } from '@whiteflagprotocol/core';
+import { BinaryBuffer, ByteArray, Base64, DataId, Hex, Json, Serializable, serializable } from '@whiteflagprotocol/util';
+/**
+ * Whiteflag message data structure as used by the `WfMessage` class
+ */
+interface WfMessageData extends WfCoreMessageData {
+    /** The metaheader of the Whiteflag message */
+    MetaHeader: WfMetaHeader;
+}
 /**
  * A Whiteflag message as defined by the Whiteflag specification
- * @class WfMessage
  * @wfversion v1-draft.7
  * @wfreference 4 Message Format
  * @remarks This class extends the core Whiteflag message class by
@@ -16,81 +23,100 @@ import { WfAccount, WfCoreMessage } from '@whiteflagprotocol/core';
  * with the Whiteflag specification.
  */
 declare class WfMessage extends WfCoreMessage {
-    /** The message metadata required for processing the message */
-    protected meta: WfMetaHeader;
+    #private;
     /**
-     * Constructor for a Whiteflag message
+     * Constructs a Whiteflag message
+     * @param data a Whiteflag core message object
+     * @param id a unique identifier for the data item; automatically generated if not specified
+     */
+    constructor(data: WfCoreMessage, id?: DataId);
+    /**
+     * Creates a new Whiteflag message
      * @param type the Whiteflag message type
      * @param version the Whiteflag protocol version
+     * @returns a new Whiteflag message of the specified type
      */
-    constructor(type: string, version?: string);
+    static create(type: string, version?: string): WfMessage;
     /**
-     * Creates new Whiteflag message from a JSON string
-     * @function fromJSON
-     * @param message a JSON string with a Whiteflag message
-     * @returns a new Whiteflag message
-     * @throws {WfError} if message could not be created
+     * Deserializes the originator data
+     * @param data the base64 encoded JSON serialized originator data
+     * @param hash the transaction hash identifying the message
+     * @returns the originator
      */
-    static fromJSON(message: string): Promise<WfMessage>;
+    static deserialize(data: Base64, hash: Hex): WfMessage;
+    /**
+     * Creates new Whiteflag message from a JSON serialized object
+     * @param message the JSON serialized object
+     * @param hash the transaction hash identifying the message
+     * @returns a new Whiteflag message
+     */
+    static fromJson(message: Json, hash?: Hex): WfMessage;
     /**
      * Creates new Whiteflag message from a plain object
-     * @function fromObject
      * @param message a plain JavaScript object with a Whiteflag message
-     * @returns a new Whiteflag message object
+     * @param hash the transaction hash identifying the message
+     * @returns a new Whiteflag message
      */
-    static fromObject(message: any): Promise<WfMessage>;
+    static fromObject(message: any, hash?: Hex): WfMessage;
+    /**
+     * Creates new Whiteflag message from a binary buffer
+     * @param message a binary buffer with the encoded message
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
+     * @param ikm the input key material to derive the encryption key, if the message is encrypted
+     * @param iv the initialisation vector, if required for the encryption method
+     * @returns a new Whiteflag message with the decoded message
+     * @remarks Adds the originator address and the initialisation vector
+     * paramters to the metadata automatically.
+     */
+    static fromBinary(message: BinaryBuffer, account?: WfAccount, ikm?: ByteArray, iv?: ByteArray): Promise<WfMessage>;
     /**
      * Creates new Whiteflag message from a hexadecimal encoded string
      * @param message  atring with the hexadecimal encoded message
-     * @param account the hexadecimal encoded originator address, if the message is encrypted
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
      * @param ikm the hexadecimalinput key material to derive the encryption key, if the message is encrypted
      * @param iv the hexadecimal initialisation vector, if required for the encryption method
-     * @returns a new Whiteflag message object with the decoded message
+     * @returns a new Whiteflag message with the decoded message
+     * @remarks Adds the originator address and the initialisation vector
+     * paramters to the metadata automatically.
      */
-    static fromHex(message: string, account?: WfAccount, ikm?: string, iv?: string): Promise<WfMessage>;
+    static fromHex(message: Hex, account?: WfAccount, ikm?: Hex, iv?: Hex): Promise<WfCoreMessage>;
     /**
      * Creates new Whiteflag message from a binary encoded message
-     * @param message a Uint8Array with the binary encoded message
-     * @param account the binary encoded originator address, if the message is encrypted
+     * @param message a ByteArray with the binary encoded message
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is encrypted
      * @param iv the initialisation vector, if required for the encryption method
      * @returns a new Whiteflag message object with the decoded message
+     * @remarks Adds the originator address and the initialisation vector
+     * paramters to the metadata automatically.
      */
-    static fromU8a(message: Uint8Array, account?: WfAccount, ikm?: Uint8Array, iv?: Uint8Array): Promise<WfMessage>;
+    static fromU8a(message: ByteArray, account?: WfAccount, ikm?: ByteArray, iv?: ByteArray): Promise<WfCoreMessage>;
     /**
-     * Returns the value of the metaheader field
-     * @function getMeta
+     * Returns the value of the specified metaheader field
      * @param fieldName the name of the metaheader field
      * @returns the value of the metaheader field
      */
-    getMeta(fieldName: string): string | null;
+    getMeta(fieldName: string): serializable;
     /**
      * Sets the value of the specified metaheader field
-     * @function setMeta
      * @param fieldName the name of the metaheader field
-     * @param value the value to set
-     * @return true if succesful, else false
+     * @param value the value to set, which must be a string or a number
+     * @returns `true` if succesful, else `false`, e.g. when field may not be altered
+     * @remarks If the `transactionHash` metadata field is set, it also sets
+     * the data item identifier to the same value autmatically. Some metadata
+     * fields may be set only once and cannot be altered.
      */
-    setMeta(fieldName: string, value: string): boolean;
-    /**
-     * Returns the Whiteflag message as a plain object
-     * @function toObject
-     * @returns the message as a plain object
-     */
-    toObject(): Object;
-    /**
-     * Returns the Whiteflag message as a JSON string
-     * @function toJSON
-     * @returns the message as a JSON string
-     */
-    toJSON(): string;
+    setMeta(fieldName: string, value: serializable): boolean;
 }
 /**
- * Defines a Whiteflag message header object
- * @interface WfMetaHeader
+ * Whiteflag message metaheader
+ * @remarks The metaheader is not defined by the Whiteflag specification. The
+ * entries defined here are the ones as used by Whiteflag JS.
  */
-interface WfMetaHeader {
-    [key: string]: any;
+interface WfMetaHeader extends Serializable {
+    /** Any meta property is allowed, but value types are restructed to
+     *  strings, array of strings, numbers, booleans, null and undefined */
+    [key: string]: serializable | undefined;
     /** Indicates if the message has been
      * automatically generated */
     autoGenerated?: string;

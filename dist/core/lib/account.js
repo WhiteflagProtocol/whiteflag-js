@@ -1,29 +1,47 @@
 'use strict';
 export { WfAccount };
-import { WfKeyType, WfError, WfErrorCode, handleError } from '@whiteflagprotocol/common';
-import { getWfKeyId, KeyStoreAccess } from '@whiteflagprotocol/crypto';
+import { WfKeyType, WfRuntimeError, WfErrorCode, handleError, WfProtocolError } from '@whiteflagprotocol/common';
+import { KeyStoreAccess, generateEcdhRawKeyPair, getWfKeyId } from '@whiteflagprotocol/crypto';
+import { DataItem } from '@whiteflagprotocol/util';
+import { b64ToStr, jsonToObj, hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 const keystore = KeyStoreAccess.getInstance();
-class WfAccount {
-    blockchain;
-    address;
-    publicKey = new Uint8Array(0);
-    #privateKeyId = '';
-    constructor(blockchain, address, publicKey, privateKeyId) {
-        if (!blockchain)
-            throw new TypeError('Missing blockchain');
-        if (!address)
-            throw new TypeError('Missing address');
-        this.blockchain = blockchain;
-        this.address = address;
-        if (publicKey)
-            this.publicKey = publicKey;
-        if (privateKeyId)
-            this.#privateKeyId = privateKeyId;
+class WfAccount extends DataItem {
+    #data;
+    constructor(data) {
+        if (!data?.blockchain)
+            throw new WfRuntimeError('Missing blockchain name in account data');
+        if (!data?.address)
+            throw new WfRuntimeError('Missing address in account data');
+        if (!data?.binAddress)
+            throw new WfRuntimeError('Missing binary address in account data');
+        const ddat = Symbol('WfAccount');
+        super(data, data.address, ddat);
+        this.#data = super.getDataReference(ddat);
+    }
+    static deserialize(data, address) {
+        return this.fromJson(b64ToStr(data), address);
+    }
+    static fromJson(data, address) {
+        return this.fromObject(jsonToObj(data), address);
+    }
+    static fromObject(data, address) {
+        if (data?.address !== address) {
+            throw new WfRuntimeError(`Account address ${data?.address} does not match account identifier ${address}`);
+        }
+        return new WfAccount(data);
+    }
+    static async create(blockchain) {
+        return this.fromSecret(blockchain);
     }
     static async fromAddress(blockchain, address) {
         let account;
         try {
-            account = new WfAccount(blockchain, address);
+            const binAddress = await blockchain.getBinAddress(address);
+            account = new WfAccount({
+                blockchain: blockchain.name,
+                address: address,
+                binAddress: u8aToHex(binAddress)
+            });
         }
         catch (err) {
             return handleError(err, 'Cannot create account from address', WfErrorCode.ACCOUNT);
@@ -34,7 +52,13 @@ class WfAccount {
         let account;
         try {
             const address = await blockchain.deriveAddress(publicKey);
-            account = new WfAccount(blockchain, address, publicKey);
+            const binAddress = await blockchain.getBinAddress(address);
+            account = new WfAccount({
+                blockchain: blockchain.name,
+                address: address,
+                binAddress: u8aToHex(binAddress),
+                publicKey: u8aToHex(publicKey)
+            });
         }
         catch (err) {
             return handleError(err, 'Cannot create account from public key', WfErrorCode.ACCOUNT);
@@ -47,56 +71,65 @@ class WfAccount {
             const keypair = await blockchain.createKeypair(secret);
             const publicKey = keypair[1];
             const address = await blockchain.deriveAddress(publicKey);
+            const binAddress = await blockchain.getBinAddress(address);
             const privateKey = new Uint8Array(keypair[0]);
-            const privateKeyId = await getPrivateKeyId(address);
+            const privateKeyId = await getWfKeyId(WfKeyType.ACCOUNT_PRIVATEKEY, address);
             await storePrivateKey(privateKeyId, privateKey);
-            account = new WfAccount(blockchain, address, publicKey, privateKeyId);
+            account = new WfAccount({
+                blockchain: blockchain.name,
+                address: address,
+                binAddress: u8aToHex(binAddress),
+                publicKey: u8aToHex(publicKey),
+                privateKeyId: privateKeyId
+            });
         }
         catch (err) {
             return handleError(err, 'Cannot create new account', WfErrorCode.ACCOUNT);
         }
         return account;
     }
-    static async create(blockchain) {
-        return this.fromSecret(blockchain);
-    }
     isSelf() {
-        return (this.#privateKeyId.length > 0);
+        return !!this.#data?.privateKeyId;
     }
-    async getBinAddress() {
-        return this.blockchain.getBinAddress(this.address);
+    getBlockchainName() {
+        return this.#data.blockchain;
     }
-    async createSignature(data) {
-        if (!this.#privateKeyId)
-            throw new WfError(`No private key avaible to create signature for account ${this.address}`, null, WfErrorCode.SIGNATURE);
-        let signature;
-        try {
-            const privateKey = await getPrivateKey(this.#privateKeyId);
-            signature = await this.blockchain.requestSignature(data, privateKey);
-        }
-        catch (err) {
-            return handleError(err, `Cannot create signature for account ${this.address}`, WfErrorCode.SIGNATURE);
-        }
-        return signature;
+    getAddress() {
+        return this.#data.address;
     }
-    async verifySignature(data, signature) {
-        if (!this.publicKey)
-            throw new WfError(`No public key avaible to verify signature for account ${this.address}`, null, WfErrorCode.SIGNATURE);
-        return this.blockchain.verifySignature(data, signature, this.publicKey);
+    getBinAddress() {
+        return hexToU8a(this.#data.binAddress);
     }
-}
-async function getPrivateKeyId(address) {
-    return getWfKeyId(WfKeyType.ACCOUNT_PRIVATEKEY, address);
-}
-async function getPrivateKey(privateKeyId) {
-    const privateKey = await keystore.getKey(privateKeyId);
-    if (privateKey === null)
-        throw new Error('Key store did not return private key');
-    return privateKey;
+    getPublicKey() {
+        if (!this.#data?.publicKey)
+            return null;
+        return hexToU8a(this.#data.publicKey);
+    }
+    async getPrivateKey() {
+        if (!this.#data?.privateKeyId)
+            return null;
+        return keystore.getKey(this.#data.privateKeyId);
+    }
+    async generateCryptoEcdhKeys() {
+        if (!this.isSelf())
+            throw new WfProtocolError('Can only generate ECDH key pair for own accounts', null, WfErrorCode.ACCOUNT);
+        const { rawPublicKey, rawPrivateKey } = generateEcdhRawKeyPair();
+        const keyId = await getWfKeyId(WfKeyType.ECDH_ENCRYPT, this.#data.address);
+        this.#data.privateCryptoEcdhKeyId = await storePrivateKey(keyId, rawPrivateKey);
+        this.#data.publicCryptoEcdhKey = u8aToHex(rawPublicKey);
+    }
+    async generateAuthEcdhKeys() {
+        if (!this.isSelf())
+            throw new WfProtocolError('Can only generate ECDH key pair for own accounts', null, WfErrorCode.ACCOUNT);
+        const { rawPublicKey, rawPrivateKey } = generateEcdhRawKeyPair();
+        const keyId = await getWfKeyId(WfKeyType.ECDH_AUTH, this.#data.address);
+        this.#data.privateAuthEcdhKeyId = await storePrivateKey(keyId, rawPrivateKey);
+        this.#data.publicAuthEcdhKey = u8aToHex(rawPublicKey);
+    }
 }
 async function storePrivateKey(privateKeyId, privateKey) {
     const stored = await keystore.upsertKey(privateKeyId, privateKey);
     if (!stored)
-        throw new Error('Key store did not store private key');
+        throw new WfRuntimeError('Key store did not store private key of the account');
     return stored;
 }

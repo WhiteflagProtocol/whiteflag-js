@@ -1,5 +1,5 @@
 'use strict';
-export { isArray, arrayEquals, arrayPluck, arrayPluckSub };
+export { isArray, arrayEquals, arrayFind, arrayIncludes, arrayPluck, arrayPluckSub };
 import { objectHas } from "./objects.js";
 function isArray(arr) {
     return Array.isArray(arr);
@@ -20,18 +20,31 @@ function arrayEquals(arr1, arr2) {
         return false;
     }
 }
+function arrayFind(arr, key, value) {
+    if (!isArray(arr))
+        throw new TypeError('First argument is not an array');
+    return arr.find(obj => {
+        return objectHas(obj, key) && obj[key] === value;
+    });
+}
+function arrayIncludes(arr, key, value) {
+    if (!isArray(arr))
+        throw new TypeError('First argument is not an array');
+    return arr.some(obj => {
+        return objectHas(obj, key) && obj[key] === value;
+    });
+}
 function arrayPluck(arr, key) {
     if (!isArray(arr))
-        throw new TypeError('Argument is not an array');
+        throw new TypeError('First argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key))
             return obj[key];
     }).filter(element => element !== undefined);
 }
-;
 function arrayPluckSub(arr, key, subkey) {
     if (!isArray(arr))
-        throw new TypeError('Argument is not an array');
+        throw new TypeError('First argument is not an array');
     return arr.map(obj => {
         if (objectHas(obj, key))
             return obj[key][subkey];

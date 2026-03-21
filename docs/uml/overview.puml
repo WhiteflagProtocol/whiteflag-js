@@ -1,0 +1,96 @@
+@startuml overview
+skinparam monochrome true
+skinparam linetype ortho
+
+left footer WFJS Overview Class Diagram
+
+package @whiteflagprotocol/main {
+    class WfState {}
+    class WfBlockchainState {}
+    class WfMessage {
+        {static} +create(type, version) : WfMessage
+        {static} +deserialize(data) : WfMessage
+        {static} +fromJson(data) : WfMessage
+        {static} +fromObject(data) : WfMessage
+        {static} +fromBinary(message) : WfMessage
+        {static} +fromHex(message) : WfMessage
+        {static} +fromU8a(message) : WfMessage
+        ..
+        +serialize(): Base64url
+        +toJson(): Json
+        +toObject(): Object
+        ..
+        +getMeta(field) : string
+        +setMeta(field, value) : boolean
+    }
+}
+
+package @whiteflagprotocol/core {
+    class WfCoreMessage {
+        {static} +create(type, version) : WfMessage
+        {static} +fromObject(data) : WfMessage
+        {static} +fromBinary(message) : WfMessage
+        ..
+        +decode(message) : WfMessage
+        +encode() : WfMessage
+        ..
+        +toString() : string
+        +toHex() : Hex
+        +toU8a() : Uint8Array
+        ..
+        +isEncoded() : boolean
+        +isValid() : boolean
+        +validate() : string[]
+        ..
+        +get(field) : string
+        +set(field, value) : boolean
+    }
+    class WfAccount {
+        __
+        +isSelf() : boolean
+        ..
+        +getAddress() : string
+        +getBinaryAddress() : byte[]
+    }
+    class WfOriginator {}
+    class WfSignature {}
+}
+
+package @whiteflagprotocol/crypto {
+    class KeyStoreAccess {}
+    class KeyStoreCtrl {}
+}
+
+package @whiteflagprotocol/common {
+    interface Blockchain
+    enum WfVersion
+    class WfRuntimeError {}
+    class WfProtocolError {}
+}
+
+package @whiteflagprotocol/util { 
+    class DataItem<T extends Object> {}
+    class DataCollection<T extends Object> {}
+    class Jws {}
+}
+
+WfAccount --|> DataItem
+WfOriginator --|> DataItem
+WfCoreMessage --|> DataItem
+
+WfSignature --|> Jws
+
+WfAccount "*" -- "1" Blockchain
+WfAccount "*" ..o "1" WfOriginator
+WfAccount ..> KeyStoreAccess
+
+WfOriginator ..> KeyStoreAccess
+
+WfMessage --|> WfCoreMessage
+
+WfState --o WfAccount
+WfState --o WfOriginator
+WfState --o WfBlockchainState
+WfState ..> KeyStoreCtrl
+
+@enduml

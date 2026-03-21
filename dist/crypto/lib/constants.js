@@ -1,9 +1,8 @@
 'use strict';
 export const BYTELENGTH = 8;
+export const HEXBYTELENGTH = 2;
 export const HEXENCODING = 'hex';
-export const RAWKEY = 'raw';
-export const EXTRACTABLE = true;
-export const NOTEXTRACTABLE = false;
+export const BASE36RADIX = 36;
 export const AES_CTR = 'AES-CTR';
 export const AES_GCM = 'AES-GCM';
 export const ECDH = 'ECDH';

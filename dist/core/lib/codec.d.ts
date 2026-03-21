@@ -8,7 +8,6 @@ import { BinaryBuffer } from '@whiteflagprotocol/util';
 /**
  * Whiteflag field encodings, defining the encoding of Whiteflag
  * message fields as defined by the Whiteflag specification
- * @enum WfCodec
  * @wfversion v1-draft.7
  * @wfreference 4.1.2 Message Encoding
  */
@@ -32,7 +31,6 @@ declare enum WfCodec {
 }
 /**
  * Encodes a Whiteflag message field
- * @function encodeField
  * @wfversion v1-draft.7
  * @wfreference 4.1.2 Message Encoding, 4.1.3 Message Compression
  * @param value the message field value
@@ -43,7 +41,6 @@ declare enum WfCodec {
 declare function encodeField(value: string, codec: WfCodec, version?: WfVersion): BinaryBuffer;
 /**
  * Decodes a Whiteflag message field
- * @function decodeField
  * @wfversion v1-draft.7
  * @wfreference 4.1.2 Message Encoding, 4.1.3 Message Compression
  * @param buffer a binary buffer with the encoded field
@@ -54,10 +51,9 @@ declare function encodeField(value: string, codec: WfCodec, version?: WfVersion)
 declare function decodeField(buffer: BinaryBuffer, codec: WfCodec, version?: WfVersion): string;
 /**
  * Checks if the field value is valid
- * @function isValidValue
  * @param value the field value
  * @param codec the field encoding
  * @param version the Whiteflag protocol version
- * @returns true if valid, else false
+ * @returns `true` if valid, else `false`
  */
-declare function isValidValue(value: string, codec: WfCodec, version?: WfVersion): boolean;
+declare function isValidValue(value: any, codec: WfCodec, version?: WfVersion): boolean;

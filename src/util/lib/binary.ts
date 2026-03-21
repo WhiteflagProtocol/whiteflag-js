@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @module util/binary
- * @summary Whiteflag JS binary buffer module
+ * @summary Whiteflag JS binary buffer utility module
  */
 export {
     BinaryBuffer,
@@ -12,19 +12,14 @@ export {
 };
 
 /* Module imports */
-import { 
-    isHex,
-    hexToU8a,
-    u8aToHex
-} from './encoding.ts';
+import { isHex, hexToU8a, u8aToHex } from './encoding.ts';
 
 /* Constants */
 const BYTELENGTH = 8;
 
 /* MODULE DECLARATIONS */
 /**
- * A class representing a binary buffer
- * @class BinaryBuffer
+ * A buffer for storing and manipulating binary data
  * @remarks Objects of this class represent a binary encoded piece of data,
  * e.g. a Whiteflag message, that can be manipulated at bit level. This class
  * provides the basic (not Whiteflag-specific) functionality for other
@@ -40,7 +35,7 @@ class BinaryBuffer {
 
     /* CONSTRUCTOR */
     /**
-     * Constructor for a binary buffer
+     * Constructs a binary buffer
      * @param buffer the Uint8Array typed array to create the binary buffer from
      * @param nBits the bit length of the buffer
      */
@@ -57,7 +52,6 @@ class BinaryBuffer {
     /* STATIC FACTORY METHODS */
     /**
      * Creates an empty binary buffer
-     * @function from
      * @returns a new binary buffer
      */
     public static empty(): BinaryBuffer {
@@ -65,7 +59,6 @@ class BinaryBuffer {
     }
     /**
      * Creates a binary buffer from another binary buffer
-     * @function from
      * @param binBuffer a binary buffer
      * @returns a new binary buffer
      */
@@ -74,7 +67,6 @@ class BinaryBuffer {
     }
     /**
      * Creates a binary buffer from bytes in a number array
-     * @function fromBytes
      * @param byteArray an array of numbers representing bytes
      * @param nBits the number of used bits
      * @returns a new binary buffer
@@ -84,7 +76,6 @@ class BinaryBuffer {
     }
     /**
      * Creates a binary buffer from a hexadecimal string
-     * @function fromHex
      * @param hexString a hexadecimal string
      * @param nBits the number of used bits
      * @returns a new binary buffer
@@ -95,7 +86,6 @@ class BinaryBuffer {
     }
     /**
      * Creates a binary buffer from a Uint8Array
-     * @function fromU8a
      * @param u8array an array of 8-bit unsigned integers
      * @param nBits the number of used bits
      * @returns a new binary buffer
@@ -107,7 +97,6 @@ class BinaryBuffer {
     /* PUBLIC CLASS METHODS */
     /**
      * Appends another binary buffer to the binary buffer
-     * @function append
      * @param binBuffer a binary buffer
      * @returns the updated binary buffer
      */
@@ -116,7 +105,6 @@ class BinaryBuffer {
     }
     /**
      * Appends bytes from a number array to the binary buffer
-     * @function appendBytes
      * @param byteArray an array of numbers representing bytes
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
@@ -126,7 +114,6 @@ class BinaryBuffer {
     }
     /**
      * Appends a hexadecimal string to the binary buffer
-     * @function appendHex
      * @param hexString a hexadecimal string
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
@@ -137,7 +124,6 @@ class BinaryBuffer {
     }
     /**
      * Appends a Uint8Array to the binary buffer
-     * @function appendU8a
      * @param u8array an array of 8-bit unsigned integers
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
@@ -150,9 +136,8 @@ class BinaryBuffer {
     }
     /**
      * Shortens the binary buffer to the length of the specified bits
-     * @function crop
      * @param nBits the number of used bits, or, if negative, the number of bits to remove
-     * @return the updated binary buffer
+     * @returns the updated binary buffer
      */
     public crop(nBits: number) {
         if (nBits === 0) return this;
@@ -191,7 +176,6 @@ class BinaryBuffer {
     }
     /**
      * Extracts the specified bits from the binary buffer to a Uint8Array
-     * @function extractU8a
      * @param startBit the first bit to extract (inclusive)
      * @param endBit the final bit of the extraction (exclusive), negative means until end of buffer
      * @returns an array of 8-bit unsigned integers with the extracted data
@@ -218,7 +202,6 @@ class BinaryBuffer {
     }
     /**
      * Inserts bytes from a number array at the start of the binary buffer
-     * @function insertBytes
      * @param byteArray an array of numbers representing bytes
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
@@ -228,7 +211,6 @@ class BinaryBuffer {
     }
     /**
      * Inserts a hexadecimal string at the start of the binary buffer
-     * @function insertHex
      * @param hexString a hexadecimal string
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
@@ -239,7 +221,6 @@ class BinaryBuffer {
     }
     /**
      * Inserts a Uint8Array at the start of the binary buffer
-     * @function insertU8a
      * @param u8array an array of 8-bit unsigned integers
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
@@ -252,7 +233,6 @@ class BinaryBuffer {
     }
     /**
      * Shifts bits in the buffer to the left, shrinking the buffer
-     * @function shiftLeft
      * @param shift the number of bits to shift to the left
      * @returns the shifted binary buffer
      */
@@ -278,7 +258,6 @@ class BinaryBuffer {
     }
     /**
      * Shifts bits in the buffer to the right, enlarging the buffer
-     * @function shiftRight
      * @param shift the number of bits to shift to the right
      * @returns the shifted binary buffer
      */
@@ -294,7 +273,6 @@ class BinaryBuffer {
     }
     /**
      * Gives the value of the binary buffer as a Uint8Array
-     * @function toU8a
      * @returns an array of 8-bit unsigned integers
      */
     public toU8a(): Uint8Array {
@@ -302,7 +280,6 @@ class BinaryBuffer {
     }
     /**
      * Gives the value of the binary buffer as a hexadecimal string
-     * @function toHex
      * @returns a hexadecimal string
      */
     public toHex(): string {
@@ -374,10 +351,9 @@ class BinaryBuffer {
 /* MODULE FUNCTIONS */
 /**
  * Shortens a Uint8Array to the length of the specified bits
- * @function cropBits
  * @param u8array the Uint8Array containing the bitset
  * @param nBits the number of used bits, or, if negative, the number of bits to remove
- * @return a new Uint8Array with the unused bits cleared
+ * @returns a new Uint8Array with the unused bits cleared
  */
 function cropBits(u8array: Uint8Array, nBits: number): Uint8Array {
     if (nBits === 0) return new Uint8Array(u8array);
@@ -405,7 +381,6 @@ function cropBits(u8array: Uint8Array, nBits: number): Uint8Array {
 }
 /**
  * Shifts bits in a Uint8Array to the right modulo 8
- * @function shiftRight
  * @param u8array the Uint8Array to be right shifted
  * @param shift the nummber of bits to be right shifted by modulo 8 bits
  * @returns a new Uint8Array with the right shifted bits
@@ -432,7 +407,6 @@ function shiftRight(u8array: Uint8Array, shift: number): Uint8Array {
 }
 /**
  * Shifts bits in a Uint8Array to the left modulo 8
- * @function shiftLeft
  * @param u8array the Uint8Array to be left shifted
  * @param shift the nummber of bits to be left shifted by modulo 8 bits
  * @returns a new Uint8Array with the left shifted bits
@@ -461,7 +435,6 @@ function shiftLeft(u8array: Uint8Array, shift: number): Uint8Array {
 }
 /**
  * Basic zeroisation function
- * @function zeroise
  * @param u8array typed array to zeroise
  * @returns the zeroised typed array
  */

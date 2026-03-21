@@ -8,7 +8,10 @@
  * packages. Therefore, this should normally be the only dependency for
  * projects implementing Whiteflag.
  */
-export { WfMessage, WfMetaHeader } from './lib/message.ts';
-export { Blockchain, WfVersion, WfMsgType, WfError, WfErrorCode } from '@whiteflagprotocol/common';
-export { WfAccount, WfOriginator } from '@whiteflagprotocol/core';
-export { KeyStoreCtrl } from '@whiteflagprotocol/crypto';
+export { WfBlockchainLayer, WfBlockchainStatus, WfBlockchainData } from './lib/blockchain.ts';
+export { WfEvents, WfEventEmitter } from './lib/events.ts';
+export { WfMessage, WfMessageData, WfMetaHeader } from './lib/message.ts';
+export { WfState, WfStateData } from './lib/state.ts';
+export { Address, Blockchain, BlockchainConfigData, BlockchainStatusData, TransactionData, WfVersion, WfMsgType, WfRuntimeError, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
+export { WfAccount, WfAccountData, WfOriginator, WfOriginatorData } from '@whiteflagprotocol/core';
+export { BinaryBuffer, ByteArray, Base58, Base64, Base64url, Hex, Iso8601, Json } from '@whiteflagprotocol/util';

@@ -1,17 +1,17 @@
 'use strict';
 /**
  * @module crypto/cipher
- * @summary Whiteflag JS encryption and decryption module
+ * @summary Whiteflag JS message encryption module
  */
 export {
-    encrypt,
-    decrypt,
+    encryptMsg,
+    decryptMsg,
     deriveKey
 };
 
 /* Dependencies */
 import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
-import { hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
+import { ByteArray, hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { hkdf } from './hash.ts';
@@ -29,8 +29,7 @@ const PARAMS = compileCryptoParams();
 
 /* MODULE FUNCTIONS */
 /**
- * Encrypts a message based on the specified encryption method
- * @function encrypt
+ * Encrypts a Whiteflag message based on the specified encryption method
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption
  * @param message the message to be encrypted
@@ -39,12 +38,12 @@ const PARAMS = compileCryptoParams();
  * @param iv the initialisation vector, if required for the method
  * @param version the Whiteflag protocol version
  */
-async function encrypt(message: Uint8Array<ArrayBuffer>,
-                       method: WfCryptoMethod,
-                       key: CryptoKey,
-                       iv?: Uint8Array<ArrayBuffer>,
-                       version = WfVersion.v1
-                    ): Promise<Uint8Array> {
+async function encryptMsg(message: ByteArray,
+                          method: WfCryptoMethod,
+                          key: CryptoKey,
+                          iv?: ByteArray,
+                          version = WfVersion.v1
+                        ): Promise<Uint8Array> {
     /* Choose encryption based on encryption method */
     switch (method) {
         case WfCryptoMethod.ECDH:
@@ -58,8 +57,7 @@ async function encrypt(message: Uint8Array<ArrayBuffer>,
     }
 }
 /**
- * Decrypts a message based on the specified encryption method
- * @function decrypt
+ * Decrypts a Whiteflag message based on the specified encryption method
  * @wfversion v1-draft.7
  * @wfreference 5.2.4 Message Encryption
  * @param message the message to be decrypted
@@ -68,12 +66,12 @@ async function encrypt(message: Uint8Array<ArrayBuffer>,
  * @param iv the initialisation vector, if required for the method
  * @param version the Whiteflag protocol version
  */
-async function decrypt(message: Uint8Array<ArrayBuffer>,
-                       method: WfCryptoMethod,
-                       key: CryptoKey,
-                       iv?: Uint8Array<ArrayBuffer>,
-                       version = WfVersion.v1
-                    ): Promise<Uint8Array> {
+async function decryptMsg(message: ByteArray,
+                          method: WfCryptoMethod,
+                          key: CryptoKey,
+                          iv?: ByteArray,
+                          version = WfVersion.v1
+                        ): Promise<Uint8Array> {
     /* Choose decryption based on encryption method */
     switch (method) {
         case WfCryptoMethod.ECDH:
@@ -88,7 +86,6 @@ async function decrypt(message: Uint8Array<ArrayBuffer>,
 }
 /**
  * Derives the encryption key based on the Whiteflag encryption method
- * @function deriveKey
  * @wfversion v1-draft.7
  * @wfreference 5.2.3 Encryption Key and Authentication Token Derivation
  * @param ikm the raw input key material
@@ -97,9 +94,9 @@ async function decrypt(message: Uint8Array<ArrayBuffer>,
  * @param version the Whiteflag protocol version
  * @returns the encryption key
  */
-async function deriveKey(ikm: Uint8Array<ArrayBuffer>,
+async function deriveKey(ikm: ByteArray,
                          method: WfCryptoMethod,
-                         info: Uint8Array<ArrayBuffer>,
+                         info: ByteArray,
                          version = WfVersion.v1
                         ): Promise<CryptoKey> {
     /* Derive raw key with HKDF */
@@ -122,19 +119,18 @@ async function deriveKey(ikm: Uint8Array<ArrayBuffer>,
 
 /* PRIVATE MODULE DECLARATIONS */
 /**
- * Defines an object with encryption parameters
+ * Encryption parameters of the Whiteflag specification
  * @private
- * @interface WfCryptoParams
  */
 interface WfCryptoParams {
     [key: string]: {                // Encryption method
         [key: string]: {            // Whiteflag version
-            $description: string,   // Description of the encryption method
-            algorithm: string,      // Encryption algorithm
-            keyLength: number,      // Byte length of the encryption key
-            salt: string            // Salt for HKDF key generation
-            ivLength?: number,      // Byte length of the initialisation vector
-            ctrLength?: number      // Byte length of the counter block part used as counter
+            $description: string;   // Description of the encryption method
+            algorithm: string;      // Encryption algorithm
+            keyLength: number;      // Byte length of the encryption key
+            salt: string;           // Salt for HKDF key generation
+            ivLength?: number;      // Byte length of the initialisation vector
+            ctrLength?: number;     // Byte length of the counter block part used as counter
         }
     }
 }
@@ -165,7 +161,7 @@ function compileCryptoParams(): WfCryptoParams {
  * @param parameters the AES encryption parameters
  * @returns the encrypted binary data
  */
-async function encryptAes(data: Uint8Array<ArrayBuffer>,
+async function encryptAes(data: ByteArray,
                           key: CryptoKey,
                           parameters: AesCtrParams | AesCbcParams | AesGcmParams
                         ): Promise<Uint8Array> {
@@ -182,7 +178,7 @@ async function encryptAes(data: Uint8Array<ArrayBuffer>,
  * @param parameters the AES encryption parameters
  * @returns the decrypted binary data
  */
-async function decryptAes(data: Uint8Array<ArrayBuffer>,
+async function decryptAes(data: ByteArray,
                           key: CryptoKey,
                           parameters: AesCtrParams | AesCbcParams | AesGcmParams
                         ): Promise<Uint8Array> {
@@ -192,15 +188,15 @@ async function decryptAes(data: Uint8Array<ArrayBuffer>,
     return new Uint8Array(decrypted);
 }
 /**
- * Creates the algortihm parameter object for AES based on the Whiteflag encryption method
+ * Creates the algorithm parameter object for AES based on the Whiteflag encryption method
  * @private
  * @param method the Whiteflag encryption method
  * @param iv the initialisation vector, if required for the method
  * @param version the Whiteflag protocol version
- * @returns the AES algortihm parameter object
+ * @returns the AES algorithm parameter object
  */
 function getAesParameters(method: WfCryptoMethod,
-                          iv?: Uint8Array<ArrayBuffer>,
+                          iv?: ByteArray,
                           version = WfVersion.v1
                         ): AesCtrParams | AesCbcParams | AesGcmParams {
     /* Compile encryption parameters based on encryption method */

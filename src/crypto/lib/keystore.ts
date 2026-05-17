@@ -11,8 +11,7 @@ export {
 
 /* Dependecies */
 import { WfKeyType, WfRuntimeError, handleError } from '@whiteflagprotocol/common';
-import { Mutex } from '@whiteflagprotocol/util';
-import { ByteArray, Base64url, isBase64u, isByteArray } from '@whiteflagprotocol/util';
+import { ByteArray, Base64url, isBase64u, isByteArray, Mutex } from '@whiteflagprotocol/util';
 import { b64uToU8a, hexToU8a, mapToU8a, strToU8a, u8aToB64u, u8aToMap } from '@whiteflagprotocol/util';
 
 /* Module imports */
@@ -56,17 +55,17 @@ export type KeyId = Base64url;
  * data. It is therefore part of the main programming interface. It does not
  * expose functions providing access to keystore, because that is only
  * required for classes internally to manage their keys. In order to prevent
- * tampering with the keystore after the initialisation, the keystore
+ * tampering with the keystore after the initialization, the keystore
  * control may be sealed. Once sealed, it cannot be unsealed and only exports
  * of encrypted keys are possible.
  */
 class KeyStoreCtrl {
     /** Singleton instantiation token */
-    static #sit: Symbol = Symbol('KeyStoreCtrl');
+    static readonly #sit: Symbol = Symbol('KeyStoreCtrl');
     /** Property to keep a single instance of the class */
     static #instance: KeyStoreCtrl;
 
-    /* CONSTRUCTOR AND STATIC FACTORY METHOD */
+    /* CONSTRUCTOR AND STATIC FACTORY METHODS */
     /**
      * Constructs the keystore control
      * @param sit the singleton instantiation token
@@ -82,10 +81,7 @@ class KeyStoreCtrl {
      * @returns the keystore control singular instance
      */
     public static getInstance(): KeyStoreCtrl {
-        if (!this.#instance) {
-            this.#instance = new KeyStoreCtrl(this.#sit);
-        }
-        return this.#instance;
+        return this.#instance ??= new KeyStoreCtrl(this.#sit);
     }
 
     /* PUBLIC CLASS METHODS */
@@ -169,7 +165,7 @@ class KeyStoreCtrl {
     }
     /**
      * Exports the encrypted serialized keystore data
-     * @returns a data object with the encrypted keystore and initialisation vector
+     * @returns a data object with the encrypted keystore and initialization vector
      */
     public async export(): Promise<EncryptedData> {
         /* Encode and encrypt the keystore */
@@ -197,11 +193,11 @@ class KeyStoreCtrl {
  */
 class KeyStoreAccess {
     /** Singleton instantiation token */
-    static #sit: Symbol = Symbol('KeyStoreAccess');
+    static readonly #sit: Symbol = Symbol('KeyStoreAccess');
     /** Property to keep a single instance of the class */
     static #instance: KeyStoreAccess;
 
-    /* CONSTRUCTOR AND STATIC FACTORY METHOD */
+    /* CONSTRUCTOR AND STATIC FACTORY METHODS */
     /**
      * Constructs the keystore access object
      * @param sit the singleton instantiation token
@@ -233,7 +229,7 @@ class KeyStoreAccess {
     public async getKey(kid: KeyId): Promise<ByteArray | null> {
         try {
             await _mutex.track();
-            return await getKey(kid);;
+            return await getKey(kid);
         } finally {
             _mutex.untrack();
         }
@@ -320,11 +316,7 @@ async function getKey(kid: KeyId): Promise<ByteArray | null> {
 
     /* Decrypt and return key */
     if (!ekdo) return null;
-    try {
-        return decryptData(kek, ekdo);
-    } catch(err) {
-        return handleError(err, 'Could not decrypt key in keystore');
-    }
+    return decryptData(kek, ekdo).catch(err => handleError(err, 'Could not decrypt key in keystore'));
 }
 /**
  * Upserts a key in the keystore
@@ -364,7 +356,7 @@ async function removeKey(kid: KeyId): Promise<boolean> {
  */
 async function recryptData(newMek: ByteArray): Promise<Map<KeyId,EncryptedData>> {
     let keyStore: Map<KeyId,EncryptedData> = new Map();
-    for await (const [kid, ekdo] of _keyStore) {
+    for (const [kid, ekdo] of _keyStore) {
         const currentKek = await generateKEK(kid);
         const rawKey = await decryptData(currentKek, ekdo);
         const newKek = await generateKEK(kid, newMek);

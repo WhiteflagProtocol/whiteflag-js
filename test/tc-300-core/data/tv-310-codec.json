@@ -1,4 +1,5 @@
 {
+    "$description": "Test case 310: Core codec module test data",
     "bdx": {
         "string": "1580bcd",
         "buffer": [ 21, 128, 188, 208 ]

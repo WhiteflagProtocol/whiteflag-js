@@ -16,9 +16,9 @@ declare class Mutex {
     #private;
     /**
      * Constructs the mutex object
-     * @param sleep the time in ms to sleep before checking again if active read-write operations or locked
+     * @param delaytime the time in ms before checking again if active read-write operations or locked
      */
-    constructor(sleep?: number);
+    constructor(delaytime?: number);
     /**
      * Locks to prevent read-write operations
      * @returns the resolved or rejected promise with the mutex value

@@ -29,9 +29,9 @@ class BinaryBuffer {
     /* CLASS PROPERTIES */
 
     /** The Uint8Array that holds the binary content */
-    private buffer: Uint8Array;
+    #buffer: Uint8Array;
     /** The number of used bits in the buffer */
-    public length: number;
+    length: number;
 
     /* CONSTRUCTOR */
     /**
@@ -41,11 +41,11 @@ class BinaryBuffer {
      */
     private constructor(buffer: Uint8Array = new Uint8Array(0), nBits: number = 0) {
         if (buffer.length > 0) {
-            this.length = this.calcBitLength(buffer.byteLength, nBits);
-            this.buffer = cropBits(buffer, this.length);
+            this.length = this.#calcBitLength(buffer.byteLength, nBits);
+            this.#buffer = cropBits(buffer, this.length);
         } else {
             this.length = 0;
-            this.buffer = buffer;
+            this.#buffer = buffer;
         }
     }
 
@@ -55,7 +55,7 @@ class BinaryBuffer {
      * @returns a new binary buffer
      */
     public static empty(): BinaryBuffer {
-        return new BinaryBuffer();
+        return new this();
     }
     /**
      * Creates a binary buffer from another binary buffer
@@ -63,7 +63,7 @@ class BinaryBuffer {
      * @returns a new binary buffer
      */
     public static from(binBuffer: BinaryBuffer): BinaryBuffer {
-        return new BinaryBuffer(binBuffer.toU8a(), binBuffer.length);
+        return new this(binBuffer.toU8a(), binBuffer.length);
     }
     /**
      * Creates a binary buffer from bytes in a number array
@@ -72,7 +72,7 @@ class BinaryBuffer {
      * @returns a new binary buffer
      */
     public static fromBytes(byteArray: Array<number>, nBits: number = 0): BinaryBuffer {
-        return new BinaryBuffer(new Uint8Array(byteArray), nBits);
+        return new this(new Uint8Array(byteArray), nBits);
     }
     /**
      * Creates a binary buffer from a hexadecimal string
@@ -82,7 +82,7 @@ class BinaryBuffer {
      */
     public static fromHex(hexString: string, nBits: number = 0): BinaryBuffer {
         if (!isHex(hexString)) throw new TypeError('Invalid hexadecimal string');
-        return new BinaryBuffer(hexToU8a(hexString), nBits);
+        return new this(hexToU8a(hexString), nBits);
     }
     /**
      * Creates a binary buffer from a Uint8Array
@@ -91,7 +91,7 @@ class BinaryBuffer {
      * @returns a new binary buffer
      */
     public static fromU8a(u8array: Uint8Array, nBits: number = 0): BinaryBuffer {
-        return new BinaryBuffer(u8array, nBits);
+        return new this(u8array, nBits);
     }
 
     /* PUBLIC CLASS METHODS */
@@ -100,7 +100,7 @@ class BinaryBuffer {
      * @param binBuffer a binary buffer
      * @returns the updated binary buffer
      */
-    public append(binBuffer: BinaryBuffer): BinaryBuffer {
+    public append(binBuffer: BinaryBuffer): this {
         return this.appendU8a(binBuffer.toU8a(), binBuffer.length);
     }
     /**
@@ -109,7 +109,7 @@ class BinaryBuffer {
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    public appendBytes(byteArray: Array<number>, nBits: number = 0): BinaryBuffer {
+    public appendBytes(byteArray: Array<number>, nBits: number = 0): this {
         return this.appendU8a(new Uint8Array(byteArray), nBits);
     }
     /**
@@ -118,7 +118,7 @@ class BinaryBuffer {
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    public appendHex(hexString: string, nBits: number = 0): BinaryBuffer {
+    public appendHex(hexString: string, nBits: number = 0): this {
         if (!isHex(hexString)) throw new TypeError('Invalid hexadecimal string');
         return this.appendU8a(hexToU8a(hexString), nBits);
     }
@@ -128,10 +128,10 @@ class BinaryBuffer {
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    public appendU8a(u8array: Uint8Array, nBits: number = 0): BinaryBuffer {
+    public appendU8a(u8array: Uint8Array, nBits: number = 0): this {
         const bitLength = this.length;
-        this.buffer = this.concatinate(this.buffer, bitLength, u8array, nBits);
-        this.length = bitLength + this.calcBitLength(u8array.byteLength, nBits);
+        this.#buffer = this.#concatinate(this.#buffer, bitLength, u8array, nBits);
+        this.length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
         return this;
     }
     /**
@@ -149,7 +149,7 @@ class BinaryBuffer {
         if (length < 0) length = 0;
 
         /* Crop buffer and set new length */
-        this.buffer = cropBits(this.buffer, nBits);
+        this.#buffer = cropBits(this.#buffer, nBits);
         this.length = length;
         return this;
     }
@@ -191,11 +191,11 @@ class BinaryBuffer {
         let bitLength = lastBit - startBit;
         if (lastBit > this.length) bitLength = this.length - startBit;
         const startByte = Math.floor(startBit / BYTELENGTH);
-        const byteLength = this.calcByteLength(bitLength);
+        const byteLength = this.#calcByteLength(bitLength);
         const shift = startBit % BYTELENGTH;
 
         /* Create and return new byte array */
-        const buffer = new Uint8Array(this.buffer.slice(
+        const buffer = new Uint8Array(this.#buffer.slice(
             startByte, startByte + byteLength + (shift > 0 ? 1 : 0)
         ));
         return cropBits(shiftLeft(buffer, shift), bitLength);
@@ -206,7 +206,7 @@ class BinaryBuffer {
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    public insertBytes(byteArray: Array<number>, nBits: number = 0): BinaryBuffer {
+    public insertBytes(byteArray: Array<number>, nBits: number = 0): this {
         return this.insertU8a(new Uint8Array(byteArray), nBits);
     }
     /**
@@ -215,7 +215,7 @@ class BinaryBuffer {
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    public insertHex(hexString: string, nBits: number = 0): BinaryBuffer {
+    public insertHex(hexString: string, nBits: number = 0): this {
         if (!isHex(hexString)) throw new TypeError('Invalid hexadecimal string');
         return this.insertU8a(hexToU8a(hexString), nBits);
     }
@@ -225,10 +225,10 @@ class BinaryBuffer {
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    public insertU8a(u8array: Uint8Array, nBits: number = 0): BinaryBuffer {
+    public insertU8a(u8array: Uint8Array, nBits: number = 0): this {
         const bitLength = this.length;
-        this.buffer = this.concatinate(u8array, nBits, this.buffer, bitLength);
-        this.length = bitLength + this.calcBitLength(u8array.byteLength, nBits);
+        this.#buffer = this.#concatinate(u8array, nBits, this.#buffer, bitLength);
+        this.length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
         return this;
     }
     /**
@@ -236,23 +236,23 @@ class BinaryBuffer {
      * @param shift the number of bits to shift to the left
      * @returns the shifted binary buffer
      */
-    public shiftLeft(shift: number): BinaryBuffer {
+    public shiftLeft(shift: number): this {
         if (shift < 0) return this.shiftRight(-shift);
 
         /* Left shift larger than lentgh gives empty buffer */
         if (shift >= this.length) {
-            this.buffer = new Uint8Array(0);
+            this.#buffer = new Uint8Array(0);
             this.length = 0;
             return this;
         }
         /* Create new smaller buffer */
         const bitLength = this.length - shift;
         const byteShift =  Math.floor(shift / BYTELENGTH);
-        const buffer = new Uint8Array(this.calcByteLength(bitLength) + 1);
+        const buffer = new Uint8Array(this.#calcByteLength(bitLength) + 1);
         for (let i = 0; i < buffer.length; i++) {
-            buffer[i] = this.buffer[i + byteShift];
+            buffer[i] = this.#buffer[i + byteShift];
         }
-        this.buffer = cropBits(shiftLeft(buffer, shift), bitLength);
+        this.#buffer = cropBits(shiftLeft(buffer, shift), bitLength);
         this.length = bitLength;
         return this;
     }
@@ -261,13 +261,13 @@ class BinaryBuffer {
      * @param shift the number of bits to shift to the right
      * @returns the shifted binary buffer
      */
-    public shiftRight(shift: number): BinaryBuffer {
+    public shiftRight(shift: number): this {
         if (shift < 0) return this.shiftLeft(-shift);
 
         /* Create new larger buffer */
         const byteShift = Math.ceil(shift / BYTELENGTH);
         const padding = new Uint8Array(byteShift);
-        this.buffer = this.concatinate(padding, shift, this.buffer, this.length);
+        this.#buffer = this.#concatinate(padding, shift, this.#buffer, this.length);
         this.length = this.length + shift;
         return this;
     }
@@ -276,14 +276,14 @@ class BinaryBuffer {
      * @returns an array of 8-bit unsigned integers
      */
     public toU8a(): Uint8Array {
-        return new Uint8Array(this.buffer);
+        return new Uint8Array(this.#buffer);
     }
     /**
      * Gives the value of the binary buffer as a hexadecimal string
      * @returns a hexadecimal string
      */
     public toHex(): string {
-        return u8aToHex(this.buffer);
+        return u8aToHex(this.#buffer);
     }
 
     /* PRIVATE CLASS METHODS */
@@ -294,7 +294,7 @@ class BinaryBuffer {
      * @param nBits the specified bit length of the buffer, or, if negative, the number of bits to remove
      * @returns the calculated bit length
      */
-    private calcBitLength(byteLength: number, nBits: number): number {
+    #calcBitLength(byteLength: number, nBits: number): number {
         const bitLength = byteLength * BYTELENGTH;
         if (nBits < 1) return Math.max(bitLength + nBits, 0);
         if (nBits > bitLength) return bitLength;
@@ -306,7 +306,7 @@ class BinaryBuffer {
      * @param nBits the number of used bits in the binary buffer
      * @returns the required byte length of the binary buffer
      */
-    private calcByteLength(nBits: number): number {
+    #calcByteLength(nBits: number): number {
         return Math.ceil(nBits / BYTELENGTH);
     }
     /**
@@ -317,12 +317,12 @@ class BinaryBuffer {
      * @param u8array2 Uint8Array containing the second bitset
      * @param nBits2 number of bits in the second bitset, i.e. which bits to take from the second Uint8Array
      */
-    private concatinate(u8array1: Uint8Array, nBits1: number, u8array2: Uint8Array, nBits2: number): Uint8Array {
+    #concatinate(u8array1: Uint8Array, nBits1: number, u8array2: Uint8Array, nBits2: number): Uint8Array {
         /* Calculate paramters */
-        const bitLength1 = this.calcBitLength(u8array1.byteLength, nBits1);
-        const bitLength2 = this.calcBitLength(u8array2.byteLength, nBits2);
+        const bitLength1 = this.#calcBitLength(u8array1.byteLength, nBits1);
+        const bitLength2 = this.#calcBitLength(u8array2.byteLength, nBits2);
         const bitLength = bitLength1 + bitLength2;
-        const byteLength = this.calcByteLength(bitLength);
+        const byteLength = this.#calcByteLength(bitLength);
         const shift = bitLength1 % BYTELENGTH;
 
         /* Prepare byte arrays */

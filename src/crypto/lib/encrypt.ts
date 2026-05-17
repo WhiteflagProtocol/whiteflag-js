@@ -39,7 +39,7 @@ const DEK_SALT = hexToU8a('6a1abfc3ccb7e1b27979fcd0d96433292d3bdaed42500e27e33da
 interface EncryptedData extends Serializable {
     /** Optional information about the encrypted data */
     info?: string;
-    /** The base64 encoded initialisation vector used to encrypt the data */
+    /** The base64 encoded initialization vector used to encrypt the data */
     iv: Base64;
     /** The base64 encoded AES-256-GCM encrypted data */
     encrypted: Base64;
@@ -51,7 +51,7 @@ interface EncryptedData extends Serializable {
  * @param key the cryptographic key object to encypt the data
  * @param plain the binary data to be encrypted
  * @param info optional additional information to be added to the returned object
- * @returns a data object with the encrypted data and initialisation vector
+ * @returns a data object with the encrypted data and initialization vector
  */
 async function encryptData(key: CryptoKey, plain: ByteArray, info?: string): Promise<EncryptedData> {
     let encrypted: ArrayBuffer;
@@ -74,7 +74,7 @@ async function encryptData(key: CryptoKey, plain: ByteArray, info?: string): Pro
 /**
  * Decrypts binary data using AES-256-GCM
  * @param key the cryptographic key object to decrypt the data
- * @param edo a data object with the encrypted data and initialisation vector
+ * @param edo a data object with the encrypted data and initialization vector
  * @returns the decrypted data
  */
 async function decryptData(key: CryptoKey, edo: EncryptedData): Promise<ByteArray> {
@@ -108,7 +108,7 @@ async function generateDEK(mek: ByteArray, info: ByteArray, salt: ByteArray = DE
 /* PRIVATE MODULE FUNCTIONS */
 /**
  * Creates the algorithm parameter object for AES-GCM encryption
- * @param iv the initialisation vector
+ * @param iv the initialization vector
  * @returns the AES-GCM algorithm parameter object
  */
 function getAesParameters(iv: ByteArray): AesGcmParams {

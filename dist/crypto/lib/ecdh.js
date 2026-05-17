@@ -1,7 +1,8 @@
 'use strict';
 export { generateEcdhRawKeyPair, deriveEcdhRawSecret, deriveEcdhSecret };
 import { createECDH } from 'node:crypto';
-import { objectHas, noString } from '@whiteflagprotocol/util';
+import { noString } from '@whiteflagprotocol/common';
+import { objectHas } from '@whiteflagprotocol/util';
 import { useExtKey } from "./keys.js";
 import { ECDH, DEFAULT_WF_ECDHCURVE } from "./constants.js";
 function generateEcdhRawKeyPair(curve = DEFAULT_WF_ECDHCURVE) {
@@ -29,6 +30,6 @@ async function deriveEcdhSecret(keypair, pubkey) {
     if (pubkey?.algorithm?.name !== ECDH)
         throw TypeError(`Public key algorithm is not for ${ECDH} secret negotiation`);
     if (pubkey?.algorithm?.namedCurve !== curve)
-        throw Error(`Public key does not macth the private key's curve ${curve}`);
+        throw new Error(`Public key does not macth the private key's curve ${curve}`);
     return deriveEcdhRawSecret(useExtKey(keypair.privateKey), useExtKey(pubkey), curve);
 }

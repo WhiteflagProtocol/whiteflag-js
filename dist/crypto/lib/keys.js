@@ -33,7 +33,7 @@ function useExtKey(key) {
 }
 function exportExtKey(key) {
     if (!key.extractable)
-        throw Error('Cannot export a non-extractable key');
+        throw new Error('Cannot export a non-extractable key');
     return useExtKey(key);
 }
 function createKeyPair(privateKey, publicKey) {

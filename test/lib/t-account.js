@@ -10,7 +10,7 @@ import { createKeyPair, createSignPubkey } from '@whiteflagprotocol/crypto';
 import { u8aToHex } from '@whiteflagprotocol/util';
 
 /* Constants */
-const DUMMY_KEYID='_FPC8ht-BjxkX2gmcKZiUg';
+const DUMMY_KEYID = '_FPC8ht-BjxkX2gmcKZiUg';
 
 /**
  * Extended implementation of the WfAccount class for testing
@@ -67,7 +67,7 @@ export class Account extends WfAccount {
      */
     static async fromAddress(blockchain, address) {
         const binAddress = await blockchain.getBinAddress(address);
-        return new Account(blockchain.name, address, u8aToHex(binAddress));
+        return new this(blockchain.name, address, u8aToHex(binAddress));
     }
     /**
      * Creates a new blockchain account from the public key
@@ -80,7 +80,7 @@ export class Account extends WfAccount {
         const pubkey = await createSignPubkey(publicKey, blockchain.signAlgorithm);
         const address = await blockchain.deriveAddress(publicKey);
         const binAddress = await blockchain.getBinAddress(address);
-        return new Account(blockchain.name, address, u8aToHex(binAddress), pubkey);
+        return new this(blockchain.name, address, u8aToHex(binAddress), pubkey);
     }
     /**
      * Creates a new blockchain account from an existing key pair
@@ -92,7 +92,7 @@ export class Account extends WfAccount {
         const pubkey = await crypto.subtle.exportKey('raw', keypair.publicKey);
         const address = await blockchain.deriveAddress(pubkey);
         const binAddress = await blockchain.getBinAddress(address);
-        return new Account(blockchain.name, address, u8aToHex(binAddress), keypair.publicKey, keypair.privateKey);
+        return new this(blockchain.name, address, u8aToHex(binAddress), keypair.publicKey, keypair.privateKey);
     }
     /**
      * Provides the public key of the account

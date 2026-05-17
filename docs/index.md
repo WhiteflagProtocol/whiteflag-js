@@ -13,7 +13,12 @@ core protocol code from the current reference implementation, i.e. the
 better to maintain and test in support of future Whiteflag protocol
 development, while ensuring reusability for other implementations.
 
-The WFJSL is to include all Whiteflag protocol features, but with minimal
+The [@whiteflagprotocol/main](md/main.md) package is the main WFJSL
+programming interface. It provides all classes and functions required to
+implement the Whiteflag protocol. This should normally be the only dependency
+for projects implementing Whiteflag.
+
+The WFJSL includes all Whiteflag protocol features, but with minimal
 dependencies. Therefore, the library is independent of any specific
 blockchain, database solution, user interface, etc.
 
@@ -26,7 +31,7 @@ blockchain, database solution, user interface, etc.
 
 ### Source Code Description
 
-* [Main WFSJL Programming Interface](md/main.md)
+* [Main WFJSL Programming Interface](md/main.md)
 * [Common Definitions](md/common.md)
 * [Core Protocol Implementation](md/core.md)
 * [Cryptographic Functions](md/crypto.md)

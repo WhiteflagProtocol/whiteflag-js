@@ -14,8 +14,8 @@ export {
 
 /* Module imports */
 import { isBase64u, strToU8a } from './encoding.ts';
-import { isObject, isString, deepCopy, objToB64u, b64uToObj, jsonToObj } from './objects.ts';
-import { ByteArray, Json, Base64url, Serializable, serializable } from './types.ts';
+import { deepCopy, objToB64u, b64uToObj, jsonToObj } from './objects.ts';
+import { ByteArray, Json, Base64url, Serializable, serializable, isObject, isString } from './types.ts';
 
 /* Constants */
 const EMPTYSTR = '';
@@ -40,7 +40,7 @@ enum JwsFormat {
  * @remarks Whiteflag uses JSON Web Signatures (JWS) for one of its
  * authentication methods. This class provides the basic (not Whiteflag-
  * specific) functionality to create, sign and convert JWSs for other
- * Whiteflag packages.
+ * Whiteflag packages. JWS are defined in RFC 7515.
  */
 class Jws {
     /* CLASS PROPERTIES */
@@ -83,7 +83,7 @@ class Jws {
      * @returns a new Binary Array
      */
     public static fromPayload(payload: JwsPayload): Jws {
-        return new Jws(Object.create(null), payload, EMPTYSTR);
+        return new this(Object.create(null), payload, EMPTYSTR);
     }
     /**
      * Creates a new JWS object from a plain javaScript object
@@ -103,14 +103,14 @@ class Jws {
     public static fromObject(jws: any): Jws {
         switch (jwsType(jws)) {
             case JwsFormat.FULL: {
-                return new Jws(
+                return new this(
                     jws?.protected as JwsHeader,
                     jws?.payload as JwsPayload,
                     jws?.signature as Base64url
                 );
             }
             case JwsFormat.FLAT: {
-                return new Jws(
+                return new this(
                     b64uToObj(jws?.protected) as JwsHeader,
                     b64uToObj(jws?.payload) as JwsPayload,
                     jws?.signature as Base64url
@@ -141,7 +141,7 @@ class Jws {
         if (jwsArray.length > 1) payload = b64uToObj(jwsArray[1]);
         let signature = EMPTYSTR;
         if (jwsArray.length > 2) signature = jwsArray[2];
-        return new Jws(header, payload, signature);
+        return new this(header, payload, signature);
     }
 
     /* PUBLIC CLASS METHODS */
@@ -185,7 +185,7 @@ class Jws {
      * @param signature the base64url encoded signature
      * @returns `true` if signature could be added, false if already signed
      */
-    public setSignature(signature: Base64url): Jws {
+    public setSignature(signature: Base64url): this {
         if (this.isSigned()) return this;
         if (this.protected.alg === 'none') {
             throw new Error('Cannot sign an unsecured JWS');

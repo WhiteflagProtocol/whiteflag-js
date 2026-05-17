@@ -42,7 +42,7 @@ function isHex(str) {
 }
 function noHexPrefix(hexStr) {
     if (hexStr.startsWith(HEXPREFIX)) {
-        return hexStr.substring(2).toLowerCase();
+        return hexStr.substring(HEXPREFIX.length).toLowerCase();
     }
     return hexStr.toLowerCase();
 }
@@ -75,9 +75,9 @@ function b58ToU8a(b58Str) {
 }
 function b64ToB64u(b64Str) {
     return b64Str
-        .replace(/=/g, EMPTYSTR)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_');
+        .replaceAll('=', EMPTYSTR)
+        .replaceAll('+', '-')
+        .replaceAll('/', '_');
 }
 function b64ToHex(b64Str) {
     return Buffer.from(b64Str, BASE64ENCODING).toString(HEXENCODING);
@@ -90,14 +90,14 @@ function b64ToU8a(b64Str) {
 }
 function b64uToB64(b64uStr) {
     let b64Str = b64uStr
-        .replace(/\-/g, '+')
-        .replace(/_/g, '/');
+        .replaceAll('-', '+')
+        .replaceAll('_', '/');
     switch (b64Str.length % 4) {
         case 2:
-            b64Str += "==";
+            b64Str += '==';
             break;
         case 3:
-            b64Str += "=";
+            b64Str += '=';
             break;
     }
     ;
@@ -125,7 +125,7 @@ function hexToU8a(hexStr) {
     const hex = noHexPrefix(hexStr);
     const u8array = new Uint8Array(hex.length / HEXBYTELENGTH);
     for (let i = 0; i < hex.length; i += HEXBYTELENGTH) {
-        u8array[i / HEXBYTELENGTH] = parseInt(hex.slice(i, i + HEXBYTELENGTH), HEXRADIX);
+        u8array[i / HEXBYTELENGTH] = Number.parseInt(hex.slice(i, i + HEXBYTELENGTH), HEXRADIX);
     }
     return u8array;
 }
@@ -160,11 +160,11 @@ function u8aToB58(u8array) {
         for (let i = 0; i < b58array.length; i++) {
             carry += b58array[i] << BYTELENGTH;
             b58array[i] = carry % BASE58RADIX;
-            carry = (carry / BASE58RADIX) | 0x00;
+            carry = Math.trunc(carry / BASE58RADIX);
         }
         while (carry > 0) {
             b58array.push(carry % BASE58RADIX);
-            carry = (carry / BASE58RADIX) | 0x00;
+            carry = Math.trunc(carry / BASE58RADIX);
         }
     }
     let b58Str = b58array.map(index => {

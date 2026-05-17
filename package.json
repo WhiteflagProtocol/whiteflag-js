@@ -51,7 +51,7 @@
         "docs:cleanup": "rimraf -g ./docs/typedoc/**/*",
         "docs:typedoc": "typedoc",
         "docs": "npm-run-all docs:*",
-        "build:cleanup": "rimraf -g ./dist/**/*.md ./dist/**/*.map ./dist/**/**/*.map ./dist/**/*.json ./dist/**/**/*.json ./dist/**/*.js ./dist/**/**/*.js ./dist/**/*.ts ./dist/**/**/*.ts",
+        "build:cleanup": "rimraf -g ./dist/**/*.md ./dist/**/*.map ./dist/**/*.json ./dist/**/*.js ./dist/**/*.ts",
         "build:compile": "tsc --declaration false --removeComments true",
         "build:declaration": "tsc --emitDeclarationOnly --declaration true --removeComments false",
         "build:packages": "copyfiles -u 1 src/**/package.json src/**/*.md dist",

@@ -4,6 +4,8 @@
  */
 export { sign, verify, SignAlgorithm, getSignParams };
 import { ByteArray } from '@whiteflagprotocol/util';
+/** Signature parameters */
+export type SignParams = RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams;
 /**
  * Supported digital signature algorithms
  */
@@ -40,4 +42,4 @@ declare function verify(data: ByteArray, signature: ByteArray, publicKey: Crypto
  * @param alg the digital signature algorithm
  * @returns a Web Crypto API algorthm object
  */
-declare function getSignParams(alg: SignAlgorithm): Algorithm | RsaPssParams | RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams;
+declare function getSignParams(alg: SignAlgorithm): Algorithm | SignParams;

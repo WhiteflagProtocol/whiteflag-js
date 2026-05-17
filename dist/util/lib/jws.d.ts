@@ -9,7 +9,7 @@ import { ByteArray, Json, Base64url, Serializable, serializable } from './types.
  * @remarks Whiteflag uses JSON Web Signatures (JWS) for one of its
  * authentication methods. This class provides the basic (not Whiteflag-
  * specific) functionality to create, sign and convert JWSs for other
- * Whiteflag packages.
+ * Whiteflag packages. JWS are defined in RFC 7515.
  */
 declare class Jws {
     /** The protected the JWS protected header */
@@ -80,7 +80,7 @@ declare class Jws {
      * @param signature the base64url encoded signature
      * @returns `true` if signature could be added, false if already signed
      */
-    setSignature(signature: Base64url): Jws;
+    setSignature(signature: Base64url): this;
     /**
      * Returns the JWS signature
      * @returns a string with the base64url encoded JWS signature

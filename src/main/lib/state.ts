@@ -2,6 +2,7 @@
 /**
  * @module main/state
  * @summary Whiteflag JS state module
+ * @todo State closure?
  */
 export {
     WfState,
@@ -9,29 +10,32 @@ export {
 };
 
 /* Dependencies */
-import { Address, handleError, WfRuntimeError } from '@whiteflagprotocol/common';
+import { Address, WfLogger, WfRuntimeError, handleError, noString } from '@whiteflagprotocol/common';
 import { WfAccount, WfOriginator } from '@whiteflagprotocol/core';
 import { EncryptedData, KeyStoreCtrl, generateDEK, encryptData, decryptData, hkdf } from '@whiteflagprotocol/crypto';
-import { ByteArray, CollectionData, DataCollection, DataId, Hex, Serializable } from '@whiteflagprotocol/util';
-import { sleep, noString, objectHas, hexToU8a, objToU8a, strToU8a, u8aToObj } from '@whiteflagprotocol/util';
+import { ByteArray, CollectionData, DataCollection, DataId, posixtime, Hex, Serializable } from '@whiteflagprotocol/util';
+import { delay, objectHas, getPosixEpoch, hexToU8a, objToU8a, strToU8a, u8aToObj } from '@whiteflagprotocol/util';
 
 /* Module imports */
-import { WfBlockchainStatus } from './blockchain.ts';
+import { WfBlockchainState } from './blockchain.ts';
+import { WfEvent, WfEventEmitter } from './events.ts';
 
 /* Constants */
+const DELAYTIME = 50;
 const KEY_LENGTH = 32;
 const MEK_INFO = strToU8a('MEK-WfState');
 const MEK_SALT = hexToU8a('33a4cff8ca686550b82765ffaf69003b6be657aed9d97982790e9c334cc6cfbe');
 const DEK_SALT = hexToU8a('927ef470db1b182131ec04c30f7fe4d954215bb0a42e0a2015821a76d7030741');
 
 /* Related singleton classes */
-const keystore = KeyStoreCtrl.getInstance();
+const wfKeystore = KeyStoreCtrl.getInstance();
+const wfEvent: WfEventEmitter = WfEventEmitter.getInstance();
 
 /* PRIVATE MODULE DATA */
 /** The master encryption key */
 let _masterKey: ByteArray;
 /** Blockchain state */
-let _blockchains = DataCollection.create() as DataCollection<WfBlockchainStatus>;
+let _blockchains = DataCollection.create() as DataCollection<WfBlockchainState>;
 /** Known originators */
 let _originators = DataCollection.create() as DataCollection<WfOriginator>;
 /** Known blockchain accounts */
@@ -45,10 +49,11 @@ let _accounts = DataCollection.create() as DataCollection<WfAccount>;
  * data object (the keystore data is always encrypted).
  */
 interface WfStateData extends Serializable {
-    _timestamp?: string;
+    /** The POSIX epoch timestamp */
+    _timestamp: posixtime;
     /** Plain or encrypted data object with the blockchain state */
     blockchains: CollectionData | EncryptedData;
-    /** Plain or encrypted data object with the knwon originators */
+    /** Plain or encrypted data object with the known originators */
     originators: CollectionData | EncryptedData;
     /** Plain or encrypted data object with the known blockchain accounts */
     accounts: CollectionData | EncryptedData;
@@ -63,11 +68,11 @@ interface WfStateData extends Serializable {
  */
 class WfState {
     /** Singleton instantiation token */
-    static #sit: Symbol = Symbol('WfState');
+    static readonly #sit: Symbol = Symbol('WfState');
     /** Property to keep a single instance of the class */
     static #instance: WfState;
 
-    /* CONSTRUCTOR AND STATIC FACTORY METHOD */
+    /* CONSTRUCTOR AND STATIC FACTORY METHODS */
     /**
      * Constructs the Whiteflag protocol state
      * @param sit the singleton instantiation token
@@ -93,21 +98,24 @@ class WfState {
         try {
             await setMasterKey(masterKey);
         } catch(err) {
-            handleError(err, 'Cannot set Whiteflag state master encryption key');
+            return handleError(err, 'Cannot set Whiteflag state master encryption key');
         }
         /* Import state data */
         try {
             if (data) await importData(data);
         } catch(err) {
-            handleError(err, 'Error importing Whiteflag state data');
+            return handleError(err, 'Error importing Whiteflag state data');
         }
         /* Seal keystore control and create state */
-        keystore.seal();
-        return this.#instance = new WfState(this.#sit);
+        wfKeystore.seal();
+        this.#instance = new WfState(this.#sit);
+        wfEvent.emit(WfEvent.STATE_INITIALIZED, this.#instance);
+        return this.#instance;
     }
     /**
      * Gets the Whiteflag protocol state
      * @returns the Whiteflag protocol state singular instance
+     * @throws if the Whiteflag state has not been initialized
      */
     public static getInstance(): WfState {
         if (!this.#instance) {
@@ -118,9 +126,12 @@ class WfState {
     /**
      * Waits for the initialized Whiteflag protocol state
      * @returns the Whiteflag protocol state singular instance
+     * @remarks This is a safer method to get the Whiteflag protocol state
+     * instance, because it waits for the Whiteflag state to have been
+     * initialized.
      */
     public static async readyInstance(): Promise<WfState> {
-        while (!this.#instance) await sleep(50);
+        while (!this.#instance) await delay(DELAYTIME);
         return this.#instance;
     }
 
@@ -136,18 +147,18 @@ class WfState {
             exportCollection(_blockchains, encrypt, 'WfBlockchainState'),   // [0]
             exportCollection(_originators, encrypt, 'WfOriginatorState'),   // [1]
             exportCollection(_accounts, encrypt, 'WfAccountState'),         // [2]
-            keystore.export()                                               // [3]
+            wfKeystore.export()                                             // [3]
         ]
         /* Export all data collections */
         let data: Array<any> = [];
         try {
             data = await Promise.all(batch);
         } catch(err) {
-            handleError(err, 'Cannot export Whiteflag state');
+            return handleError(err, 'Cannot export Whiteflag state');
         }
         /* Return the full exportable state */
         return {
-            _timestamp: new Date().toISOString(),
+            _timestamp: getPosixEpoch(),
             blockchains: data[0],
             originators: data[1], 
             accounts: data[2],
@@ -155,20 +166,47 @@ class WfState {
         }
     }
     /**
+     * Checks for the blockchain state in the Whiteflag state
+     * @param blockchain the name of the blockchain
+     * @returns `true` if the blockchain exists in the state, else `false`
+     */
+    public hasBlockchain(blockchain: string): boolean {
+        return _blockchains.exists(blockchain);
+    }
+    /**
      * Get a blockchain state from the Whiteflag state
      * @param blockchain the name of the blockchain
      * @returns the blockchain state, or `null` if not found
      */
-    public getBlockchainStatus(blockchain: string): WfBlockchainStatus | null {
+    public getBlockchain(blockchain: string): WfBlockchainState | null {
         return _blockchains.retrieve(blockchain);
     }
     /**
-     * Upserts a blockchain account in the Whiteflag state
+     * Upserts a blockchain state in the Whiteflag state
      * @param status the blockchain status
      * @returns the blockchain state data item identifier, i.e. the blockchain name
      */
-    public upsertBlockchainStatus(status: WfBlockchainStatus): string {
+    public upsertBlockchain(status: WfBlockchainState): string {
         return _blockchains.upsert(status);
+    }
+    /**
+     * Creates a new empty blockchain state, if not yet existing
+     * @param blockchain the name of the new blockchain
+     * @returns the blockchain state data item identifier, or null if none created
+     */
+    public createBlockchain(blockchain: string): string | null {
+        if (_blockchains.exists(blockchain)) return null;
+        return _blockchains.upsert(
+            WfBlockchainState.create(blockchain)
+        );
+    }
+    /**
+     * Checks for the account in the Whiteflag state
+     * @param address the address of the account
+     * @returns `true` if the account exists in the state, else `false`
+     */
+    public hasAccount(address: Address): boolean {
+        return _accounts.exists(address);
     }
     /**
      * Get a blockchain account from the Whiteflag state
@@ -228,7 +266,7 @@ async function setMasterKey(masterKey: Hex): Promise<boolean> {
     _masterKey = await generateMEK(rawKey);
 
     /* Set keystore master key*/
-    const success = await keystore.setMasterKey(rawKey)
+    const success = await wfKeystore.setMasterKey(rawKey)
     if (!success) throw new Error('Could not set keystore master key');
 
     /* Done */
@@ -252,7 +290,7 @@ async function generateMEK(mek: ByteArray): Promise<ByteArray> {
 async function importData(data: WfStateData): Promise<boolean> {
     /* Import collections */
     if (data?.blockchains) {
-        _blockchains = await importCollection(data.blockchains) as DataCollection<WfBlockchainStatus>;
+        _blockchains = await importCollection(data.blockchains) as DataCollection<WfBlockchainState>;
     }
     if (data?.originators) {
         _originators = await importCollection(data.originators) as DataCollection<WfOriginator>;
@@ -262,7 +300,7 @@ async function importData(data: WfStateData): Promise<boolean> {
     }
     /* Import keystore */
     if (data?.secrets) {
-        const success = await keystore.import(data?.secrets);
+        const success = await wfKeystore.import(data?.secrets);
         if (!success) throw new Error('Could not import keystore data')
     }
     /* Done */
@@ -302,7 +340,7 @@ async function exportCollection(collection: DataCollection<any>, encrypt: boolea
  * @private
  * @param collection the data collection to be encrypted
  * @param info information that identifies the data encryption key
- * @returns a data object with the encrypted collection and initialisation vector
+ * @returns a data object with the encrypted collection and initialization vector
  */
 async function encryptCollection(collection: CollectionData, info: string): Promise<EncryptedData> {
     /* Get data encryption key */
@@ -315,7 +353,7 @@ async function encryptCollection(collection: CollectionData, info: string): Prom
 /**
  * Decrypts a data collection
  * @private
- * @param data a data object with the encrypted data and initialisation vector
+ * @param data a data object with the encrypted data and initialization vector
  * @returns the decrypted data collection encrypted
  */
 async function decryptCollection(esdo: EncryptedData): Promise<CollectionData> {

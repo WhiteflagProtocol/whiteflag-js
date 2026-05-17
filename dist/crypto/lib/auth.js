@@ -1,7 +1,7 @@
 'use strict';
 export { deriveToken };
-import { WfVersion, WfAuthMethod } from '@whiteflagprotocol/common';
-import { hexToU8a, noNumber, noString } from '@whiteflagprotocol/util';
+import { WfVersion, WfAuthMethod, noNumber, noString } from '@whiteflagprotocol/common';
+import { hexToU8a } from '@whiteflagprotocol/util';
 import { hkdf } from "./hash.js";
 import authSpec_v1 from '../static/v1/wf-auth-params.json' with { type: 'json' };
 const PARAMS = compileAuthParams();

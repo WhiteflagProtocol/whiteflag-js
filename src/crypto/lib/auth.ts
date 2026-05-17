@@ -8,8 +8,8 @@ export {
 };
 
 /* Dependencies */
-import { WfVersion, WfAuthMethod } from '@whiteflagprotocol/common';
-import { ByteArray, hexToU8a, noNumber, noString } from '@whiteflagprotocol/util';
+import { WfVersion, WfAuthMethod, noNumber, noString } from '@whiteflagprotocol/common';
+import { ByteArray, hexToU8a } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { hkdf } from './hash.ts';

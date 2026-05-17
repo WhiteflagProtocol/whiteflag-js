@@ -31,15 +31,15 @@ import testVector from './data/tv-321-authentication.json' with { type: 'json' }
 /* TEST SCRIPT */
 testCase('Test case 321: Core authentication module', function() {
     testCase('Whiteflag authentication signatures (method 1)', function() {
-        const blockchainA = new Blockchain('A', 'ES256');
+        const testchainA = new Blockchain('A', 'ES256');
         assertion(' 1a. should correctly verify existing valid signature', async function() {
             /* Get signed Whiteflag signature */
             const signature = WfSignature.fromObject(testVector['1'].signature);
             strictEqual(signature.isSigned(), true);
             /* Check signature against account and url */
-            const account =  await Account.fromPublicKey(blockchainA, hexToU8a(testVector['1'].pubkey));
+            const account =  await Account.fromPublicKey(testchainA, hexToU8a(testVector['1'].pubkey));
             const signurl = new URL(testVector['1'].url.correct);
-            const result = await isValidAuthSignature(blockchainA, account, signature, signurl);
+            const result = await isValidAuthSignature(testchainA, account, signature, signurl);
             /* Check results */
             return strictEqual(result, true);
         });
@@ -48,9 +48,9 @@ testCase('Test case 321: Core authentication module', function() {
             const signature = WfSignature.fromObject(testVector['1'].invalid);
             strictEqual(signature.isSigned(), true);
             /* Check signature against account and url */
-            const account = await Account.fromPublicKey(blockchainA, hexToU8a(testVector['1'].pubkey));
+            const account = await Account.fromPublicKey(testchainA, hexToU8a(testVector['1'].pubkey));
             const signurl = new URL(testVector['1'].url.false);
-            const result = await isValidAuthSignature(blockchainA, account, signature, signurl);
+            const result = await isValidAuthSignature(testchainA, account, signature, signurl);
             /* Check results */
             return strictEqual(result, false);
         });
@@ -59,9 +59,9 @@ testCase('Test case 321: Core authentication module', function() {
             const signature = WfSignature.fromObject(testVector['1'].signature);
             strictEqual(signature.isSigned(), true);
             /* Check signature against account and url */
-            const account = await Account.fromPublicKey(blockchainA, hexToU8a(testVector['1'].wrongkey));
+            const account = await Account.fromPublicKey(testchainA, hexToU8a(testVector['1'].wrongkey));
             const signurl = new URL(testVector['1'].url.correct);
-            const result = await isValidAuthSignature(blockchainA, account, signature, signurl);
+            const result = await isValidAuthSignature(testchainA, account, signature, signurl);
             /* Check results */
             return strictEqual(result, false);
         });
@@ -70,61 +70,61 @@ testCase('Test case 321: Core authentication module', function() {
             const signature = WfSignature.fromObject(testVector['1'].signature);
             strictEqual(signature.isSigned(), true);
             /* Check signature against account and url */
-            const account = await Account.fromPublicKey(blockchainA, hexToU8a(testVector['1'].pubkey));
+            const account = await Account.fromPublicKey(testchainA, hexToU8a(testVector['1'].pubkey));
             const signurl = new URL(testVector['1'].url.false);
-            const result = await isValidAuthSignature(blockchainA, account, signature, signurl);
+            const result = await isValidAuthSignature(testchainA, account, signature, signurl);
             /* Check results */
             return strictEqual(result, false);
         });
         assertion(' 2a. should correctly create and sign signature', async function() {
             /* Create blockchain, originator and account */
-            const blockchainB = new Blockchain('B', 'Ed25519');
-            const account = await Account.create(blockchainB);
+            const testchainB = new Blockchain('B', 'Ed25519');
+            const account = await Account.create(testchainB);
             const signurl = new URL(testVector['2'].url);
             const originator = new WfOriginator({
                 name: testVector['2'].orgname,
                 accounts: [ account.getAddress() ]
             });
             /* Create unsigned signature */
-            const unsigned = WfSignature.create(blockchainB.signAlgorithm, {
+            const unsigned = WfSignature.create(testchainB.signAlgorithm, {
                 addr: account.getAddress(),
                 orgname: originator.getName(),
                 url: signurl.toString()
             });
             strictEqual(unsigned.isSigned(), false);
             /* Create signature */
-            const signed = await createAuthSignature(blockchainB, account, originator, signurl);
+            const signed = await createAuthSignature(testchainB, account, originator, signurl);
             strictEqual(signed.isSigned(), true);
             /* Verify signature */
-            const result = await isValidAuthSignature(blockchainB, account, signed, signurl);
+            const result = await isValidAuthSignature(testchainB, account, signed, signurl);
             return strictEqual(result, true);
         });
     });
     testCase('Whiteflag authentication token (method 2)', function() {
-        const blockchainC = new Blockchain('C', 'ES256');
+        const testchainC = new Blockchain('C', 'ES256');
         assertion(' 3a. should correctly verify token', async function() {
-            const account = await Account.fromAddress(blockchainC, testVector['3'].address);
+            const account = await Account.fromAddress(testchainC, testVector['3'].address);
             const secret = hexToU8a(testVector['3'].secret);
             const token = hexToU8a(testVector['3'].token);
             const result = await isValidAuthToken(token, account, secret);
             return strictEqual(result, true);
         });
         assertion(' 3b. should correctly verify invalid token', async function() {
-            const account = await Account.fromAddress(blockchainC, testVector['3'].address);
+            const account = await Account.fromAddress(testchainC, testVector['3'].address);
             const secret = hexToU8a(testVector['3'].secret);
             const token = hexToU8a(testVector['4'].token);
             const result = await isValidAuthToken(token, account, secret);
             return strictEqual(result, false);
         });
         assertion(' 3c. should correctly verify token', async function() {
-            const account = await Account.fromAddress(blockchainC, testVector['4'].address);
+            const account = await Account.fromAddress(testchainC, testVector['4'].address);
             const secret = hexToU8a(testVector['4'].secret);
             const token = hexToU8a(testVector['4'].token);
             const result = await isValidAuthToken(token, account, secret);
             return strictEqual(result, true);
         });
         assertion(' 3d. should correctly verify token against wrong address', async function() {
-            const account = await Account.fromAddress(blockchainC, testVector['3'].address);
+            const account = await Account.fromAddress(testchainC, testVector['3'].address);
             const secret = hexToU8a(testVector['4'].secret);
             const token = hexToU8a(testVector['4'].token);
             const result = await isValidAuthToken(token, account, secret);

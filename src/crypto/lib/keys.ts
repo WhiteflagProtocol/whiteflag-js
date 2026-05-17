@@ -137,7 +137,7 @@ function useExtKey(key: ExtCryptoKey): ByteArray {
  * @returns the raw binary cryptographic key
  */
 function exportExtKey(key: ExtCryptoKey): ByteArray {
-    if (!key.extractable) throw Error('Cannot export a non-extractable key');
+    if (!key.extractable) throw new Error('Cannot export a non-extractable key');
     return useExtKey(key);
 }
 /**
@@ -168,7 +168,7 @@ function createKeyPair(privateKey: CryptoKey, publicKey: CryptoKey): CryptoKeyPa
  * CryptoKeyPair interface.
  */
 function createExtKeyPair(privateKey: ExtCryptoKey, publicKey: ExtCryptoKey): ExtCryptoKeyPair {
-    return createKeyPair(privateKey, publicKey) as ExtCryptoKeyPair;
+    return createKeyPair(privateKey, publicKey);
 }
 /**
  * Generates a Web Crypto API-like ECDH key pair
@@ -216,7 +216,7 @@ async function createAesKey(rawKey: ByteArray,
                             extractable = NOTEXTRACTABLE
                         ): Promise<CryptoKey> {
     const aesAlgorithm: AesKeyAlgorithm = {
-        name: algorithm as string,
+        name: algorithm,
         length: rawKey.length * BYTELENGTH
     };
     return crypto.subtle.importKey(
@@ -240,7 +240,7 @@ async function createHmacKey(rawKey: ByteArray,
                         ): Promise<CryptoKey> {
     const hmacAlgorithm: HmacImportParams = {
         name: HMAC,
-        hash: { name: algorithm as string }
+        hash: { name: algorithm }
     };
     return crypto.subtle.importKey(
         RAWKEY,

@@ -1,0 +1,39 @@
+{
+    "$description": "Test case 020: Common logger module test data",
+    "fatal": {
+        "level": 1,
+        "indicator": "FATAL",
+        "message": "Some fatal error message!!!",
+        "module": "test"
+    },
+    "error": {
+        "level": 2,
+        "indicator": "ERROR",
+        "message": "Some error message!",
+        "module": "test"
+    },
+    "warn": {
+        "level": 3,
+        "indicator": "WARN",
+        "message": "Some warning message?!",
+        "module": "test"
+    },
+    "info": {
+        "level": 4,
+        "indicator": "INFO",
+        "message": "Some informational message.",
+        "module": "test"
+    },
+    "debug": {
+        "level": 5,
+        "indicator": "DEBUG",
+        "message": "Some debug data...",
+        "module": "test"
+    },
+    "trace": {
+        "level": 6,
+        "indicator": "TRACE",
+        "message": "Some tracing data......",
+        "module": "test"
+    }
+}

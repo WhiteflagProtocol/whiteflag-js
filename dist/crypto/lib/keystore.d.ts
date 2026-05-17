@@ -16,7 +16,7 @@ export type KeyId = Base64url;
  * data. It is therefore part of the main programming interface. It does not
  * expose functions providing access to keystore, because that is only
  * required for classes internally to manage their keys. In order to prevent
- * tampering with the keystore after the initialisation, the keystore
+ * tampering with the keystore after the initialization, the keystore
  * control may be sealed. Once sealed, it cannot be unsealed and only exports
  * of encrypted keys are possible.
  */
@@ -56,7 +56,7 @@ declare class KeyStoreCtrl {
     import(ekdo: EncryptedData): Promise<boolean>;
     /**
      * Exports the encrypted serialized keystore data
-     * @returns a data object with the encrypted keystore and initialisation vector
+     * @returns a data object with the encrypted keystore and initialization vector
      */
     export(): Promise<EncryptedData>;
 }

@@ -12,7 +12,7 @@ import { ByteArray, Base64, Serializable } from '@whiteflagprotocol/util';
 interface EncryptedData extends Serializable {
     /** Optional information about the encrypted data */
     info?: string;
-    /** The base64 encoded initialisation vector used to encrypt the data */
+    /** The base64 encoded initialization vector used to encrypt the data */
     iv: Base64;
     /** The base64 encoded AES-256-GCM encrypted data */
     encrypted: Base64;
@@ -22,13 +22,13 @@ interface EncryptedData extends Serializable {
  * @param key the cryptographic key object to encypt the data
  * @param plain the binary data to be encrypted
  * @param info optional additional information to be added to the returned object
- * @returns a data object with the encrypted data and initialisation vector
+ * @returns a data object with the encrypted data and initialization vector
  */
 declare function encryptData(key: CryptoKey, plain: ByteArray, info?: string): Promise<EncryptedData>;
 /**
  * Decrypts binary data using AES-256-GCM
  * @param key the cryptographic key object to decrypt the data
- * @param edo a data object with the encrypted data and initialisation vector
+ * @param edo a data object with the encrypted data and initialization vector
  * @returns the decrypted data
  */
 declare function decryptData(key: CryptoKey, edo: EncryptedData): Promise<ByteArray>;

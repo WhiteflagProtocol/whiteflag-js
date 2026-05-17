@@ -1,14 +1,18 @@
 'use strict';
 export { WfState };
-import { handleError, WfRuntimeError } from '@whiteflagprotocol/common';
+import { WfRuntimeError, handleError, noString } from '@whiteflagprotocol/common';
 import { KeyStoreCtrl, generateDEK, encryptData, decryptData, hkdf } from '@whiteflagprotocol/crypto';
 import { DataCollection } from '@whiteflagprotocol/util';
-import { sleep, noString, objectHas, hexToU8a, objToU8a, strToU8a, u8aToObj } from '@whiteflagprotocol/util';
+import { delay, objectHas, getPosixEpoch, hexToU8a, objToU8a, strToU8a, u8aToObj } from '@whiteflagprotocol/util';
+import { WfBlockchainState } from "./blockchain.js";
+import { WfEvent, WfEventEmitter } from "./events.js";
+const DELAYTIME = 50;
 const KEY_LENGTH = 32;
 const MEK_INFO = strToU8a('MEK-WfState');
 const MEK_SALT = hexToU8a('33a4cff8ca686550b82765ffaf69003b6be657aed9d97982790e9c334cc6cfbe');
 const DEK_SALT = hexToU8a('927ef470db1b182131ec04c30f7fe4d954215bb0a42e0a2015821a76d7030741');
-const keystore = KeyStoreCtrl.getInstance();
+const wfKeystore = KeyStoreCtrl.getInstance();
+const wfEvent = WfEventEmitter.getInstance();
 let _masterKey;
 let _blockchains = DataCollection.create();
 let _originators = DataCollection.create();
@@ -30,17 +34,19 @@ class WfState {
             await setMasterKey(masterKey);
         }
         catch (err) {
-            handleError(err, 'Cannot set Whiteflag state master encryption key');
+            return handleError(err, 'Cannot set Whiteflag state master encryption key');
         }
         try {
             if (data)
                 await importData(data);
         }
         catch (err) {
-            handleError(err, 'Error importing Whiteflag state data');
+            return handleError(err, 'Error importing Whiteflag state data');
         }
-        keystore.seal();
-        return this.#instance = new WfState(this.#sit);
+        wfKeystore.seal();
+        this.#instance = new WfState(this.#sit);
+        wfEvent.emit(WfEvent.STATE_INITIALIZED, this.#instance);
+        return this.#instance;
     }
     static getInstance() {
         if (!this.#instance) {
@@ -50,7 +56,7 @@ class WfState {
     }
     static async readyInstance() {
         while (!this.#instance)
-            await sleep(50);
+            await delay(DELAYTIME);
         return this.#instance;
     }
     async export(encrypt = true) {
@@ -58,28 +64,39 @@ class WfState {
             exportCollection(_blockchains, encrypt, 'WfBlockchainState'),
             exportCollection(_originators, encrypt, 'WfOriginatorState'),
             exportCollection(_accounts, encrypt, 'WfAccountState'),
-            keystore.export()
+            wfKeystore.export()
         ];
         let data = [];
         try {
             data = await Promise.all(batch);
         }
         catch (err) {
-            handleError(err, 'Cannot export Whiteflag state');
+            return handleError(err, 'Cannot export Whiteflag state');
         }
         return {
-            _timestamp: new Date().toISOString(),
+            _timestamp: getPosixEpoch(),
             blockchains: data[0],
             originators: data[1],
             accounts: data[2],
             secrets: data[3]
         };
     }
-    getBlockchainStatus(blockchain) {
+    hasBlockchain(blockchain) {
+        return _blockchains.exists(blockchain);
+    }
+    getBlockchain(blockchain) {
         return _blockchains.retrieve(blockchain);
     }
-    upsertBlockchainStatus(status) {
+    upsertBlockchain(status) {
         return _blockchains.upsert(status);
+    }
+    createBlockchain(blockchain) {
+        if (_blockchains.exists(blockchain))
+            return null;
+        return _blockchains.upsert(WfBlockchainState.create(blockchain));
+    }
+    hasAccount(address) {
+        return _accounts.exists(address);
     }
     getAccount(address) {
         return _accounts.retrieve(address);
@@ -104,7 +121,7 @@ class WfState {
 async function setMasterKey(masterKey) {
     const rawKey = hexToU8a(masterKey);
     _masterKey = await generateMEK(rawKey);
-    const success = await keystore.setMasterKey(rawKey);
+    const success = await wfKeystore.setMasterKey(rawKey);
     if (!success)
         throw new Error('Could not set keystore master key');
     return true;
@@ -123,7 +140,7 @@ async function importData(data) {
         _accounts = await importCollection(data.accounts);
     }
     if (data?.secrets) {
-        const success = await keystore.import(data?.secrets);
+        const success = await wfKeystore.import(data?.secrets);
         if (!success)
             throw new Error('Could not import keystore data');
     }

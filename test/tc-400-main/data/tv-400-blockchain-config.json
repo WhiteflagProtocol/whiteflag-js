@@ -1,0 +1,14 @@
+{
+    "$description": "Test case 4xx: Main blockchain configuration test data",
+    "testchain": {
+        "name": "testchain",
+        "testnet": true,
+        "active": true,
+        "blockIntervalTime": 50,
+        "blockRetrievalStart": 0,
+        "blockRetrievalRestart": 10,
+        "blockMaxRetries": 2,
+        "blockBatchSize": 12,
+        "transactionBatchSize": 12
+    }
+}

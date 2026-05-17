@@ -13,7 +13,7 @@
 export { WfAccount, WfAccountData } from './lib/account.ts';
 export { WfSignature, createAuthSignature, createAuthToken, validateAuthSignature, isValidAuthSignature, isValidAuthToken } from './lib/authentication.ts';
 export { WfCodec, encodeField, decodeField, isValidValue } from './lib/codec.ts';
-export { WfCoreMessage, WfCoreMessageData, WfMsgHeader, WfMsgBody, isValidMessage, validateMessage, encryptMessage, decryptMessage } from './lib/message.ts';
+export { WfCoreMessage, WfCoreMessageData, WfMsgHeader, WfMsgBody, isValidMessage, validateMessage, encryptMessage, decryptMessage, WFMSG_PREFIX } from './lib/message.ts';
 export { WfOriginator, WfOriginatorData } from './lib/originator.ts';
 export { WfVersion, WfMsgType, WfAuthMethod, WfCryptoMethod } from '@whiteflagprotocol/common';
 export { BinaryBuffer } from '@whiteflagprotocol/util';

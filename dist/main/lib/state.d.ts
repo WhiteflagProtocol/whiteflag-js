@@ -1,13 +1,14 @@
 /**
  * @module main/state
  * @summary Whiteflag JS state module
+ * @todo State closure?
  */
 export { WfState, WfStateData };
 import { Address } from '@whiteflagprotocol/common';
 import { WfAccount, WfOriginator } from '@whiteflagprotocol/core';
 import { EncryptedData } from '@whiteflagprotocol/crypto';
-import { CollectionData, DataId, Hex, Serializable } from '@whiteflagprotocol/util';
-import { WfBlockchainStatus } from './blockchain.ts';
+import { CollectionData, DataId, posixtime, Hex, Serializable } from '@whiteflagprotocol/util';
+import { WfBlockchainState } from './blockchain.ts';
 /**
  * Whiteflag state data object as exported by the `WfState` class
  * @remarks The Whiteflag state returns this object when its data is
@@ -15,10 +16,11 @@ import { WfBlockchainStatus } from './blockchain.ts';
  * data object (the keystore data is always encrypted).
  */
 interface WfStateData extends Serializable {
-    _timestamp?: string;
+    /** The POSIX epoch timestamp */
+    _timestamp: posixtime;
     /** Plain or encrypted data object with the blockchain state */
     blockchains: CollectionData | EncryptedData;
-    /** Plain or encrypted data object with the knwon originators */
+    /** Plain or encrypted data object with the known originators */
     originators: CollectionData | EncryptedData;
     /** Plain or encrypted data object with the known blockchain accounts */
     accounts: CollectionData | EncryptedData;
@@ -48,11 +50,15 @@ declare class WfState {
     /**
      * Gets the Whiteflag protocol state
      * @returns the Whiteflag protocol state singular instance
+     * @throws if the Whiteflag state has not been initialized
      */
     static getInstance(): WfState;
     /**
      * Waits for the initialized Whiteflag protocol state
      * @returns the Whiteflag protocol state singular instance
+     * @remarks This is a safer method to get the Whiteflag protocol state
+     * instance, because it waits for the Whiteflag state to have been
+     * initialized.
      */
     static readyInstance(): Promise<WfState>;
     /**
@@ -62,17 +68,35 @@ declare class WfState {
      */
     export(encrypt?: boolean): Promise<WfStateData>;
     /**
+     * Checks for the blockchain state in the Whiteflag state
+     * @param blockchain the name of the blockchain
+     * @returns `true` if the blockchain exists in the state, else `false`
+     */
+    hasBlockchain(blockchain: string): boolean;
+    /**
      * Get a blockchain state from the Whiteflag state
      * @param blockchain the name of the blockchain
      * @returns the blockchain state, or `null` if not found
      */
-    getBlockchainStatus(blockchain: string): WfBlockchainStatus | null;
+    getBlockchain(blockchain: string): WfBlockchainState | null;
     /**
-     * Upserts a blockchain account in the Whiteflag state
+     * Upserts a blockchain state in the Whiteflag state
      * @param status the blockchain status
      * @returns the blockchain state data item identifier, i.e. the blockchain name
      */
-    upsertBlockchainStatus(status: WfBlockchainStatus): string;
+    upsertBlockchain(status: WfBlockchainState): string;
+    /**
+     * Creates a new empty blockchain state, if not yet existing
+     * @param blockchain the name of the new blockchain
+     * @returns the blockchain state data item identifier, or null if none created
+     */
+    createBlockchain(blockchain: string): string | null;
+    /**
+     * Checks for the account in the Whiteflag state
+     * @param address the address of the account
+     * @returns `true` if the account exists in the state, else `false`
+     */
+    hasAccount(address: Address): boolean;
     /**
      * Get a blockchain account from the Whiteflag state
      * @param address the address of the account

@@ -15,8 +15,8 @@ export {
 };
 
 /* Dependencies */
-import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
-import { ByteArray, BinaryBuffer, DataItem, DataId, Hex, Serializable, isString, serializable } from '@whiteflagprotocol/util';
+import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode, WfRuntimeError } from '@whiteflagprotocol/common';
+import { ByteArray, BinaryBuffer, DataItem, DataId, Hex, Serializable, isString, deepCopy } from '@whiteflagprotocol/util';
 import { encryptMsg, decryptMsg, deriveKey } from '@whiteflagprotocol/crypto';
 
 /* Module imports */
@@ -28,8 +28,8 @@ import msgSpec_v1 from '../static/v1/wf-msg-structure.json' with { type: 'json' 
 
 /* Constants */
 const EMPTYSTR = '';
-const MSG_PREFIX = 'WF';
-const MSG_NOENCRYPT = '0';
+export const WFMSG_PREFIX = 'WF';
+export const WFMSG_NOENCRYPT = '0';
 
 /* MODULE DECLARATIONS */
 /**
@@ -62,30 +62,39 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
     /* CLASS PROPERTIES */
     /** The data stored in this data item */
     readonly #data: WfCoreMessageData;
+    /** Reference to the message header */
+    readonly #header: WfMsgHeader;
+    /** Reference to the message body */
+    readonly #body: WfMsgBody;
+    /** The Whiteflag protocol version */
+    readonly #version: WfVersion = WfVersion.v1;
     /** The message type */
     #type: WfMsgType;
-    /** The Whiteflag protocol version */
-    #version: WfVersion = WfVersion.v1;
     /** The binary encoded message */
     #binary: BinaryBuffer = BinaryBuffer.empty();
     /** Indicates if message is final and cannot be altered */
     #final: boolean = false;
 
-    /* CONSTRUCTOR */
+    /* CONSTRUCTOR AND STATIC FACTORY METHODS */
     /**
      * Constructs a Whiteflag message
      * @param data a plain JavaScript object with message header and body
+     * @param binary a binary buffer with the encoded message, if 
      * @param id a unique identifier for the data item; automatically generated if not specified
      * @param ddat a data acces stoken for access to the private data property
      */
-    constructor(data: WfCoreMessageData, id?: DataId, ddat = Symbol('WfCoreMessage')) {
+    constructor(data: WfCoreMessageData, binary?: BinaryBuffer, id?: DataId, ddat = Symbol('WfCoreMessage')) {
+        /* Organize core data */
         super(data, id, ddat);
         this.#data = super.getDataReference(ddat) as WfCoreMessageData;
+        if (binary) this.#binary = binary;
+
+        /* References to data */
+        this.#header = this.#data?.MessageHeader;
+        this.#body = this.#data?.MessageBody;
         this.#type = this.#data?.MessageHeader['MessageCode'] as WfMsgType;
         this.#version = this.#data?.MessageHeader['Version'] as WfVersion;
     }
-
-    /* STATIC FACTORY METHODS */
     /**
      * Creates a new Whiteflag message
      * @param msgType the Whiteflag message type
@@ -94,55 +103,63 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
      */
     public static create(msgType: WfMsgType, version = WfVersion.v1): WfCoreMessage {
         const data = {
-            MessageHeader: generateHeader(msgType, version),
-            MessageBody: generateBody(msgType, version)
+            MessageHeader: this.generateHeader(msgType, version),
+            MessageBody: this.generateBody(msgType, version)
         }
-        return new WfCoreMessage(data);
+        return new this(data);
     }
-        /**
-     * Creates new Whiteflag message from a plain object
+    /**
+     * Creates new Whiteflag message from a plain message data object
      * @param message a plain JavaScript object with message header and body
      * @returns a new Whiteflag message
      */
-    public static override fromObject(message: any): WfCoreMessage {
+    public static override fromObject(message: WfCoreMessageData): WfCoreMessage {
         /* Check object */
         const errors = validateMessage(message);
         if (errors.length > 0) throw new WfProtocolError('Invalid message', errors, WfErrorCode.FORMAT);
 
         /* Create new WfCoreMessage object */
-        const header = message.MessageHeader;
-        const wfMessage = this.create(header['MessageCode'] as WfMsgType, header['Version'] as WfVersion);
-
-        /* Set header fields */
-        for (const [field, value] of Object.entries(header)) {
-            if (!wfMessage.set(field, value as string)) {
-                throw new WfProtocolError(`Header field ${field} could not be set`, null, WfErrorCode.FORMAT);
-            }
-        }
-        /* Set body fields */
-        const body = message.MessageBody; 
-        for (const [field, value]  of Object.entries(body)) {
-            if (!wfMessage.set(field, value as string)) {
-                throw new WfProtocolError(`Body field ${field} could not be set`, null, WfErrorCode.FORMAT);
-            }
-        }
+        const wfMessage = this.create(
+            message.MessageHeader['MessageCode'] as WfMsgType,
+            message.MessageHeader['Version'] as WfVersion
+        );
+        /* Set header and body data, and return result */
+        wfMessage.setHeader(message.MessageHeader);
+        wfMessage.setBody(message.MessageBody);
         return wfMessage;
     }
     /**
      * Creates new Whiteflag message from a binary buffer
      * @param message a binary buffer with the encoded message
-     * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
-     * @param ikm the input key material to derive the encryption key, if the message is encrypted
-     * @param iv the initialisation vector, if required for the encryption method
-     * @returns a new Whiteflag message with the decoded message
+     * @returns a new Whiteflag message
      */
-    public static async fromBinary(message: BinaryBuffer, account?: WfAccount, ikm?: ByteArray, iv?: ByteArray): Promise<WfCoreMessage> {
-        let buffer = message;
+    public static fromBinary(message: BinaryBuffer): WfCoreMessage {
+        /* Construct data */
+        const header = this.extractHeader(message);
+        const data = {
+            MessageHeader: header,
+            MessageBody: this.generateBody(WfMsgType.unknown, header['version'] as WfVersion)
+        }
+        /* Create message */
+        return new this(data, message);
+    }
 
-        /* Decode and check unencrypted header */
-        const { prefix, version, encryption } = extractUnencryptedHeader(buffer);
+    /*
+     * STATIC PUBLIC METHODS
+     * These functions are generic supporting function for creating message
+     * that are used by other class function, but are also useful for functions
+     * of child classes and in other contexts.
+     */
+    /**
+     * Extracts the unecrypted header from an encoded message
+     * @param message the binary encoded message
+     * @returns a plain Whiteflag message header object
+     */
+    public static extractHeader(message: BinaryBuffer): WfMsgHeader {
+        /* Extract and check unencrypted header fields */
+        const { prefix, version, encryption } = extractUnencryptedHeader(message);
         if (!checkPrefix(prefix)) {
-            throw new WfProtocolError(`Message has no ${MSG_PREFIX} prefix`, null, WfErrorCode.FORMAT);
+            throw new WfProtocolError(`Message has no ${WFMSG_PREFIX} prefix`, null, WfErrorCode.FORMAT);
         }
         if (!checkVersion(version)) {
             throw new WfProtocolError(`Undefined protocol version: ${version}`, null, WfErrorCode.FORMAT);
@@ -150,36 +167,55 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
         if (!checkEncryption(encryption)) {
             throw new WfProtocolError(`Undefined encryption method: ${encryption}`, null, WfErrorCode.ENCRYPTION);
         }
-        /* Decrypt binary message if necessary */
-        if (encryption !== MSG_NOENCRYPT) {
-            if (!ikm) throw new Error('Missing encryption key');
-            if (!account) throw new Error('Missing originator account');
-            const binAddress = await account.getBinAddress();
-            buffer = await decryptMessage(
-                message as BinaryBuffer,
-                encryption as WfCryptoMethod,
-                ikm as ByteArray,
-                binAddress as ByteArray,
-                iv as ByteArray,
-                version as WfVersion
-            );
+        /* Create and return header */
+        const header = this.generateHeader(WfMsgType.unknown, version as WfVersion);
+        header['Prefix'] = prefix;
+        header['Version'] = version;
+        header['EncryptionIndicator'] = encryption;
+        return header;
+    }
+    /**
+     * Generates message header and sets known values
+     * @param msgType the message type
+     * @param version the Whiteflag protocol version
+     * @returns a plain Whiteflag message header object
+     */
+    public static generateHeader(msgType: WfMsgType, version = WfVersion.v1): WfMsgHeader {
+        let header: WfMsgHeader = Object.create(null);
+        for (const field of Object.keys(MSGSPEC[msgType][version].header)) {
+            header[field] = EMPTYSTR;
         }
-        /* Decode message type */
-        let msgType = extractHeaderField(buffer, 'MessageCode') as WfMsgType;
-        if (!checkType(msgType)) {
-            throw new WfProtocolError(`Undefined message type: ${msgType}`, null, WfErrorCode.FORMAT);
+        header['Prefix'] = WFMSG_PREFIX;
+        header['Version'] = version as string;
+        header['MessageCode'] = msgType as string;
+        return header;
+    }
+    /**
+     * Generates message body
+     * @param msgType the message type, or pseudo type for a test message
+     * @param version the Whiteflag protocol version
+     * @param testMsg if test message; defaults to `false`
+     * @returns a plain Whiteflag message body object
+     */
+    public static generateBody(msgType: WfMsgType, version = WfVersion.v1, testMsg = false): WfMsgBody {
+        let body: WfMsgBody = Object.create(null);
+        if (testMsg) body['PseudoMessageCode'] = msgType as string;
+        for (const field of Object.keys(MSGSPEC[msgType][version].body)) {
+            body[field] = EMPTYSTR;
         }
-        /* Create and decode new message object */
-        const wfMessage = this.create(msgType, version as WfVersion);
-        return wfMessage.decode(buffer);
+        return body;
     }
 
-    /* PUBLIC CLASS METHODS */
+    /* 
+     * PUBLIC CLASS METHODS for message handling
+     * These functions are for encoding en decoding messages,
+     * validate its format and values, and checking its status.
+     */
     /**
-     * Indicates if the message has already been encoded
+     * Indicates if the message has been fully encoded or decoded
      * @returns `true` if message has been encoded, else `false`
      */
-    public isEncoded(): boolean {
+    public isFinal(): boolean {
         if (this.#final) return true;
         return false;
     }
@@ -196,123 +232,84 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
      * @returns an array of validation errors
      */
     public validate(): string[] {
-        return checkMsgSegments(this.#data.MessageHeader, this.#data.MessageBody);
-    }
-    /**
-     * Decodes an unencrypted binary encoded message
-     * @param message a binary encoded message
-     * @returns a new Whiteflag message object
-     */
-    public async decode(message: BinaryBuffer): Promise<WfCoreMessage> {
-        if (!this.#final) {
-            /* Get message specification */
-            let errors: string[] = [];
-            let msgType = this.#type;
-            let msgSpec = MSGSPEC[msgType][this.#version];
-
-            /* Store binary message */
-            this.#binary = message; 
-
-            /* Decode and set header fields */
-            for (const field of Object.keys(msgSpec.header)) {
-                if (!this.set(field, decodeHeaderField(message, field, msgType, this.#version))) {
-                    errors.push(`Header field ${field} could not be set`);
-                }
-            }
-            /* If test message, add pseudo message body and offset for other fields */
-            let offset = 0;
-            if (msgType === WfMsgType.T) {
-                const field = 'PseudoMessageCode';
-                if (this.set(field, decodeBodyField(message, field, msgType, offset, this.#version))) {
-                    const fieldSpec = msgSpec.body[field];
-                    offset = fieldSpec.endBit - fieldSpec.startBit;
-                    msgType = this.#data.MessageBody[field] as WfMsgType;
-                } else {
-                    errors.push(`Body field ${field} could not be set`);
-                }
-            }
-            /* Decode and set body fields */
-            msgSpec = MSGSPEC[msgType][this.#version];
-            for (const field of Object.keys(msgSpec.body)) {
-                if (!this.set(field, decodeBodyField(message, field, msgType, offset, this.#version))) {
-                    errors.push(`Body field ${field} could not be set`);
-                }
-            }
-            /* Final validation check */
-            if (errors.length === 0) errors = this.validate();
-            if (errors.length > 0) {
-                throw new WfProtocolError(`Cannot decode ${this.#type} message`, errors, WfErrorCode.FORMAT);
-            }
-            this.#final = true;
-        }
-        return this;
+        return checkMsgSegments(this.#header, this.#body);
     }
     /**
      * Encodes the message, making the contents final
      * @param account the blockchain account with which the message is sent, required to derive the encryption key if the message is encrypted
      * @param ikm the input key material to derive the encryption key, if the message is to be encrypted
-     * @param iv the initialisation vector, if required for the encryption method
-     * @returns this Whitedlag message object with the encoded message
+     * @param iv the initialization vector, if required for the encryption method
+     * @returns this Whiteflag message object with the encoded message
      */
-    public async encode(account?: WfAccount, ikm?: ByteArray, iv?: ByteArray): Promise<WfCoreMessage> {
+    public async encode(account?: WfAccount, ikm?: ByteArray, iv?: ByteArray): Promise<this> {
         if (!this.#final) {
             /* Validate message before encoding */
             const errors = this.validate();
             if (errors.length > 0) {
                 throw new WfProtocolError('Cannot encode message', errors, WfErrorCode.FORMAT);
             }
-            /* Encode message header */
-            const header = this.#data.MessageHeader;
-            for (const field of Object.keys(header)) {
-                const encoding = MSGSPEC[this.#type][this.#version].header[field].encoding as WfCodec;
-                this.#binary.append(encodeField(header[field] as string, encoding, this.#version));
-            }
-            /* Encode message body */
-            let msgType = this.#type;
-            const body = this.#data.MessageBody;
-            for (const field of Object.keys(body)) {
-                const encoding = MSGSPEC[msgType][this.#version].body[field].encoding as WfCodec;
-                this.#binary.append(encodeField(body[field] as string, encoding, this.#version));
+            /* Encode message header and body */
+            await this.#encodeHeader();
+            await this.#encodeBody();
 
-                /* If pseudo message code, treat rest of body as pseudo message type */
-                if (field === 'PseudoMessageCode') msgType = body[field] as WfMsgType;
-            }
             /* Encrypt message if encryption indicator is set */
-            if (header['EncryptionIndicator'] !== MSG_NOENCRYPT) {
-                if (!ikm) throw new Error('Missing encryption key');
-                if (!account) throw new Error('Missing originator account');
-                const binAddress = await account.getBinAddress();
-                this.#binary = await encryptMessage(
-                    this.#binary, 
-                    header['EncryptionIndicator'] as WfCryptoMethod,
-                    ikm as ByteArray,
-                    binAddress as ByteArray,
-                    iv as ByteArray,
-                    header['Version'] as WfVersion
-                );
+            if (this.#header['EncryptionIndicator'] !== WFMSG_NOENCRYPT) {
+                if (!ikm) throw new WfRuntimeError('Missing encryption key');
+                if (!account) throw new WfRuntimeError('Missing originator account');
+                await this.#encrypt(account, ikm, iv);
             }
             this.#final = true;
         }
         return this;
     }
     /**
+     * Decodes a binary encoded message
+     * @param account the blockchain account with which the message has been sent, required to derive the encryption key
+     * @param ikm the input key material to derive the encryption key
+     * @param iv the initialization vector, if required for the encryption method
+     * @returns a new Whiteflag message object
+     */
+    public async decode(account?: WfAccount, ikm?: ByteArray, iv?: ByteArray): Promise<this> {
+        /* Check message */
+        if (this.#final) return this;
+        if (this.#binary.length === 0) throw new WfRuntimeError(`No binary message to decode`);
+
+        /* Decrypt if encypted */
+        let buffer: BinaryBuffer;
+        if (this.#header['EncryptionIndicator'] === WFMSG_NOENCRYPT) {
+            buffer = this.#binary;
+        } else {
+            if (!ikm) throw new WfRuntimeError('Missing encryption key');
+            if (!account) throw new WfRuntimeError('Missing originator account');
+            buffer = await this.#decrypt(account, ikm, iv);
+        }
+        /* Decode and set header and body fields */
+        let errors: string[] = [];
+        errors.push(...await this.#decodeHeader(buffer));
+        errors.push(...await this.#decodeBody(buffer));
+
+        /* Final validation check */
+        if (errors.length === 0) errors = this.validate();
+        if (errors.length > 0) {
+            throw new WfProtocolError(`Cannot decode ${this.#type} message`, errors, WfErrorCode.FORMAT);
+        }
+        this.#final = true;
+        return this;
+    }
+
+    /* 
+     * PUBLIC CLASS METHODS for getting and setting message fields
+     * These functions are to set and get data from the message, i.e.
+     * the message header and body message fields.
+     */
+    /**
      * Returns the value of the specified message field
      * @param fieldName the name of the message field
-     * @returns the value of the message field
+     * @returns the value of the message field, or `null` if no such field
      */
     public get(fieldName: string): string | null {
-        /* Look for field in message header */
-        const header = this.#data.MessageHeader;
-        for (const field of Object.keys(header)) {
-            if (field === fieldName) return header[field] as string;
-        }
-        /* Look for field in message body */
-        const body = this.#data.MessageBody;
-        for (const field of Object.keys(body)) {
-            if (field === fieldName) return body[field] as string;
-        }
-        /* Specified field not found */
-        return null;
+        /* Look for field in message header and body */
+        return this.getHeaderField(fieldName) || this.getBodyField(fieldName) || null;
     }
     /**
      * Sets the value of the specified message field, if the message has not been encoded
@@ -324,37 +321,136 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
         /* Cannot change data if already encoded */
         if (this.#final) return false;
 
+        /* Look for field to set value in message body or header */
+        if (this.setHeaderField(fieldName, value)) return true;
+        if (this.setBodyField(fieldName, value)) return true;
+
+        /* Specified field not found */
+        return false;
+    }
+    /**
+     * Returns the message header
+     * @returns a plain object with the message header
+     */
+    public getHeader(): WfMsgBody {
+        return deepCopy(this.#header);
+    }
+    /**
+     * Sets the values of all header fields
+     * @param header a Whiteflag message header
+     * @returns `true` if succesful, else `false`
+     */
+    public setHeader(header: WfMsgHeader): boolean {
+        /* Set header fields */
+        for (const [field, value] of Object.entries(header)) {
+            if (!this.setHeaderField(field, value as string)) {
+                throw new WfProtocolError(`Header field ${field} could not be set`, null, WfErrorCode.FORMAT);
+            }
+        }
+        return true;
+    }
+    /**
+     * Returns the message body
+     * @returns a plain object with the message body
+     */
+    public getBody(): WfMsgBody {
+        return deepCopy(this.#body);
+    }
+    /**
+     * Sets the values of all body fields
+     * @param body a Whiteflag message body
+     * @returns `true` if succesful, else `false`
+     */
+    public setBody(body: WfMsgBody): boolean {
+        /* Set body fields */
+        for (const [field, value] of Object.entries(body)) {
+            if (!this.setBodyField(field, value as string)) {
+                throw new WfProtocolError(`Body field ${field} could not be set`, null, WfErrorCode.FORMAT);
+            }
+        }
+        return true;
+    }
+    /**
+     * Returns the value of the specified message header field
+     * @param fieldName the name of the header field
+     * @returns the value of the header field, or `null` if no such field
+     */
+    public getHeaderField(fieldName: string): string | null {
+        for (const field of Object.keys(this.#header)) {
+            if (field === fieldName) return this.#header[field] as string;
+        }
+        return null;
+    }
+    /**
+     * Sets the value of the specified message header field, if the message has not been encoded
+     * @param fieldName the name of the header field
+     * @param value the value to set
+     * @returns `true` if succesful, else `false`
+     */
+    public setHeaderField(fieldName: string, value: string): boolean {
+        /* Cannot change data if already encoded */
+        if (this.#final) return false;
+
         /* Look for field to set value in message header */
-        const header = this.#data.MessageHeader;
-        for (const field of Object.keys(header)) {
+        for (const field of Object.keys(this.#header)) {
             if (field === fieldName) {
                 /* Cannot change message prefix, version and type */
-                if (field === 'Prefix' && value !== MSG_PREFIX) return false;
-                if (field === 'Version' && value !== header[field]) return false;
-                if (field === 'MessageCode' && value !== header[field]) return false;
-
+                if (field === 'Prefix' && value !== WFMSG_PREFIX) return false;
+                if (field === 'Version' && value !== this.#header[field]) return false;
+                if (field === 'MessageCode') {
+                    if (this.#type === WfMsgType.unknown) {
+                        this.#setType(value as WfMsgType);
+                    } else if (value !== this.#header[field]) return false;
+                }
                 /* Set field value */
-                header[field] = value;
+                this.#header[field] = value;
                 return true;
             }
         }
+        return false;
+    }
+    /**
+     * Returns the value of the specified message body field
+     * @param fieldName the name of the body field
+     * @returns the value of the body field, or `null` if no such field
+     */
+    public getBodyField(fieldName: string): string | null {
+        for (const field of Object.keys(this.#body)) {
+            if (field === fieldName) return this.#body[field] as string;
+        }
+        return null;
+    }
+    /**
+     * Sets the value of the specified message body field, if the message has not been encoded
+     * @param fieldName the name of the body field
+     * @param value the value to set
+     * @returns `true` if succesful, else `false`
+     */
+    public setBodyField(fieldName: string, value: string): boolean {
+        /* Cannot change data if already encoded */
+        if (this.#final) return false;
+
         /* Look for field to set value in message body */
-        const body = this.#data.MessageBody;
-        for (const field of Object.keys(body)) {
+        for (const field of Object.keys(this.#body)) {
             if (field === fieldName) {
                 if (field === 'PseudoMessageCode') {
-                    /* Create new pseudo message body */
-                    this.#data.MessageBody = generateBody(value as WfMsgType, this.#version, true);
+                    /* Create new test message body */
+                    this.#replaceBody(value as WfMsgType, true);
                 } else {
                     /* Set field value */
-                    body[field] = value;
+                    this.#body[field] = value;
                 }
                 return true;
             }
         }
-        /* Specified field not found */
         return false;
     }
+
+    /* 
+     * PUBLIC CLASS METHODS for exporting data
+     * These functions provide the message data in other formats,
+     * such as a concatinated string or binary encoded.
+     */
     /**
      * Returns the Whiteflag message as a string
      * @returns a concatinated string of field values 
@@ -363,14 +459,12 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
         let messageStr: string = EMPTYSTR;
         if (this.isValid()) {
             /* Serialize message header */
-            const header = this.#data.MessageHeader;
-            for (const field of Object.keys(header)) {
-                messageStr += header[field];
+            for (const field of Object.keys(this.#header)) {
+                messageStr += this.#header[field];
             }
             /* Serialize message body */
-            const body = this.#data.MessageBody;
-            for (const field of Object.keys(body)) {
-                messageStr += body[field];
+            for (const field of Object.keys(this.#body)) {
+                messageStr += this.#body[field];
             }
         }
         return messageStr;
@@ -390,6 +484,144 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
     public toU8a(): Uint8Array {
        if (this.#final) return this.#binary.toU8a();
        return new Uint8Array(0);
+    }
+
+    /* PRIVATE CLASS METHODS */
+    /**
+     * Sets the message type, if previously unknown
+     * @private
+     * @param type the message type
+     */
+    #setType(type: WfMsgType): void {
+        if (this.#type !== WfMsgType.unknown) {
+            throw new WfRuntimeError('Message type already set');
+        }
+        this.#type = type;
+        this.#replaceBody(type, false);
+    }
+    /**
+     * Encodes the message header
+     * @private
+     */
+    async #encodeHeader(): Promise<void> {
+        /* Encode header fields and append to the binary message */
+        for (const field of Object.keys(this.#header)) {
+            const encoding = MSGSPEC[this.#type][this.#version].header[field].encoding as WfCodec;
+            this.#binary.append(encodeField(this.#header[field] as string, encoding, this.#version));
+        }
+    }
+    /**
+     * Decodes the message header
+     * @private
+     * @param buffer the unencrypted binary message
+     * @returns an array with encountered decoding errors
+     */
+    async #decodeHeader(buffer: BinaryBuffer): Promise<string[]> {
+        /* Collect errors in array */
+        let errors: string[] = [];
+
+        /* Decode and set header fields */
+        for (const field of Object.keys(MSGSPEC[this.#type][this.#version].header)) {
+            if (!this.setHeaderField(field, decodeHeaderField(buffer, field, this.#type, this.#version))) {
+                errors.push(`Header field ${field} could not be set`);
+            }
+        }
+        return errors;
+    }
+    /**
+     * Encodes the message body
+     * @private
+     */
+    async #encodeBody(): Promise<void> {
+        /* Message type may change for pseudo message body */
+        let msgType = this.#type;
+
+        /* Encode body fields and append to the binary message */
+        const body = this.#body;
+        for (const field of Object.keys(body)) {
+            const encoding = MSGSPEC[msgType][this.#version].body[field].encoding as WfCodec;
+            this.#binary.append(encodeField(body[field] as string, encoding, this.#version));
+
+            /* If pseudo message code, treat rest of body as pseudo message type */
+            if (field === 'PseudoMessageCode') msgType = body[field] as WfMsgType;
+        }
+    }
+    /**
+     * Decodes the message body
+     * @private
+     * @param buffer the unencrypted binary message
+     * @returns an array with encountered decoding errors
+     */
+    async #decodeBody(buffer: BinaryBuffer): Promise<string[]> {
+        /* Collect errors in array */
+        let errors: string[] = [];
+
+        /* Message type, spec and offset may change for pseudo message body */
+        let msgType = this.#type;
+        let msgSpec = MSGSPEC[this.#type][this.#version];
+        let offset = 0;
+
+        /* If test message, set type, spec and offset for pseudo message body */
+        if (msgType === WfMsgType.T) {
+            const field = 'PseudoMessageCode';
+            if (this.setBodyField(field, decodeBodyField(buffer, field, msgType, offset, this.#version))) {
+                const fieldSpec = msgSpec.body[field];
+                offset = fieldSpec.endBit - fieldSpec.startBit;
+                msgType = this.#body[field] as WfMsgType;
+            } else {
+                errors.push(`Body field ${field} could not be decoded`);
+            }
+        }
+        /* Decode and set body (pseudo) fields */
+        msgSpec = MSGSPEC[msgType][this.#version];
+        for (const field of Object.keys(msgSpec.body)) {
+            if (!this.setBodyField(field, decodeBodyField(buffer, field, msgType, offset, this.#version))) {
+                errors.push(`Body field ${field} could not be decoded`);
+            }
+        }
+        return errors;
+    }
+    /**
+     * Replaces the message body
+     * @private
+     * @param msgType the message type, or pseudo type for a test message
+     * @param testMsg if test message; defaults to `false`
+     */
+    #replaceBody(type: WfMsgType, testMsg: boolean = false): void {
+        Object.keys(this.#body).forEach(field => delete this.#body[field]);
+        Object.assign(this.#body, WfCoreMessage.generateBody(type, this.#version, testMsg));
+    }
+    /**
+     * Encrypts the encoded binary message buffer
+     * @param account the blockchain account with which the message is sent, required to derive the encryption key
+     * @param ikm the input key material to derive the encryption key
+     * @param iv the initialization vector, if required for the encryption method
+     */
+    async #encrypt(account: WfAccount, ikm: ByteArray, iv?: ByteArray): Promise<void> {
+        this.#binary = await encryptMessage(
+            this.#binary,
+            this.#header['EncryptionIndicator'] as WfCryptoMethod,
+            ikm as ByteArray,
+            account.getBinAddress() as ByteArray,
+            iv as ByteArray,
+            this.#header['Version'] as WfVersion
+        );
+    }
+    /**
+     * Decrypts the encoded binary message buffer
+     * @param account the blockchain account with which the message has been sent, required to derive the encryption key
+     * @param ikm the input key material to derive the encryption key
+     * @param iv the initialization vector, if required for the encryption method
+     */
+    async #decrypt(account: WfAccount, ikm: ByteArray, iv?: ByteArray): Promise<BinaryBuffer> {
+        return decryptMessage(
+            this.#binary as BinaryBuffer,
+            this.#header['EncryptionIndicator'] as WfCryptoMethod,
+            ikm as ByteArray,
+            account.getBinAddress() as ByteArray,
+            iv as ByteArray,
+            this.#header['Version'] as WfVersion
+        );
     }
 }
 
@@ -433,7 +665,7 @@ function validateMessage(message: any): string[] {
  * @param method the Whiteflag encryption method
  * @param ikm the input key material to derive the encryption key
  * @param address the binary encoded originator address
- * @param iv the initialisation vector, if required for the encryption method
+ * @param iv the initialization vector, if required for the encryption method
  * @param version the Whiteflag protocol version
  * @returns the encrypted message
  */
@@ -471,7 +703,7 @@ async function encryptMessage(message: BinaryBuffer,
  * @param method the Whiteflag encryption method
  * @param ikm the input key material to derive the encryption key
  * @param address the binary encoded originator address
- * @param iv the initialisation vector, if required for the encryption method
+ * @param iv the initialization vector, if required for the encryption method
  * @param version the Whiteflag protocol version
  * @returns the decrypted binary encoded message
  */
@@ -621,23 +853,6 @@ function compileMsgSpecRegex(segSpec: any): any {
     return segSpec;
 }
 /**
- * Generates message header and sets known values
- * @private
- * @param msgType the message type
- * @param version the Whiteflag protocol version
- * @returns a Whiteflag message header object
- */
-function generateHeader(msgType: WfMsgType, version = WfVersion.v1): WfMsgHeader {
-    let header: WfMsgHeader = Object.create(null);
-    for (const field of Object.keys(MSGSPEC[msgType][version].header)) {
-        header[field] = EMPTYSTR;
-    }
-    header['Prefix'] = MSG_PREFIX;
-    header['Version'] = version as string;
-    header['MessageCode'] = msgType as string;
-    return header;
-}
-/**
  * Decodes a field from a binary encoded message header
  * @param message the binary encoded message
  * @param field the header field to decode
@@ -653,22 +868,6 @@ function decodeHeaderField(message: BinaryBuffer, field: string, msgType: WfMsgT
             msgSpec.header[field]?.endBit
         ),
     msgSpec.header[field]?.encoding as WfCodec);
-}
-/**
- * Generates message body
- * @private
- * @param msgType the message type, or pseudo type for a test message
- * @param version the Whiteflag protocol version
- * @param testMsg if test message; defaults to `false`
- * @returns a Whiteflag message body object
- */
-function generateBody(msgType: WfMsgType, version = WfVersion.v1, testMsg = false): WfMsgBody {
-    let body: WfMsgBody = Object.create(null);
-    if (testMsg) body['PseudoMessageCode'] = msgType as string;
-    for (const field of Object.keys(MSGSPEC[msgType][version].body)) {
-        body[field] = EMPTYSTR;
-    }
-    return body;
 }
 /**
  * Decodes a field from a binary encoded message body
@@ -779,7 +978,7 @@ function checkFields(segment: WfMsgHeader | WfMsgBody, segSpec: any, version = W
 function checkEncryption(method: WfCryptoMethod | string | undefined): boolean {
     if (method === undefined) return false;
     if (isString(method)) {
-        if (method === MSG_NOENCRYPT) return true;
+        if (method === WFMSG_NOENCRYPT) return true;
         if (Object.keys(WfCryptoMethod).includes(method as string)) return true;
     }
     if (Object.values(WfCryptoMethod).includes(method as WfCryptoMethod)) return true;
@@ -793,7 +992,7 @@ function checkEncryption(method: WfCryptoMethod | string | undefined): boolean {
  */
 function checkPrefix(prefix: string | undefined): boolean {
     if (prefix === undefined) return false;
-    if (prefix === MSG_PREFIX) return true;
+    if (prefix === WFMSG_PREFIX) return true;
     return false;
 }
 /**

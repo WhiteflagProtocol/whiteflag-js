@@ -2,20 +2,8 @@
  * @module util/objects
  * @summary Whiteflag JS objects utility module
  */
-export { isString, isObject, objectHas, deepCopy, objToJson, objToMap, objToB64, objToB64u, objToU8a, jsonToObj, jsonToMap, mapToObj, mapToJson, mapToU8a, b64ToObj, b64uToObj, u8aToObj, u8aToMap };
+export { objectHas, deepCopy, objToJson, objToMap, objToB64, objToB64u, objToU8a, jsonToObj, jsonToMap, mapToObj, mapToJson, mapToU8a, b64ToObj, b64uToObj, u8aToObj, u8aToMap };
 import { ByteArray, Base64, Base64url, Json } from './types.ts';
-/**
- * Checks if something is a string
- * @param str something that might be a string
- * @returns `true` if string, else `false`
- */
-declare function isString(str: any): boolean;
-/**
- * Checks if something is an object
- * @param obj something that might be an object
- * @returns `true` if object, else `false`
- */
-declare function isObject(obj: any): boolean;
 /**
  * Checks if an object has a property identified by key
  * @param obj the object to check

@@ -1,52 +1,29 @@
 /**
  * @module main/blockchain
- * @summary Whiteflag JS state module
+ * @summary Whiteflag JS main blockchain module
  */
-export { WfBlockchainLayer, WfBlockchainStatus, WfBlockchainData };
-import { Blockchain, BlockchainConfigData, BlockchainStatusData } from '@whiteflagprotocol/common';
-import { Base64, DataItem, Json } from '@whiteflagprotocol/util';
+export { WfBlockchainState, WfBlockchainData, WfBlockListener, extractMessage };
+import { Blockchain, TransactionData } from '@whiteflagprotocol/common';
+import { Base64, DataItem, Json, Serializable, serializable, posixtime } from '@whiteflagprotocol/util';
+import { WfMessage } from './message.ts';
 /**
- * Whiteflag blockchain data structure as used by the `WfBlockchainState` class
+ * Whiteflag blockchain state data structure
  */
-interface WfBlockchainData extends BlockchainStatusData {
+interface WfBlockchainData extends Serializable {
+    [key: string]: Serializable | serializable | undefined;
     /** The name of the blockchain */
     name: string;
-    /** Inicates if the blockchain is actively used */
-    active: boolean;
-}
-/**
- * The Whiteflag blockchain layer
- * @todo Implement blockchain layer, including status and listener
- */
-declare class WfBlockchainLayer {
-    #private;
-    /**
-     * Constructs the Whiteflag blockchain layer
-     * @param sit the singleton instantiation token
-     */
-    private constructor();
-    /**
-     * Gets the blockchain layer
-     * @returns the blockchain layer singular instance
-     */
-    static getInstance(): WfBlockchainLayer;
-    /**
-     * Configures a blockchain
-     * @param blockchain the blockchain implementation
-     * @param config the blockchain configuration data
-     * @returns `true` if the blockchain is succesfully configured, else false
-     * @emits blockchain:configured when the blockchain is configured
-     * @todo Implement blockchain configuration
-     */
-    configure(blockchain: Blockchain, config: BlockchainConfigData): Promise<boolean>;
-    /**
-     * Connects to a blockchain
-     * @param blockchain the name of the blockchain to connect to
-     * @returns `true` if succesfully connected to the blockchain, else false
-     * @emits blockchain:connected when the blockchain is configured
-     * @todo Implement blockchain connection
-     */
-    connect(blockchain: string): Promise<boolean>;
+    /** The blockchain state */
+    state: {
+        /** The POSIX epoch timestamp of the last blockchain state update */
+        _timestamp: posixtime;
+        /** The highest known existing block on the blockchain */
+        highestBlock: number;
+        /** The block that is currently processed */
+        currentBlock: number;
+        /** The highest block that has been processed */
+        processedBlock: number;
+    };
 }
 /**
  * The status of a blockchain
@@ -54,7 +31,7 @@ declare class WfBlockchainLayer {
  * it doens not provide any functions for blockchain operations, such
  * as processing transactions.
  */
-declare class WfBlockchainStatus extends DataItem<WfBlockchainData> {
+declare class WfBlockchainState extends DataItem<WfBlockchainData> {
     #private;
     /**
      * Constructs a blockchain status
@@ -69,31 +46,88 @@ declare class WfBlockchainStatus extends DataItem<WfBlockchainData> {
      * @param name the name uniquely identifying the blockchain
      * @returns the blockchain status
      */
-    static create(name: string): WfBlockchainStatus;
+    static create(name: string): WfBlockchainState;
     /**
      * Deserializes the blockchain status data
      * @param data the base64 encoded JSON serialized blockchain status data
      * @param blockchain the blockchain name as the unique identifier
      * @returns the blockchain status
      */
-    static deserialize(data: Base64, blockchain: string): WfBlockchainStatus;
+    static deserialize(data: Base64, blockchain: string): WfBlockchainState;
     /**
      * Creates a blockchain status from a JSON serialized object
      * @param data the JSON serialized object
      * @param blockchain the blockchain name as the unique identifier
      * @returns a new data item
      */
-    static fromJson(data: Json, blockchain?: string): WfBlockchainStatus;
+    static fromJson(data: Json, blockchain?: string): WfBlockchainState;
     /**
      * Creates a blockchain status from a plain JavaScript object
      * @param data a plain JavaScript object  with the blockchain status data
      * @param blockchain the blockchain name as the unique identifier
      * @returns a new blockchain account
      */
-    static fromObject(data: WfBlockchainData, blockchain?: string): WfBlockchainStatus;
+    static fromObject(data: WfBlockchainData, blockchain?: string): WfBlockchainState;
     /**
      * Provides the name of the blockchain
      * @returns the human readible name of the blockchain
      */
     getName(): string;
+    /**
+     * Provides the current state of the blockchain
+     * @returns the current blockchain state
+     */
+    getCurrentState(): WfBlockchainData['state'];
 }
+/**
+ * A listener for blockchain transactions
+ * @remarks This class defines an object that listens on a specific blockchain
+ * and keeps track of the blocks using the Whiteflag state.
+ */
+declare class WfBlockListener {
+    #private;
+    /** The blockchain name */
+    readonly blockchain: string;
+    /**
+     * Constructor to create a blockchain account
+     * @param bc the blockchain instance to listen on
+     * @param cit the class instantiation token
+     */
+    private constructor();
+    /**
+     * Initilaizes the blockchain listener
+     * @param bc the blockchain instance to listen on
+     * @returns `true` if the initialization was succesful, else `false`
+     */
+    static init(bc: Blockchain): WfBlockListener;
+    /**
+     * Starts listening to the blockchain
+     * @returns `true` if the listener is active, else `false`
+     */
+    start(): Promise<boolean>;
+    /**
+     * Stops listening to the blockchain
+     * @returns `true` if the listener is stopped, else `false`
+     */
+    stop(): boolean;
+    /** Checks if the listener is listening
+     * @returns `true` if the listener is active, else `false`
+    */
+    isListening(): boolean;
+    /**
+     * Gets the highest known block and updates the state
+     * @returns the highest known block
+     */
+    getHighestBlock(): Promise<number>;
+    /**
+     * Gives the number received messages in this session, i.e. since initialization
+     * @returns th number of received messages
+     */
+    messageCount(): number;
+}
+/**
+ * Extracts a Whiteflag message from a blockchain transaction
+ * @param transaction a blockchain transaction
+ * @returns a Whiteflag message, or `null` if no message in the transaction
+ */
+declare function extractMessage(transaction: TransactionData): WfMessage | null;

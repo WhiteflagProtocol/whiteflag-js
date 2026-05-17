@@ -26,6 +26,9 @@ import {
 } from './constants.ts';
 
 /* MODULE DECLARATIONS */
+/** Signature parameters */
+export type SignParams = RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams
+
 /**
  * Supported digital signature algorithms
  */
@@ -75,7 +78,7 @@ async function verify(data: ByteArray,
  * @param alg the digital signature algorithm
  * @returns a Web Crypto API algorthm object
  */
-function getSignParams(alg: SignAlgorithm): Algorithm | RsaPssParams | RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams {
+function getSignParams(alg: SignAlgorithm): Algorithm | SignParams {
     /* Choose codec based on field encoding */
     switch (alg) {
         /* RSASSA-PKCS1-v1_5 using SHA-256 */

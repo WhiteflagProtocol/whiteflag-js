@@ -10,8 +10,8 @@ export {
 };
 
 /* Dependencies */
-import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
-import { ByteArray, hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
+import { WfCryptoMethod, WfVersion, noNumber } from '@whiteflagprotocol/common';
+import { ByteArray, hexToU8a, zeroise } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { hkdf } from './hash.ts';
@@ -22,9 +22,10 @@ import { BYTELENGTH } from './constants.ts';
 import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'json' };
 
 /* MODULE DECLARATIONS */
-/**
- * Whiteflag encryption parameters for each method
- */
+/** AES Parameters */
+export type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
+
+/** Whiteflag encryption parameters for each method */
 const PARAMS = compileCryptoParams();
 
 /* MODULE FUNCTIONS */
@@ -35,7 +36,7 @@ const PARAMS = compileCryptoParams();
  * @param message the message to be encrypted
  * @param method the Whiteflag encryption method
  * @param key the input key material for the encryption key
- * @param iv the initialisation vector, if required for the method
+ * @param iv the initialization vector, if required for the method
  * @param version the Whiteflag protocol version
  */
 async function encryptMsg(message: ByteArray,
@@ -63,7 +64,7 @@ async function encryptMsg(message: ByteArray,
  * @param message the message to be decrypted
  * @param method the Whiteflag encryption method
  * @param key the encryption key
- * @param iv the initialisation vector, if required for the method
+ * @param iv the initialization vector, if required for the method
  * @param version the Whiteflag protocol version
  */
 async function decryptMsg(message: ByteArray,
@@ -129,7 +130,7 @@ interface WfCryptoParams {
             algorithm: string;      // Encryption algorithm
             keyLength: number;      // Byte length of the encryption key
             salt: string;           // Salt for HKDF key generation
-            ivLength?: number;      // Byte length of the initialisation vector
+            ivLength?: number;      // Byte length of the initialization vector
             ctrLength?: number;     // Byte length of the counter block part used as counter
         }
     }
@@ -163,7 +164,7 @@ function compileCryptoParams(): WfCryptoParams {
  */
 async function encryptAes(data: ByteArray,
                           key: CryptoKey,
-                          parameters: AesCtrParams | AesCbcParams | AesGcmParams
+                          parameters: AesParams
                         ): Promise<Uint8Array> {
     const encrypted = await crypto.subtle.encrypt(
         parameters, key, data
@@ -180,7 +181,7 @@ async function encryptAes(data: ByteArray,
  */
 async function decryptAes(data: ByteArray,
                           key: CryptoKey,
-                          parameters: AesCtrParams | AesCbcParams | AesGcmParams
+                          parameters: AesParams
                         ): Promise<Uint8Array> {
     const decrypted = await crypto.subtle.decrypt(
         parameters, key, data
@@ -191,23 +192,23 @@ async function decryptAes(data: ByteArray,
  * Creates the algorithm parameter object for AES based on the Whiteflag encryption method
  * @private
  * @param method the Whiteflag encryption method
- * @param iv the initialisation vector, if required for the method
+ * @param iv the initialization vector, if required for the method
  * @param version the Whiteflag protocol version
  * @returns the AES algorithm parameter object
  */
 function getAesParameters(method: WfCryptoMethod,
                           iv?: ByteArray,
                           version = WfVersion.v1
-                        ): AesCtrParams | AesCbcParams | AesGcmParams {
+                        ): AesParams {
     /* Compile encryption parameters based on encryption method */
     switch (method) {
         case WfCryptoMethod.ECDH:
         case WfCryptoMethod.PSK: {
             if (!iv) {
-                throw new Error(`Encryption method ${method} requires an initialisation vector`);
+                throw new Error(`Encryption method ${method} requires an initialization vector`);
             }
             if (iv.length !== PARAMS[method][version].ivLength) {
-                throw new Error(`Invalid initialisation vector length for encryption method ${method}`);
+                throw new Error(`Invalid initialization vector length for encryption method ${method}`);
             }
             return {
                 name: PARAMS[method][version].algorithm,

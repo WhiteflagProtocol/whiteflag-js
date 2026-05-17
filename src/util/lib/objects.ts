@@ -4,8 +4,6 @@
  * @summary Whiteflag JS objects utility module
  */
 export {
-    isString,
-    isObject,
     objectHas,
     deepCopy,
     objToJson,
@@ -27,27 +25,12 @@ export {
 /* Module imports */
 import { b64ToStr, b64uToStr, strToB64, strToB64u, strToU8a, u8aToStr } from './encoding.ts';
 import { ByteArray, Base64, Base64url, Json } from './types.ts';
+import { isObject } from './types.ts';
 
 /* Constants */
 const illegalKeys = new Set(['__proto__', 'constructor', 'prototype']);
 
 /* MODULE FUNCTIONS */
-/**
- * Checks if something is a string
- * @param str something that might be a string
- * @returns `true` if string, else `false`
- */
-function isString(str: any): boolean {
-    return (typeof str === 'string' || str instanceof String); 
-}
-/**
- * Checks if something is an object
- * @param obj something that might be an object
- * @returns `true` if object, else `false`
- */
-function isObject(obj: any): boolean {
-    return (typeof obj === 'object' || obj instanceof Object);
-}
 /**
  * Checks if an object has a property identified by key
  * @param obj the object to check
@@ -72,8 +55,10 @@ function deepCopy(entity: any): any {
 
     /* Null and undefined */
     switch (entity) {
-        case null: return null;
-        case undefined: return null;
+        case null:
+        case undefined: {
+            return null;
+        }
     }
     /* Handle complex objects */
     switch (true) {

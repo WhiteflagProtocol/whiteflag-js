@@ -14,7 +14,7 @@ import { createHash, getRandomValues } from 'node:crypto';
 /* Module imports */
 import { b64ToStr, hexToB64u } from './encoding.ts';
 import { deepCopy, jsonToObj, objToB64 } from './objects.ts';
-import { ignore } from './process.ts';
+import { ignore } from './processing.ts';
 import { Base64, Json, Serializable } from './types.ts';
 
 /* MODULE DECLARATIONS */
@@ -96,10 +96,10 @@ class DataItem<D extends Serializable> {
      */
     public static fromObject(data: Serializable, id?: DataId, ...args: any): DataItem<Serializable> {
         ignore(args);
-        return new DataItem(data, id);
+        return new this(data, id);
     }
 
-    /* PUBLIC METHODS */
+    /* PUBLIC CLASS METHODS */
     /**
      * Gives the unique data item identifier
      * @returns the data item identifier
@@ -138,7 +138,7 @@ class DataItem<D extends Serializable> {
 class DataCollection<I extends DataItem<Serializable>> {
     /* CLASS PROPERTIES */
     /** The data items stored in this collection */
-    #collection: Map<DataId,I>;
+    readonly #collection: Map<DataId,I>;
 
     /* CONSTRUCTOR */
     /**
@@ -155,7 +155,7 @@ class DataCollection<I extends DataItem<Serializable>> {
      * @returns a new data collection
      */
     public static create(): DataCollection<DataItem<Serializable>> {
-        return new DataCollection(new Map());
+        return new this(new Map());
     }
     /**
      * Creates a data collection from a JSON serialization with base64 encoded data items
@@ -168,13 +168,13 @@ class DataCollection<I extends DataItem<Serializable>> {
         /* Run through entries and deserialize each data item */
         for (const [id, data] of Object.entries(jsonToObj(collection))) {
             try {
-                map.set(id as DataId, DataItem.deserialize(data as Base64, id as DataId) as DataItem<Serializable>);
+                map.set(id, DataItem.deserialize(data as Base64, id));
             } catch(err: any) {
                 throw new Error(`Cannot deserialize data item ${id}: ${err?.message}`, { cause: err });
             }
         }
         /* Create new data collection from deserialized data items */
-        return new DataCollection(map);
+        return new this(map);
     }
     /**
      * Creates a data collection from a JSON serialized object
@@ -194,13 +194,13 @@ class DataCollection<I extends DataItem<Serializable>> {
 
         /* Run through entries of the object and add data items */
         for (const [id, data] of Object.entries(collection)) {
-            map.set(id as DataId, DataItem.fromObject(data as Serializable, id as DataId) as DataItem<Serializable>);
+            map.set(id, DataItem.fromObject(data, id));
         }
         /* Create new data collection from deserialized data items */
-        return new DataCollection(map);
+        return new this(map);
     }
 
-    /* PUBLIC METHODS */
+    /* PUBLIC CLASS METHODS */
     /**
      * Converts the data collection into a JSON object with base64 encoded data items
      * @returns a JSON object with base64 encoded data items

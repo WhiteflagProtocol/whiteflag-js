@@ -1,15 +1,15 @@
 'use strict';
 export { Mutex };
-import { sleep } from "./process.js";
-const DEFAULTSLEEP = 50;
+import { delay } from "./processing.js";
+const DEFAULTDELAY = 50;
 const MINSLEEP = 10;
-const MAXSLEEP = 5000;
+const MAXSLEEP = 1000;
 class Mutex {
+    #delaytime = DEFAULTDELAY;
     #mutex = 0;
-    #sleeptime = DEFAULTSLEEP;
-    constructor(sleep) {
-        if (sleep && sleep >= MINSLEEP && sleep <= MAXSLEEP) {
-            this.#sleeptime = sleep;
+    constructor(delaytime) {
+        if (delaytime && delaytime >= MINSLEEP && delaytime <= MAXSLEEP) {
+            this.#delaytime = delaytime;
         }
     }
     async lock() {
@@ -21,7 +21,7 @@ class Mutex {
     }
     async locked() {
         while (this.#mutex < 0)
-            await sleep(this.#sleeptime);
+            await delay(this.#delaytime);
         return this.#mutex;
     }
     async track() {
@@ -35,7 +35,7 @@ class Mutex {
     }
     async tracked() {
         while (this.#mutex !== 0)
-            await sleep(this.#sleeptime);
+            await delay(this.#delaytime);
         return this.#mutex;
     }
 }

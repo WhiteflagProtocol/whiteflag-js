@@ -6,6 +6,7 @@ var WfVersion;
 })(WfVersion || (WfVersion = {}));
 var WfMsgType;
 (function (WfMsgType) {
+    WfMsgType["unknown"] = "unknown";
     WfMsgType["A"] = "A";
     WfMsgType["K"] = "K";
     WfMsgType["T"] = "T";

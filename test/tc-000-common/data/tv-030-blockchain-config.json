@@ -1,0 +1,17 @@
+{
+    "$description": "Test case 030: Common blockchain interface test data",
+    "testchain": {
+        "name": "testchain",
+        "testnet": true,
+        "active": true,
+        "blockIntervalTime": 20,
+        "blockRetrievalStart": 1,
+        "blockRetrievalRestart": 10,
+        "blockMaxRetries": 2,
+        "blockBatchSize": 12,
+        "transactionBatchSize": 12,
+        "rpcProtocol": "https",
+        "rpcHost": "example.com",
+        "rpcPort": 8484
+    }
+}

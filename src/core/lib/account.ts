@@ -15,7 +15,7 @@ import { ByteArray, Base64, DataItem, Hex, Json, Serializable } from '@whiteflag
 import { b64ToStr, jsonToObj, hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 
 /* Related singleton classes */
-const keystore = KeyStoreAccess.getInstance();
+const wfKeystore = KeyStoreAccess.getInstance();
 
 /* MODULE DECLARATIONS */
 /**
@@ -110,7 +110,7 @@ class WfAccount extends DataItem<WfAccountData> {
             throw new WfRuntimeError(`Account address ${data?.address} does not match account identifier ${address}`);
         }
         /* Create new account */
-        return new WfAccount(data);
+        return new this(data);
     }
     /**
      * Creates a new blockchain account by generating a key pair
@@ -241,7 +241,7 @@ class WfAccount extends DataItem<WfAccountData> {
      */
     public async getPrivateKey(): Promise<ByteArray | null> {
         if (!this.#data?.privateKeyId) return null;
-        return keystore.getKey(this.#data.privateKeyId);
+        return wfKeystore.getKey(this.#data.privateKeyId);
     }
     /**
      * Generates ECDH key pair for encryption key negotiation
@@ -282,7 +282,7 @@ class WfAccount extends DataItem<WfAccountData> {
  * @returns `true` if key is successfully stored, else `false`
  */
 async function storePrivateKey(privateKeyId: KeyId, privateKey: ByteArray): Promise<KeyId> {
-    const stored = await keystore.upsertKey(privateKeyId, privateKey);
+    const stored = await wfKeystore.upsertKey(privateKeyId, privateKey);
     if (!stored) throw new WfRuntimeError('Key store did not store private key of the account');
     return stored;
 }

@@ -10,19 +10,27 @@
  * projects implementing Whiteflag.
  */
 export {
-    WfBlockchainLayer,
-    WfBlockchainStatus,
-    WfBlockchainData
+    WfBlockchainState,
+    WfBlockchainData,
+    WfBlockListener,
+    extractMessage
 } from './lib/blockchain.ts';
 export {
-    WfEvents,
-    WfEventEmitter
+    WfEvent,
+    WfEventData,
+    WfEventEmitter,
+    EventListener,
+    EventData
 } from './lib/events.ts';
 export {
     WfMessage,
     WfMessageData,
-    WfMetaHeader
+    WfMetaHeader,
+    WfMetaField
 } from './lib/message.ts';
+export {
+    WfNetwork
+} from './lib/network.ts';
 export {
     WfState,
     WfStateData
@@ -31,13 +39,18 @@ export {
     Address,
     Blockchain,
     BlockchainConfigData,
-    BlockchainStatusData,
     TransactionData,
     WfVersion,
     WfMsgType,
     WfRuntimeError,
     WfProtocolError,
-    WfErrorCode
+    WfErrorCode,
+    WfLogger,
+    LogData,
+    LogEvent,
+    LogEventData,
+    LogLevel,
+    LogListener
 } from '@whiteflagprotocol/common';
 export {
     WfAccount,

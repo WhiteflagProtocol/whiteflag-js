@@ -2,7 +2,7 @@
  * @module common/errors
  * @summary Whiteflag JS common error module
  */
-export { WfErrorCode, WfProtocolError, WfRuntimeError, handleError };
+export { WfErrorCode, WfProtocolError, WfRuntimeError, handleError, noNumber, noString };
 /**
  * Defines Whiteflag protocol error types
  */
@@ -52,15 +52,18 @@ declare class WfProtocolError extends Error {
  * @extends Error
  * @remarks This error class is used in cases where the Whiteflag JS is
  * incorrectly used. This is usually an indication of a programming error
- * that requires further debugging. An example is an underlying `TypeError`.
+ * that requires further debugging. An example is an underlying `TypeError`
+ * or invalid configuration data.
  */
 declare class WfRuntimeError extends Error {
+    /** Underlying causes of the error */
+    causes: string[];
     /**
      * Constructs Whiteflag JS runtime errors
      * @param message a human readable error message
-     * @param reason underlying error causing this error
+     * @param reasons underlying error(s) causing this error
      */
-    constructor(message: string, reason?: Error);
+    constructor(message: string, reasons?: Error | Array<string> | string | null);
 }
 /**
  * Handles a catched error as a Whiteflag error in a type safe manner
@@ -69,4 +72,20 @@ declare class WfRuntimeError extends Error {
  * @param code the code identifying the Whiteflag error type
  * @throws a new error object
  */
-declare function handleError(err: any, msg?: string, code?: WfErrorCode): any;
+declare function handleError(err: unknown, msg?: string, code?: WfErrorCode): any;
+/**
+ * Throws a reference error for missing a numeric parameter as a result of a coding error
+ * @param descr description of the missing parameter
+ * @throws a reference error
+ * @remarks To be used where a value might be optional in one case,
+ * but required in another, e.g.: `let nr = params?.nr || noNumber()`
+ */
+declare function noNumber(descr?: string): number;
+/**
+ * Throws a reference error for missing a string parameter as a result of a coding error
+ * @param descr description of the missing parameter
+ * @throws a reference error
+ * @remarks To be used where a value might be optional in one case,
+ * but required in another, e.g.: `let str = params?.str || noString()`
+ */
+declare function noString(descr?: string): string;

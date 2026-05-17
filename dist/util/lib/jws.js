@@ -1,7 +1,8 @@
 'use strict';
 export { Jws };
 import { isBase64u, strToU8a } from "./encoding.js";
-import { isObject, isString, deepCopy, objToB64u, b64uToObj, jsonToObj } from "./objects.js";
+import { deepCopy, objToB64u, b64uToObj, jsonToObj } from "./objects.js";
+import { isObject, isString } from "./types.js";
 const EMPTYSTR = '';
 const JWSSEPARATOR = '.';
 const REGEX_JWS_FLAT = /e[yw][A-Za-z0-9-_]+/;
@@ -30,7 +31,7 @@ class Jws {
             Object.freeze(this);
     }
     static fromPayload(payload) {
-        return new Jws(Object.create(null), payload, EMPTYSTR);
+        return new this(Object.create(null), payload, EMPTYSTR);
     }
     static fromJSON(jws) {
         return this.fromObject(jsonToObj(jws));
@@ -38,10 +39,10 @@ class Jws {
     static fromObject(jws) {
         switch (jwsType(jws)) {
             case JwsFormat.FULL: {
-                return new Jws(jws?.protected, jws?.payload, jws?.signature);
+                return new this(jws?.protected, jws?.payload, jws?.signature);
             }
             case JwsFormat.FLAT: {
-                return new Jws(b64uToObj(jws?.protected), b64uToObj(jws?.payload), jws?.signature);
+                return new this(b64uToObj(jws?.protected), b64uToObj(jws?.payload), jws?.signature);
             }
             case JwsFormat.COMPACT: {
                 return this.fromCompact(jws);
@@ -65,7 +66,7 @@ class Jws {
         let signature = EMPTYSTR;
         if (jwsArray.length > 2)
             signature = jwsArray[2];
-        return new Jws(header, payload, signature);
+        return new this(header, payload, signature);
     }
     isSigned() {
         return (this.signature.length > 0);

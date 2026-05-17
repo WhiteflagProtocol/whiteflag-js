@@ -11,8 +11,7 @@ export { BinaryBuffer, cropBits, shiftRight, shiftLeft, zeroise };
  * Whiteflag packages to encode and decode binary Whiteflag messages.
  */
 declare class BinaryBuffer {
-    /** The Uint8Array that holds the binary content */
-    private buffer;
+    #private;
     /** The number of used bits in the buffer */
     length: number;
     /**
@@ -58,28 +57,28 @@ declare class BinaryBuffer {
      * @param binBuffer a binary buffer
      * @returns the updated binary buffer
      */
-    append(binBuffer: BinaryBuffer): BinaryBuffer;
+    append(binBuffer: BinaryBuffer): this;
     /**
      * Appends bytes from a number array to the binary buffer
      * @param byteArray an array of numbers representing bytes
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    appendBytes(byteArray: Array<number>, nBits?: number): BinaryBuffer;
+    appendBytes(byteArray: Array<number>, nBits?: number): this;
     /**
      * Appends a hexadecimal string to the binary buffer
      * @param hexString a hexadecimal string
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    appendHex(hexString: string, nBits?: number): BinaryBuffer;
+    appendHex(hexString: string, nBits?: number): this;
     /**
      * Appends a Uint8Array to the binary buffer
      * @param u8array an array of 8-bit unsigned integers
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    appendU8a(u8array: Uint8Array, nBits?: number): BinaryBuffer;
+    appendU8a(u8array: Uint8Array, nBits?: number): this;
     /**
      * Shortens the binary buffer to the length of the specified bits
      * @param nBits the number of used bits, or, if negative, the number of bits to remove
@@ -113,33 +112,33 @@ declare class BinaryBuffer {
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    insertBytes(byteArray: Array<number>, nBits?: number): BinaryBuffer;
+    insertBytes(byteArray: Array<number>, nBits?: number): this;
     /**
      * Inserts a hexadecimal string at the start of the binary buffer
      * @param hexString a hexadecimal string
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    insertHex(hexString: string, nBits?: number): BinaryBuffer;
+    insertHex(hexString: string, nBits?: number): this;
     /**
      * Inserts a Uint8Array at the start of the binary buffer
      * @param u8array an array of 8-bit unsigned integers
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    insertU8a(u8array: Uint8Array, nBits?: number): BinaryBuffer;
+    insertU8a(u8array: Uint8Array, nBits?: number): this;
     /**
      * Shifts bits in the buffer to the left, shrinking the buffer
      * @param shift the number of bits to shift to the left
      * @returns the shifted binary buffer
      */
-    shiftLeft(shift: number): BinaryBuffer;
+    shiftLeft(shift: number): this;
     /**
      * Shifts bits in the buffer to the right, enlarging the buffer
      * @param shift the number of bits to shift to the right
      * @returns the shifted binary buffer
      */
-    shiftRight(shift: number): BinaryBuffer;
+    shiftRight(shift: number): this;
     /**
      * Gives the value of the binary buffer as a Uint8Array
      * @returns an array of 8-bit unsigned integers
@@ -150,30 +149,6 @@ declare class BinaryBuffer {
      * @returns a hexadecimal string
      */
     toHex(): string;
-    /**
-     * Calculates the number of bits to be stored in the buffer
-     * @private
-     * @param byteLength the actual byte length of the buffer containing the bitset
-     * @param nBits the specified bit length of the buffer, or, if negative, the number of bits to remove
-     * @returns the calculated bit length
-     */
-    private calcBitLength;
-    /**
-     * Calculates the number of bytes required to hold a given number of bits
-     * @private
-     * @param nBits the number of used bits in the binary buffer
-     * @returns the required byte length of the binary buffer
-     */
-    private calcByteLength;
-    /**
-     * Concatinates two bitsets
-     * @private
-     * @param u8array1 Uint8Array containing the first bitset
-     * @param nBits1 number of bits in the first bitset, i.e. which bits to take from the first Uint8Array
-     * @param u8array2 Uint8Array containing the second bitset
-     * @param nBits2 number of bits in the second bitset, i.e. which bits to take from the second Uint8Array
-     */
-    private concatinate;
 }
 /**
  * Shortens a Uint8Array to the length of the specified bits

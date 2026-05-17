@@ -56,4 +56,4 @@ declare function decodeField(buffer: BinaryBuffer, codec: WfCodec, version?: WfV
  * @param version the Whiteflag protocol version
  * @returns `true` if valid, else `false`
  */
-declare function isValidValue(value: any, codec: WfCodec, version?: WfVersion): boolean;
+declare function isValidValue(value: string | undefined, codec: WfCodec, version?: WfVersion): boolean;

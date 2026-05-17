@@ -37,7 +37,8 @@ export {
     isValidMessage,
     validateMessage,
     encryptMessage,
-    decryptMessage
+    decryptMessage,
+    WFMSG_PREFIX
 } from './lib/message.ts';
 export {
     WfOriginator,

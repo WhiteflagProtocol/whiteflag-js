@@ -16,13 +16,31 @@ This description provides a generic overview of the Whiteflag main package.
 Please refer to the [WFJSL TypeDoc documentation](https://js.whiteflagprotocol.org/typedoc)
 for a detailed description of all classes and functions.
 
-## Blockchain layer
+### Whiteflag Protocol Stack and WFJSL Scope
 
-The blockchain layer is represented by the `WfBlockchainLayer` class defined
-by the `main/blockchain` module. The blockchain layer provides access to
-one or more underlying blockchains used to send and receive Whiteflag messages.
+The Whiteflag Protocol works on top of the internet and on one or more
+blockchains to create a network for trusted communications that can be used
+by different applications through application programming interfaces.
 
-## Whiteflag protocol
+The WFJSL implements layers 3–5 of the protocol stack as defined in
+[Paragraph 2.2](https://standard.whiteflagprotocol.org/v1/#2.2-Protocol-Stack-and-Scope)
+of the Whiteflag specification:
+
+1. At the bottom of the protocol stack is the _Connection Layer_ to ensure global connectivity, i.e. the Internet.
+
+2. On top of the Internet is the _Blockchain Layer_ that ensures connectivity and interaction with specific blockchains. This layer is typically interacted with through the APIs of the underlying blockchains.
+
+3. The _Blockchain Overlay Network Layer_ works on top of the Blockchain Layer. The WFJSL creates the **Whiteflag Network Layer** as a blockchain overlay network by encapsulating Whiteflag messages in blockchain transactions, as described below.
+
+4. The _Decentralized Protocol Layer_ is implemented with the **Whiteflag Protocol Layer** as the full protocol handler, which forms the core of the WFJSL as described below.
+
+5. The Application Programming Interface (API) layer is the abstraction of the programming interface provided by the `@whiteflagprotocol/main` package, which allows software to interact with the Whiteflag Protocol.
+
+6. The _Application Layer_ is the part of the stack that comprises the applications that are actually used by the end-users. This layer is outside the scope of the WFJSL and typically implemented either with classical applications such as databases in use by various organizations, or with newly developed web applications or smartphone apps that can send, receive, filter, analyse and display data exchanged through Whiteflag combined with data from other sources.
+
+## The Whiteflag Protocol Layer
+
+### Whiteflag protocol events
 
 The `WfEventEmitter` singleton class defined by the `main/events` module is
 the event emitter for Whiteflag protocol events, such as a received message,
@@ -32,23 +50,69 @@ this is the main interface for dynamic interaction with the Whiteflag protocol.
 The `WfEvents` enum defines all events and their associated data.
 
 ```javascript
-let events = WfEventEmitter.getInstance();
-events.on('message:validated', furtherMsgHandler);
+const events = WfEventEmitter.getInstance();
+events.once('state:initialized', doOtherInitializations);
+events.on('blockchain:connected', startListener);
+events.on('message:received', someMessageHandler);
 ```
+
+### Whiteflag protocol state
 
 The `WfState` singleton class defined by the `main/state` module keeps track
 of the protocol state. As such, it holds all known accounts, originators,
 cryptographic keys and blockchain status. The state should be initialized
 using `WfState.init(...)` providing a master encryption key and, optionally,
-the previously saved state. The state can be exported (e.g. to store) using the
-`WfState.export()` function.
+the previously saved state.
 
 ```javascript
-WfState.init(masterKey, savedState);
-state = await WfState.readyInstance();
+const state = WfState.init(masterKey, previousStateData);
 ```
 
-## Whiteflag messages
+To get the Whiteflag state instance, either use the synchronous or
+asynchronous static method:
+
+```javascript
+const state1 = WfState.getInstance();           // Throws if not initialized
+const state2 = await WfState.readyInstance();   // Waits until initialized
+```
+
+The state data can be exported using the `WfState.export()` function
+to store, and later restore, the state:
+
+```javascript
+const currentStateData = await state.export();
+```
+
+## The Whiteflag Network Layer
+
+The blockchain overlay network layer is represented by the `WfNetwork`
+singleton class defined by the `main/network` module. The network layer
+provides access to one or more underlying blockchains used to send and
+receive Whiteflag messages. To get the blockchain overlay network layer,
+use the async `readyInstance()` method, which ensure that the Whiteflag
+state has been initialized:
+
+```javascript
+const network = await WfNetwork.readyInstance();
+```
+
+For this layer to interact with the underlying blockchain layer, the WFJSL
+assumes it can interact with a blockchain through the `Blockchain` interface.
+For example, if the `Ethereum` class is an implementation of the Whiteflag
+`Blockchain` interface to use an Ethereum network as one of the underlying
+blockchains of the Whiteflag network, the sequence to initialize, connect to
+and listen for Whiteflag messages on the Ethereum network is as follows:
+
+```javascript
+await network.initialize(new Ethereum(), { name: 'ethereum-mainnet', ... });
+await network.connect('ethereum-mainnet');
+await network.listen('ethereum-mainnet');
+```
+
+The blockchain name, in this case `Ethereum-mainnet`, is part of the
+configuration data, defined by the `BlockchainConfigData` interface.
+
+### Whiteflag messages
 
 The Whiteflag message class `WfMessage` defined in the `main/message` module
 represents a Whiteflag message.
@@ -85,7 +149,7 @@ static factory methods such as `fromHex(...)` or `fromU8a(...)`, since the
 message type is probably not known before decoding.
 
 ```javascript
-wfMessage = await WfMessage.fromHex(hexMessage);
+let incomingMessage = await WfMessage.fromHex(hexMessage);
 ```
 
 Encryption and decryption is automatically performed upon encoding and

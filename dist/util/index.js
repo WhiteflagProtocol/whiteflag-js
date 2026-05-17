@@ -6,5 +6,6 @@ export * from "./lib/encoding.js";
 export * from "./lib/jws.js";
 export * from "./lib/mutex.js";
 export * from "./lib/objects.js";
-export * from "./lib/process.js";
+export * from "./lib/processing.js";
+export * from "./lib/time.js";
 export * from "./lib/types.js";

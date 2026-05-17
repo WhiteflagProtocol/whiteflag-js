@@ -1,4 +1,4 @@
 'use strict';
-export { BlockListener } from "./lib/blockchain.js";
-export { WfRuntimeError, WfProtocolError, WfErrorCode, handleError } from "./lib/errors.js";
+export { WfRuntimeError, WfProtocolError, WfErrorCode, handleError, noNumber, noString } from "./lib/errors.js";
+export { WfLogger, LogEvent, LogLevel, checkLogLevel } from "./lib/logger.js";
 export { WfVersion, WfMsgType, WfKeyType, WfAuthMethod, WfCryptoMethod } from "./lib/protocol.js";

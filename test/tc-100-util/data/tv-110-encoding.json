@@ -1,4 +1,5 @@
 {
+    "$description": "Test case 110: Util encoding module",
     "0": {
         "hex": "5768697465666c61673a353734362f746573742d30313f3f3f",
         "hexp": "0x5768697465666c61673a353734362f746573742d30313f3f3f",

@@ -1,22 +1,23 @@
 'use strict';
 /**
  * @module common/blockchain
- * @summary Whiteflag JS common blockchain module
+ * @summary Whiteflag JS common blockchain interface module
  */
 export {
     Blockchain,
-    BlockListener,
     BlockchainConfigData,
     BlockchainStatusData,
     TransactionData
 };
 
 /* Dependencies */
-import { ByteArray, Hex, Iso8601, Serializable, serializable } from '@whiteflagprotocol/util';
+import { ByteArray, Hex, posixtime, Serializable, serializable } from '@whiteflagprotocol/util';
 
 /* MODULE DECLARATIONS */
 /** A blockchain address in the encoding specified for that blockchain */
 export type Address = string;
+/** A block is defined as an array with transactions */
+export type Block = Array<TransactionData>;
 
 /**
  * The blockchain used to send Whiteflag messages
@@ -30,37 +31,56 @@ interface Blockchain {
     /* PROPERTIES */
     /** The name uniquely identifying the blockchain */
     name: string;
-    /** The URL of the underlying blockchain node */
-    node: URL
     /** The name or identifier of the signature algorithm of the blockchain */
     signAlgorithm: string;
 
-    /* PUBLIC METHODS (Control) */
-    /**
-     * Initilaizes the blockchain
-     * @param config the blockchain configuration paramters
-     * @param status the last known blockchain status
-     * @returns `true` if the initialization was succesful, else `false`
+    /*
+     * PUBLIC CLASS METHODS for control
+     * These functions are to control the blockchain object, e.g. initializing,
+     * configuration, and connecting and disconnecting to the blockchain.
      */
-    init(config: BlockchainConfigData, status: BlockchainStatusData): Promise<Blockchain>;
+    /**
+     * Initializes the blockchain
+     * @param config the blockchain configuration data
+     * @returns `true` if the initialization was succesful, else `false`
+     * @throws if invalid configuration data
+     */
+    initialize(config: BlockchainConfigData): Promise<boolean>;
+    /**
+     * Provides the current blockchain status
+     * @returns the blockchain status data
+     * @throws if blockchain has not been initialized
+     */
+    status(): Promise<BlockchainStatusData>;
     /**
      * Connects with the blockchain node
      * @returns `true` if the connection has been established, else `false`
-     * @remarks The blockchain should have been initialized before connecting.
+     * @throws if blockchain has not been initialized
      */
     connect(): Promise<boolean>;
     /**
      * Disconnects from the blockchain node
      * @returns `true` if the connection has been closed cleanly, else `false`
+     * @throws if blockchain has not been initialized
      */
     disconnect(): Promise<boolean>;
     /**
-     * Indicates if the underlying blockchain node is synchronizing with the blockchain
-     * @returns `true` if syncing, or `false` if synchronized
+     * Indicates if the blockchain instance is connected with the blockchain node
+     * @returns `true` if connected, or `false` if not connected
      */
-    isConnected(): Promise<boolean>;
+    isConnected(): boolean;
+    /**
+     * Provides the current blockchain configuration
+     * @returns the blockchain configuration data
+     * @throws if blockchain has not been initialized
+     */
+    getConfig(): BlockchainConfigData;
 
-    /* PUBLIC METHODS (Offline) */
+    /*
+     * PUBLIC CLASS METHODS for offline use
+     * These functions should be available, even if there is no connection
+     * with the underlying blockchain. 
+     */
     /**
      * Creates a new key pair for this blockchain
      * @param secret optional blockchain-specific secret to create account from
@@ -82,7 +102,7 @@ interface Blockchain {
      * @remarks Should also work if not connected to the blockchain.
      */
     getBinAddress(address: string): Promise<ByteArray>;
-        /**
+    /**
      * Requests a signature using the blockchain's signature algorithm
      * @param data the binary data to sign
      * @param privateKey the raw private key of the account to sign the data with
@@ -100,7 +120,12 @@ interface Blockchain {
      */
     verifySignature(data: ByteArray, signature: ByteArray, publicKey: ByteArray): Promise<boolean>;
 
-    /** PUBLIC METHODS (Online) */
+    /*
+     * PUBLIC CLASS METHODS for online use
+     * These functions are only available if there is a connection with the
+     * the underlying blockchain, e.g. sending and receiving messages, block
+     * lookups, transferring funds, etc.
+     */
     /**
      * Indicates if the underlying blockchain node is synchronizing with the blockchain
      * @returns `true` if syncing, or `false` if synchronized
@@ -116,10 +141,12 @@ interface Blockchain {
      * Gets the transactions from the specified blocks
      * @param firstBlock the starting block
      * @param lastBlock the ending block (inclusive)
-     * @returns an array with transaction data from the scanned blocks
-     * @remarks Requires connection with the blockchain.
+     * @returns a readible stream returning arrays with transdaction data for each block
+     * @remarks Requires connection with the blockchain. The blockchain
+     * configuration parameter `blockBatchSize` specifies how many blocks
+     * this function can process.
      */
-    getTransactions(firstBlock: number, lastBlock?: number): Promise<Array<TransactionData>>;
+    getTransactions(firstBlock: number, lastBlock?: number): ReadableStream<Block>;
     /**
      * Looks up a transaction on a blockchain by its transaction hash
      * @param txHash the hexadecimal encoded transaction hash
@@ -139,29 +166,6 @@ interface Blockchain {
     makeTransaction(txData: TransactionData, privateKey: ByteArray): Promise<TransactionData>;
 }
 /**
- * A listener for blockchain transactions
- * @remarks This class defines an object that listens on a specific blockchain
- * and keeps track of the blocks using the Whiteflag state.
- * @todo Develop blockchain listener class
- */
-class BlockListener {
-    /* CLASS PROPERTIES */
-    /** The blockchain to listen */
-    readonly #blockchain: Blockchain;
-    /** The interval between blocks in ms */
-    readonly #interval: number;
-
-    /* CONSTRUCTOR */
-    /**
-     * Constructor to create a blockchain account
-     * @param blockchain the blockchain to listen on
-     */
-    constructor(blockchain: Blockchain, interval: number) {
-        this.#blockchain = blockchain;
-        this.#interval = interval;
-    }
-}
-/**
  * Blockchain configuration data structure
  */
 interface BlockchainConfigData extends Serializable {
@@ -174,13 +178,15 @@ interface BlockchainConfigData extends Serializable {
     /** Indicates if this blockchain should be activated */
     active: boolean;
     /** The time is milliseconds between block retrievals */
-    blockRetrievalInterval: number;
+    blockIntervalTime: number;
     /** The block number  */
     blockRetrievalStart: number;
     /** The maximum number of blocks to look back after a disconnect */
     blockRetrievalRestart: number;
     /** The maximum number retries if a block could not be retrieved */
     blockMaxRetries: number;
+    /** The maximum number of blocks that can be requested or processed in parallel */
+    blockBatchSize: number;
     /** The maximum number of transactions to be processed in parallel */
     transactionBatchSize: number;
     /** The timeout in milliseconds for connecting to a blockchain node */
@@ -199,26 +205,21 @@ interface BlockchainConfigData extends Serializable {
     rpcPassword: string;
 }
 /**
- * Blockchain status data structure
+ * Blockchain current status data structure
  */
 interface BlockchainStatusData extends Serializable {
-    /* Additional configuration paramters are alloweed */
-    [key: string]: Serializable | serializable | undefined;
     /** The name of the blockchain */
     name: string;
-    /** The blockchain status */
-    status: {
-        /** The date-time of the last blockchain update */
-        updated: Iso8601;
-        /** Indicates if the blockchain is currently synchronizing */
-        syncing: boolean;
-        /** The highest known existing block on the blockchain */
-        highestBlock: number;
-        /** The block that is currently processed */
-        currentBlock: number;
-        /** The highest block that has been processed */
-        processedBlock: number;
-    }
+    /** The blockchain node URL */
+    node: string | null;
+    /** Indicates if the instance is currently connected to the node */
+    connected: boolean;
+    /** Indicates if the blockchain node is currently synchronizing */
+    syncing: boolean | null;
+    /** The number of peers the blockchain node is connected to */
+    peers: number | null;
+    /** The block height of the blockchain */
+    blocks: number | null;
 }
 /**
  * Blockchain transaction data structure
@@ -228,8 +229,8 @@ interface TransactionData extends Serializable {
     blockchain: string;
     /** Indicates if the transaction was successful */
     success?: boolean;
-    /** The epoch timestamp of the transaction or the block */
-    time?: number;
+    /** The POSIX epoch timestamp of the transaction or the block */
+    time?: posixtime;
     /** The address of the sending account */
     sender?: Address;
     /** The address of the receiving account */

@@ -24,7 +24,7 @@ import testVector from './data/tv-311-message.json' with { type: 'json' };
 
 /* TEST SCRIPT */
 testCase('Test case 311: Core message module', function() {
-    const blockchainA = new Blockchain();
+    const testchain = new Blockchain('testchain');
     testCase('Message creation', function() {
         assertion(' 1a. should create new message object', function(done) {
             const MSG = WfCoreMessage.create('A');
@@ -34,70 +34,66 @@ testCase('Test case 311: Core message module', function() {
             return done();
         });
         assertion(' 1b. should create message from object', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['1'].wfMessage);
+            const MSG = WfCoreMessage.fromObject(testVector['1'].wfMessage);
             strictEqual(MSG.get('MessageCode'), testVector['1'].wfMessage.MessageHeader.MessageCode);
             return strictEqual(MSG.isValid(), true);
         });
     });
     testCase('Message serialization', function() {
         assertion(' 2a. should correctly serialize (test vector 1)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['1'].wfMessage);
+            const MSG = WfCoreMessage.fromObject(testVector['1'].wfMessage);
             return strictEqual(MSG.toString(), testVector['1'].concatinatedMessage);
         });
         assertion(' 2b. should correctly serialize (test vector 2)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['2'].wfMessage);
+            const MSG = WfCoreMessage.fromObject(testVector['2'].wfMessage);
             return strictEqual(MSG.toString(), testVector['2'].concatinatedMessage);
         });
         assertion(' 2c. should correctly serialize (test vector 3)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['3'].wfMessage);
+            const MSG = WfCoreMessage.fromObject(testVector['3'].wfMessage);
             return strictEqual(MSG.toString(), testVector['3'].concatinatedMessage);
         });
         assertion(' 2d. should correctly serialize (test vector 4)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['4'].wfMessage);
+            const MSG = WfCoreMessage.fromObject(testVector['4'].wfMessage);
             return strictEqual(MSG.toString(), testVector['4'].concatinatedMessage);
         });
     });
     testCase('Message encoding', function() {
         assertion(' 3a. should correctly encode to binary (test vector 1)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['1'].wfMessage);
-            await MSG.encode();
+            const MSG = await WfCoreMessage.fromObject(testVector['1'].wfMessage).encode();
             return strictEqual(MSG.toHex(), testVector['1'].encodedMessage);
         });
         assertion(' 3b. should correctly encode to binary (test vector 2)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['2'].wfMessage);
-            await MSG.encode();
+            const MSG = await WfCoreMessage.fromObject(testVector['2'].wfMessage).encode();
             return strictEqual(MSG.toHex(), testVector['2'].encodedMessage);
         });
         assertion(' 3c. should correctly encode to binary (test vector 3)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['3'].wfMessage);
-            await MSG.encode();
+            const MSG = await WfCoreMessage.fromObject(testVector['3'].wfMessage).encode();
             return strictEqual(MSG.toHex(), testVector['3'].encodedMessage);
         });
         assertion(' 3d. should correctly encode to binary (test vector 4)', async function() {
-            const MSG = await WfCoreMessage.fromObject(testVector['4'].wfMessage);
-            await MSG.encode();
+            const MSG = await WfCoreMessage.fromObject(testVector['4'].wfMessage).encode();
             return strictEqual(MSG.toHex(), testVector['4'].encodedMessage);
         });
     });
     testCase('Message decoding', function() {
         assertion(' 4a. should correctly decode (test vector 1)', async function() {
             const MSG_BINARY = BinaryBuffer.fromHex(testVector['1'].encodedMessage);
-            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY);
+            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY).decode();
             return strictEqual(MSG.toString(), testVector['1'].concatinatedMessage);
         });
         assertion(' 4b. should correctly decode (test vector 2)', async function() {
             const MSG_BINARY = BinaryBuffer.fromHex(testVector['2'].encodedMessage);
-            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY);
+            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY).decode();
             return strictEqual(MSG.toString(), testVector['2'].concatinatedMessage);
         });
         assertion(' 4c. should correctly decode (test vector 3)', async function() {
             const MSG_BINARY = BinaryBuffer.fromHex(testVector['3'].encodedMessage);
-            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY);
+            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY).decode();
             return strictEqual(MSG.toString(), testVector['3'].concatinatedMessage);
         });
         assertion(' 4d. should correctly decode (test vector 4)', async function() {
             const MSG_BINARY = BinaryBuffer.fromHex(testVector['4'].encodedMessage);
-            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY);
+            const MSG = await WfCoreMessage.fromBinary(MSG_BINARY).decode();
             return strictEqual(MSG.toString(), testVector['4'].concatinatedMessage);
         });
     });
@@ -114,7 +110,7 @@ testCase('Test case 311: Core message module', function() {
             return strictEqual(MSG_ENCRYPTED.toHex(), testVector['5'].encodedMessage);
         });
         assertion(' 5b. should correctly encrypt plain message object', async function() {
-            const ACCOUNT = await Account.fromAddress(blockchainA, testVector['5'].originatorAddress);
+            const ACCOUNT = await Account.fromAddress(testchain, testVector['5'].originatorAddress);
             const MSG = await WfCoreMessage.fromObject(testVector['5'].wfMessage);
             await MSG.encode(
                 ACCOUNT,
@@ -137,13 +133,14 @@ testCase('Test case 311: Core message module', function() {
             return strictEqual(MSG_UNENCRYPTED.toHex(), testVector['5'].unencryptedMessage);
         });
         assertion(' 6b. should correctly create message from plain encrypted message', async function() {
-            const ACCOUNT = await Account.fromAddress(blockchainA, testVector['5'].originatorAddress);
-            const MSG = await WfCoreMessage.fromBinary(
-                BinaryBuffer.fromHex(testVector['5'].encodedMessage),
-                ACCOUNT,
-                hexToU8a(testVector['5'].encryptionKeyInput),
-                hexToU8a(testVector['5'].encryptionInitVector)
-            );
+            const ACCOUNT = await Account.fromAddress(testchain, testVector['5'].originatorAddress);
+            const MSG = await WfCoreMessage
+                .fromBinary(BinaryBuffer.fromHex(testVector['5'].encodedMessage))
+                .decode(
+                    ACCOUNT,
+                    hexToU8a(testVector['5'].encryptionKeyInput),
+                    hexToU8a(testVector['5'].encryptionInitVector)
+                );
             return strictEqual(MSG.get('Text'), testVector['5'].wfMessage.MessageBody['Text']);
         });
     });

@@ -1,5 +1,5 @@
 'use strict';
-export { WfErrorCode, WfProtocolError, WfRuntimeError, handleError };
+export { WfErrorCode, WfProtocolError, WfRuntimeError, handleError, noNumber, noString };
 var WfErrorCode;
 (function (WfErrorCode) {
     WfErrorCode["GENERIC"] = "WF_GENERIC_ERROR";
@@ -24,33 +24,28 @@ class WfProtocolError extends Error {
         }
         this.name = this.constructor.name;
         this.code = code;
-        if (Array.isArray(reasons))
-            this.causes = reasons;
-        if (reasons instanceof Error)
-            this.causes = [reasons.message];
-        if (typeof reasons === 'string')
-            this.causes = [reasons];
+        this.causes = processReasons(reasons);
     }
 }
 class WfRuntimeError extends Error {
-    constructor(message, reason) {
-        if (reason && reason instanceof Error) {
-            super(message, { cause: reason });
+    causes = [];
+    constructor(message, reasons) {
+        if (reasons && reasons instanceof Error) {
+            super(message, { cause: reasons });
         }
         else {
             super(message);
         }
         this.name = this.constructor.name;
+        this.causes = processReasons(reasons);
     }
 }
 function handleError(err, msg, code) {
-    let message;
-    if (msg) {
-        message = `${msg}: ${err?.message}`;
-    }
-    else {
-        message = err?.message || 'Unspecified error occured';
-    }
+    let message = 'Unspecified error occured';
+    if (err instanceof Error)
+        message = err?.message;
+    if (msg)
+        message = `${msg}: ${message}`;
     switch (true) {
         case err instanceof EvalError:
         case err instanceof ReferenceError:
@@ -61,17 +56,35 @@ function handleError(err, msg, code) {
             let reasons = err.causes;
             if (msg)
                 reasons.push(err.message);
-            if (!code)
-                code = err.code;
+            code ??= err.code;
             throw new WfProtocolError(message, reasons, code);
         }
         case err instanceof Error: {
             throw new WfRuntimeError(message, err);
         }
         default: {
-            if (!message)
-                message = 'Unspecified error occured';
             throw new WfRuntimeError(message);
         }
     }
+}
+function noNumber(descr) {
+    if (descr)
+        throw new ReferenceError(`Missing parameter of type number: ${descr}`);
+    throw new ReferenceError('Missing parameter of type number');
+}
+function noString(descr) {
+    if (descr)
+        throw new ReferenceError(`Missing parameter of type string: ${descr}`);
+    throw new ReferenceError('Missing parameter of type string');
+}
+function processReasons(reasons) {
+    if (!reasons)
+        return [];
+    if (Array.isArray(reasons))
+        return reasons;
+    if (reasons instanceof Error)
+        return [reasons.message];
+    if (typeof reasons === 'string')
+        return [reasons];
+    return [];
 }

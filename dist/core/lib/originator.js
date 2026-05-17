@@ -4,7 +4,7 @@ import { WfKeyType, WfRuntimeError } from '@whiteflagprotocol/common';
 import { KeyStoreAccess, getWfKeyId } from '@whiteflagprotocol/crypto';
 import { DataItem } from '@whiteflagprotocol/util';
 import { b64ToStr, hexToU8a, jsonToObj } from '@whiteflagprotocol/util';
-const keystore = KeyStoreAccess.getInstance();
+const wfKeystore = KeyStoreAccess.getInstance();
 class WfOriginator extends DataItem {
     #data;
     constructor(data, id) {
@@ -13,7 +13,7 @@ class WfOriginator extends DataItem {
         this.#data = super.getDataReference(ddat);
     }
     static create(name) {
-        return new WfOriginator({
+        return new this({
             name: name,
             accounts: []
         });
@@ -25,7 +25,7 @@ class WfOriginator extends DataItem {
         return this.fromObject(jsonToObj(data), id);
     }
     static fromObject(data, id) {
-        return new WfOriginator(data, id);
+        return new this(data, id);
     }
     setName(name) {
         return this.#data.name = name;
@@ -52,7 +52,7 @@ class WfOriginator extends DataItem {
     }
     async removePSK() {
         if (this.#data.pskId)
-            return keystore.removeKey(this.#data.pskId);
+            return wfKeystore.removeKey(this.#data.pskId);
         return false;
     }
     async storePSS(pss) {
@@ -62,16 +62,16 @@ class WfOriginator extends DataItem {
     }
     async removePSS() {
         if (this.#data.pssId)
-            return keystore.removeKey(this.#data.pssId);
+            return wfKeystore.removeKey(this.#data.pssId);
         return false;
     }
 }
 async function getSecret(secretId) {
-    const secret = await keystore.getKey(secretId);
+    const secret = await wfKeystore.getKey(secretId);
     return secret;
 }
 async function storeSecret(secretId, secret) {
-    const stored = await keystore.upsertKey(secretId, secret);
+    const stored = await wfKeystore.upsertKey(secretId, secret);
     if (!stored)
         throw new WfRuntimeError('Key store did not store secret for the originator');
     return stored;

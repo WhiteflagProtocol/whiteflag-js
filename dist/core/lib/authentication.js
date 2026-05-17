@@ -15,7 +15,7 @@ class WfSignature extends Jws {
         const header = {
             alg: signAlgorithm
         };
-        return new WfSignature(header, payload);
+        return new this(header, payload);
     }
 }
 async function createAuthSignature(blockchain, account, originator, url) {
@@ -37,7 +37,7 @@ async function createAuthSignature(blockchain, account, originator, url) {
             throw new Error(`Error setting signtaure on JWS`);
     }
     catch (err) {
-        handleError(err, `Could not create authentication signature for account ${account.getAddress()}`, WfErrorCode.SIGNATURE);
+        return handleError(err, `Could not create authentication signature for account ${account.getAddress()}`, WfErrorCode.SIGNATURE);
     }
     return authSignature;
 }

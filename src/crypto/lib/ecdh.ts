@@ -11,7 +11,8 @@ export {
 
 /* Dependencies */
 import { createECDH } from 'node:crypto';
-import { ByteArray, objectHas, noString } from '@whiteflagprotocol/util';
+import { noString } from '@whiteflagprotocol/common';
+import { ByteArray, objectHas } from '@whiteflagprotocol/util';
 
 /* Module imports */
 import { ExtCryptoKey, ExtCryptoKeyPair, RawKeyPair, useExtKey } from './keys.ts';
@@ -61,7 +62,7 @@ async function deriveEcdhSecret(keypair: ExtCryptoKeyPair, pubkey: ExtCryptoKey)
     /* Check public key */
     if (pubkey?.type !== 'public') throw new TypeError(`Invalid public key`);
     if (pubkey?.algorithm?.name !== ECDH) throw TypeError(`Public key algorithm is not for ${ECDH} secret negotiation`);
-    if (pubkey?.algorithm?.namedCurve !== curve) throw Error(`Public key does not macth the private key's curve ${curve}`);
+    if (pubkey?.algorithm?.namedCurve !== curve) throw new Error(`Public key does not macth the private key's curve ${curve}`);
 
     /* Calculate seceret for the specified curve */
     return deriveEcdhRawSecret(useExtKey(keypair.privateKey), useExtKey(pubkey), curve);

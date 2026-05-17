@@ -12,6 +12,7 @@ export type CollectionData = {
 };
 /**
  * A generic data item
+ * @template D the serializable data structure of this data item
  * @remarks This is a generic class to derive child classes from
  * for specific data items.
  */
@@ -77,7 +78,8 @@ declare class DataItem<D extends Serializable> {
     toObject(): D;
 }
 /**
- * A collection of data items
+ * A collection of data items of the same class
+ * @template I the data item class stored in this collection
  * @remarks This is a generic class to derive child classes from
  * for specific collections.
  */

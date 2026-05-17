@@ -1,13 +1,8 @@
 'use strict';
-export { isString, isObject, objectHas, deepCopy, objToJson, objToMap, objToB64, objToB64u, objToU8a, jsonToObj, jsonToMap, mapToObj, mapToJson, mapToU8a, b64ToObj, b64uToObj, u8aToObj, u8aToMap };
+export { objectHas, deepCopy, objToJson, objToMap, objToB64, objToB64u, objToU8a, jsonToObj, jsonToMap, mapToObj, mapToJson, mapToU8a, b64ToObj, b64uToObj, u8aToObj, u8aToMap };
 import { b64ToStr, b64uToStr, strToB64, strToB64u, strToU8a, u8aToStr } from "./encoding.js";
+import { isObject } from "./types.js";
 const illegalKeys = new Set(['__proto__', 'constructor', 'prototype']);
-function isString(str) {
-    return (typeof str === 'string' || str instanceof String);
-}
-function isObject(obj) {
-    return (typeof obj === 'object' || obj instanceof Object);
-}
 function objectHas(obj, key) {
     return (isObject(obj) && Object.hasOwn(obj, key));
 }
@@ -15,8 +10,10 @@ function deepCopy(entity) {
     if (!isObject(entity))
         return entity;
     switch (entity) {
-        case null: return null;
-        case undefined: return null;
+        case null:
+        case undefined: {
+            return null;
+        }
     }
     switch (true) {
         case entity instanceof Map: return deepCopy(Object.fromEntries(entity));

@@ -149,7 +149,8 @@ function decodeField(buffer: BinaryBuffer, codec: WfCodec, version = WfVersion.v
  * @param version the Whiteflag protocol version
  * @returns `true` if valid, else `false`
  */
-function isValidValue(value: any, codec: WfCodec, version = WfVersion.v1): boolean {
+function isValidValue(value: string | undefined, codec: WfCodec, version = WfVersion.v1): boolean {
+    if (!value) return false;
     return FIELDS[codec][version].regex.test(value);
 }
 
@@ -249,8 +250,8 @@ function encodeBDX(bdxString: string): BinaryBuffer {
     /* Add pairs of 4-bits to the buffer */
     for (let i = 0; i < buffer.length; i++) {
         const d = i * 2;
-        buffer[i] |= parseInt(bdxString.substring(d, d + 1) + '0', HEXRADIX);
-        buffer[i] |= parseInt('0' + bdxString.substring(d + 1, d + 2), HEXRADIX);
+        buffer[i] |= Number.parseInt(bdxString.substring(d, d + 1) + '0', HEXRADIX);
+        buffer[i] |= Number.parseInt('0' + bdxString.substring(d + 1, d + 2), HEXRADIX);
     }
     /* Return the resulting binary buffer */
     return BinaryBuffer.fromU8a(buffer, bitLength);
@@ -298,7 +299,7 @@ function encodeUTF(utfString: string): BinaryBuffer {
 
     /* Add the character code per byte */
     for (let i = 0; i < buffer.length; i++) {
-        buffer[i] = utfString.charCodeAt(i);
+        buffer[i] = utfString.codePointAt(i) || 0;
     }
     /* Return the resulting binary buffer */
     return BinaryBuffer.fromU8a(buffer, bitLength);
@@ -312,7 +313,7 @@ function encodeUTF(utfString: string): BinaryBuffer {
  */
 function decodeUTF(buffer: BinaryBuffer): string {
     const bitLength = buffer.length - (buffer.length % BYTELENGTH);
-    return String.fromCharCode(...buffer.extractU8a(0, bitLength));
+    return String.fromCodePoint(...buffer.extractU8a(0, bitLength));
 }
 /**
  * Encodes a field with a datetime, time periode and latlong coordinates

@@ -1,8 +1,7 @@
 'use strict';
 export { KeyStoreCtrl, KeyStoreAccess, getWfKeyId };
 import { WfRuntimeError, handleError } from '@whiteflagprotocol/common';
-import { Mutex } from '@whiteflagprotocol/util';
-import { isBase64u, isByteArray } from '@whiteflagprotocol/util';
+import { isBase64u, isByteArray, Mutex } from '@whiteflagprotocol/util';
 import { b64uToU8a, hexToU8a, mapToU8a, strToU8a, u8aToB64u, u8aToMap } from '@whiteflagprotocol/util';
 import { hash, hkdf } from "./hash.js";
 import { generateDEK, encryptData, decryptData } from "./encrypt.js";
@@ -28,10 +27,7 @@ class KeyStoreCtrl {
         Object.freeze(this);
     }
     static getInstance() {
-        if (!this.#instance) {
-            this.#instance = new KeyStoreCtrl(this.#sit);
-        }
-        return this.#instance;
+        return this.#instance ??= new KeyStoreCtrl(this.#sit);
     }
     seal() {
         _ctrlSeal = true;
@@ -124,7 +120,6 @@ class KeyStoreAccess {
         try {
             await _mutex.track();
             return await getKey(kid);
-            ;
         }
         finally {
             _mutex.untrack();
@@ -167,12 +162,7 @@ async function getKey(kid) {
     const ekdo = _keyStore.get(id);
     if (!ekdo)
         return null;
-    try {
-        return decryptData(kek, ekdo);
-    }
-    catch (err) {
-        return handleError(err, 'Could not decrypt key in keystore');
-    }
+    return decryptData(kek, ekdo).catch(err => handleError(err, 'Could not decrypt key in keystore'));
 }
 async function upsertKey(kid, key) {
     const id = checkKeyId(kid);
@@ -192,7 +182,7 @@ async function removeKey(kid) {
 }
 async function recryptData(newMek) {
     let keyStore = new Map();
-    for await (const [kid, ekdo] of _keyStore) {
+    for (const [kid, ekdo] of _keyStore) {
         const currentKek = await generateKEK(kid);
         const rawKey = await decryptData(currentKek, ekdo);
         const newKek = await generateKEK(kid, newMek);

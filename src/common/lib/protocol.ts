@@ -27,6 +27,8 @@ enum WfVersion {
  * 
  */
 enum WfMsgType {
+    /** unknown message type, e.g. when encrypted  */
+    unknown = 'unknown',
     /** Authentication message */
     A = 'A',
     /** Cryptographic support message */

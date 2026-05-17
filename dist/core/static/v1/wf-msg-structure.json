@@ -45,6 +45,7 @@
         }
     },
     "body": {
+        "unknown": {},
         "A": {
             "VerificationMethod": {
                 "encoding": "hexadecimal",

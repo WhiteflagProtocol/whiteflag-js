@@ -86,6 +86,8 @@ function decodeField(buffer, codec, version = WfVersion.v1) {
     }
 }
 function isValidValue(value, codec, version = WfVersion.v1) {
+    if (!value)
+        return false;
     return FIELDS[codec][version].regex.test(value);
 }
 function compileFieldCodecs() {
@@ -134,8 +136,8 @@ function encodeBDX(bdxString) {
     const buffer = new Uint8Array(Math.ceil(bitLength / BYTELENGTH));
     for (let i = 0; i < buffer.length; i++) {
         const d = i * 2;
-        buffer[i] |= parseInt(bdxString.substring(d, d + 1) + '0', HEXRADIX);
-        buffer[i] |= parseInt('0' + bdxString.substring(d + 1, d + 2), HEXRADIX);
+        buffer[i] |= Number.parseInt(bdxString.substring(d, d + 1) + '0', HEXRADIX);
+        buffer[i] |= Number.parseInt('0' + bdxString.substring(d + 1, d + 2), HEXRADIX);
     }
     return BinaryBuffer.fromU8a(buffer, bitLength);
 }
@@ -158,13 +160,13 @@ function encodeUTF(utfString) {
     const bitLength = utfString.length * BYTELENGTH;
     const buffer = new Uint8Array(utfString.length);
     for (let i = 0; i < buffer.length; i++) {
-        buffer[i] = utfString.charCodeAt(i);
+        buffer[i] = utfString.codePointAt(i) || 0;
     }
     return BinaryBuffer.fromU8a(buffer, bitLength);
 }
 function decodeUTF(buffer) {
     const bitLength = buffer.length - (buffer.length % BYTELENGTH);
-    return String.fromCharCode(...buffer.extractU8a(0, bitLength));
+    return String.fromCodePoint(...buffer.extractU8a(0, bitLength));
 }
 function encodeDatum(datumStr) {
     return encodeBDX(datumStr.replace(/[-+:.A-Z]/g, NOCHAR));

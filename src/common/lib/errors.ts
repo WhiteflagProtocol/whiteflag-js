@@ -7,7 +7,9 @@ export {
     WfErrorCode,
     WfProtocolError,
     WfRuntimeError,
-    handleError
+    handleError,
+    noNumber,
+    noString
 };
 
 /* MODULE DECLARATIONS */
@@ -44,6 +46,7 @@ enum WfErrorCode {
  */
 class WfProtocolError extends Error {
     /* CLASS PROPERTIES */
+
     /** The Whiteflag protocol error code */
     public code: string;
     /** Underlying causes of the error */
@@ -64,11 +67,7 @@ class WfProtocolError extends Error {
         }
         this.name = this.constructor.name;
         this.code = code;
-
-        /* Process reasons */
-        if (Array.isArray(reasons)) this.causes = reasons;
-        if (reasons instanceof Error) this.causes = [ reasons.message ];
-        if (typeof reasons === 'string') this.causes = [ reasons ];
+        this.causes = processReasons(reasons);
     }
 }
 /**
@@ -76,22 +75,29 @@ class WfProtocolError extends Error {
  * @extends Error
  * @remarks This error class is used in cases where the Whiteflag JS is
  * incorrectly used. This is usually an indication of a programming error
- * that requires further debugging. An example is an underlying `TypeError`.
+ * that requires further debugging. An example is an underlying `TypeError`
+ * or invalid configuration data.
  */
 class WfRuntimeError extends Error {
+    /* CLASS PROPERTIES */
+
+    /** Underlying causes of the error */
+    public causes: string[] = [];
+    
     /**
      * Constructs Whiteflag JS runtime errors
      * @param message a human readable error message
-     * @param reason underlying error causing this error
+     * @param reasons underlying error(s) causing this error
      */
-    constructor(message: string, reason?: Error) {
+    constructor(message: string, reasons?: Error | Array<string> | string | null) {
         /* Call parent constructor and set properties */
-        if (reason && reason instanceof Error) {
-            super(message, { cause: reason });
+        if (reasons && reasons instanceof Error) {
+            super(message, { cause: reasons });
         } else {
             super(message);
         }
         this.name = this.constructor.name;
+        this.causes = processReasons(reasons);
     }
 }
 
@@ -103,14 +109,12 @@ class WfRuntimeError extends Error {
  * @param code the code identifying the Whiteflag error type
  * @throws a new error object
  */
-function handleError(err: any, msg?: string, code?: WfErrorCode): any {
-    /* Create new error message */
-    let message: string;
-    if (msg) {
-        message = `${msg}: ${err?.message}`
-    } else {
-        message = err?.message || 'Unspecified error occured';
-    }
+function handleError(err: unknown, msg?: string, code?: WfErrorCode): any {
+    /* Check error */
+    let message = 'Unspecified error occured';
+    if (err instanceof Error) message = err?.message
+    if (msg) message = `${msg}: ${message}`;
+
     /* Handle error according to type */
     switch (true) {
         case err instanceof EvalError:
@@ -123,7 +127,7 @@ function handleError(err: any, msg?: string, code?: WfErrorCode): any {
             /* Throw new error with updated details*/
             let reasons: string[] = err.causes;
             if (msg) reasons.push(err.message);
-            if (!code) code = err.code as WfErrorCode;
+            code ??= err.code as WfErrorCode;
             throw new WfProtocolError(message, reasons, code);
         }
         case err instanceof Error: {
@@ -131,8 +135,45 @@ function handleError(err: any, msg?: string, code?: WfErrorCode): any {
             throw new WfRuntimeError(message, err);
         }
         default: {
-            if (!message) message = 'Unspecified error occured';
+            /* Unspecified error occured */
             throw new WfRuntimeError(message);
         }
     }
+}
+/**
+ * Throws a reference error for missing a numeric parameter as a result of a coding error
+ * @param descr description of the missing parameter
+ * @throws a reference error
+ * @remarks To be used where a value might be optional in one case,
+ * but required in another, e.g.: `let nr = params?.nr || noNumber()`
+ */
+function noNumber(descr?: string): number {
+    if (descr) throw new ReferenceError(`Missing parameter of type number: ${descr}`);
+    throw new ReferenceError('Missing parameter of type number');
+}
+/**
+ * Throws a reference error for missing a string parameter as a result of a coding error
+ * @param descr description of the missing parameter
+ * @throws a reference error
+ * @remarks To be used where a value might be optional in one case,
+ * but required in another, e.g.: `let str = params?.str || noString()`
+ */
+function noString(descr?: string): string {
+    if (descr) throw new ReferenceError(`Missing parameter of type string: ${descr}`);
+    throw new ReferenceError('Missing parameter of type string');
+}
+
+/* PRIVATE MODULE FUNCTIONS */
+/**
+ * Puts error reasons in a string array
+ * @private
+ * @param reasons underlying error(s) causing this error
+ * @returns a string array with the reasons
+ */
+function processReasons(reasons?: Error | Array<string> | string | null) : string[] {
+    if (!reasons) return [];
+    if (Array.isArray(reasons)) return reasons;
+    if (reasons instanceof Error) return [ reasons.message ];
+    if (typeof reasons === 'string') return [ reasons ];
+    return [];
 }

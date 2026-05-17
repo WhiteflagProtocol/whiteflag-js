@@ -1,57 +1,61 @@
 'use strict';
+var _a;
 export { WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
-import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode } from '@whiteflagprotocol/common';
-import { BinaryBuffer, DataItem, isString } from '@whiteflagprotocol/util';
+import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode, WfRuntimeError } from '@whiteflagprotocol/common';
+import { BinaryBuffer, DataItem, isString, deepCopy } from '@whiteflagprotocol/util';
 import { encryptMsg, decryptMsg, deriveKey } from '@whiteflagprotocol/crypto';
 import { decodeField, encodeField, isValidValue } from "./codec.js";
 import msgSpec_v1 from '../static/v1/wf-msg-structure.json' with { type: 'json' };
 const EMPTYSTR = '';
-const MSG_PREFIX = 'WF';
-const MSG_NOENCRYPT = '0';
+export const WFMSG_PREFIX = 'WF';
+export const WFMSG_NOENCRYPT = '0';
 const MSGSPEC = compileMsgSpec();
 class WfCoreMessage extends DataItem {
     #data;
-    #type;
+    #header;
+    #body;
     #version = WfVersion.v1;
+    #type;
     #binary = BinaryBuffer.empty();
     #final = false;
-    constructor(data, id, ddat = Symbol('WfCoreMessage')) {
+    constructor(data, binary, id, ddat = Symbol('WfCoreMessage')) {
         super(data, id, ddat);
         this.#data = super.getDataReference(ddat);
+        if (binary)
+            this.#binary = binary;
+        this.#header = this.#data?.MessageHeader;
+        this.#body = this.#data?.MessageBody;
         this.#type = this.#data?.MessageHeader['MessageCode'];
         this.#version = this.#data?.MessageHeader['Version'];
     }
     static create(msgType, version = WfVersion.v1) {
         const data = {
-            MessageHeader: generateHeader(msgType, version),
-            MessageBody: generateBody(msgType, version)
+            MessageHeader: this.generateHeader(msgType, version),
+            MessageBody: this.generateBody(msgType, version)
         };
-        return new WfCoreMessage(data);
+        return new this(data);
     }
     static fromObject(message) {
         const errors = validateMessage(message);
         if (errors.length > 0)
             throw new WfProtocolError('Invalid message', errors, WfErrorCode.FORMAT);
-        const header = message.MessageHeader;
-        const wfMessage = this.create(header['MessageCode'], header['Version']);
-        for (const [field, value] of Object.entries(header)) {
-            if (!wfMessage.set(field, value)) {
-                throw new WfProtocolError(`Header field ${field} could not be set`, null, WfErrorCode.FORMAT);
-            }
-        }
-        const body = message.MessageBody;
-        for (const [field, value] of Object.entries(body)) {
-            if (!wfMessage.set(field, value)) {
-                throw new WfProtocolError(`Body field ${field} could not be set`, null, WfErrorCode.FORMAT);
-            }
-        }
+        const wfMessage = this.create(message.MessageHeader['MessageCode'], message.MessageHeader['Version']);
+        wfMessage.setHeader(message.MessageHeader);
+        wfMessage.setBody(message.MessageBody);
         return wfMessage;
     }
-    static async fromBinary(message, account, ikm, iv) {
-        let buffer = message;
-        const { prefix, version, encryption } = extractUnencryptedHeader(buffer);
+    static fromBinary(message) {
+        const header = this.extractHeader(message);
+        const data = {
+            MessageHeader: header,
+            MessageBody: this.generateBody(WfMsgType.unknown, header['version'])
+        };
+        return new this(data, message);
+    }
+    static extractHeader(message) {
+        const { prefix, version, encryption } = extractUnencryptedHeader(message);
         if (!checkPrefix(prefix)) {
-            throw new WfProtocolError(`Message has no ${MSG_PREFIX} prefix`, null, WfErrorCode.FORMAT);
+            throw new WfProtocolError(`Message has no ${WFMSG_PREFIX} prefix`, null, WfErrorCode.FORMAT);
         }
         if (!checkVersion(version)) {
             throw new WfProtocolError(`Undefined protocol version: ${version}`, null, WfErrorCode.FORMAT);
@@ -59,22 +63,32 @@ class WfCoreMessage extends DataItem {
         if (!checkEncryption(encryption)) {
             throw new WfProtocolError(`Undefined encryption method: ${encryption}`, null, WfErrorCode.ENCRYPTION);
         }
-        if (encryption !== MSG_NOENCRYPT) {
-            if (!ikm)
-                throw new Error('Missing encryption key');
-            if (!account)
-                throw new Error('Missing originator account');
-            const binAddress = await account.getBinAddress();
-            buffer = await decryptMessage(message, encryption, ikm, binAddress, iv, version);
-        }
-        let msgType = extractHeaderField(buffer, 'MessageCode');
-        if (!checkType(msgType)) {
-            throw new WfProtocolError(`Undefined message type: ${msgType}`, null, WfErrorCode.FORMAT);
-        }
-        const wfMessage = this.create(msgType, version);
-        return wfMessage.decode(buffer);
+        const header = this.generateHeader(WfMsgType.unknown, version);
+        header['Prefix'] = prefix;
+        header['Version'] = version;
+        header['EncryptionIndicator'] = encryption;
+        return header;
     }
-    isEncoded() {
+    static generateHeader(msgType, version = WfVersion.v1) {
+        let header = Object.create(null);
+        for (const field of Object.keys(MSGSPEC[msgType][version].header)) {
+            header[field] = EMPTYSTR;
+        }
+        header['Prefix'] = WFMSG_PREFIX;
+        header['Version'] = version;
+        header['MessageCode'] = msgType;
+        return header;
+    }
+    static generateBody(msgType, version = WfVersion.v1, testMsg = false) {
+        let body = Object.create(null);
+        if (testMsg)
+            body['PseudoMessageCode'] = msgType;
+        for (const field of Object.keys(MSGSPEC[msgType][version].body)) {
+            body[field] = EMPTYSTR;
+        }
+        return body;
+    }
+    isFinal() {
         if (this.#final)
             return true;
         return false;
@@ -85,45 +99,7 @@ class WfCoreMessage extends DataItem {
         return true;
     }
     validate() {
-        return checkMsgSegments(this.#data.MessageHeader, this.#data.MessageBody);
-    }
-    async decode(message) {
-        if (!this.#final) {
-            let errors = [];
-            let msgType = this.#type;
-            let msgSpec = MSGSPEC[msgType][this.#version];
-            this.#binary = message;
-            for (const field of Object.keys(msgSpec.header)) {
-                if (!this.set(field, decodeHeaderField(message, field, msgType, this.#version))) {
-                    errors.push(`Header field ${field} could not be set`);
-                }
-            }
-            let offset = 0;
-            if (msgType === WfMsgType.T) {
-                const field = 'PseudoMessageCode';
-                if (this.set(field, decodeBodyField(message, field, msgType, offset, this.#version))) {
-                    const fieldSpec = msgSpec.body[field];
-                    offset = fieldSpec.endBit - fieldSpec.startBit;
-                    msgType = this.#data.MessageBody[field];
-                }
-                else {
-                    errors.push(`Body field ${field} could not be set`);
-                }
-            }
-            msgSpec = MSGSPEC[msgType][this.#version];
-            for (const field of Object.keys(msgSpec.body)) {
-                if (!this.set(field, decodeBodyField(message, field, msgType, offset, this.#version))) {
-                    errors.push(`Body field ${field} could not be set`);
-                }
-            }
-            if (errors.length === 0)
-                errors = this.validate();
-            if (errors.length > 0) {
-                throw new WfProtocolError(`Cannot decode ${this.#type} message`, errors, WfErrorCode.FORMAT);
-            }
-            this.#final = true;
-        }
-        return this;
+        return checkMsgSegments(this.#header, this.#body);
     }
     async encode(account, ikm, iv) {
         if (!this.#final) {
@@ -131,68 +107,126 @@ class WfCoreMessage extends DataItem {
             if (errors.length > 0) {
                 throw new WfProtocolError('Cannot encode message', errors, WfErrorCode.FORMAT);
             }
-            const header = this.#data.MessageHeader;
-            for (const field of Object.keys(header)) {
-                const encoding = MSGSPEC[this.#type][this.#version].header[field].encoding;
-                this.#binary.append(encodeField(header[field], encoding, this.#version));
-            }
-            let msgType = this.#type;
-            const body = this.#data.MessageBody;
-            for (const field of Object.keys(body)) {
-                const encoding = MSGSPEC[msgType][this.#version].body[field].encoding;
-                this.#binary.append(encodeField(body[field], encoding, this.#version));
-                if (field === 'PseudoMessageCode')
-                    msgType = body[field];
-            }
-            if (header['EncryptionIndicator'] !== MSG_NOENCRYPT) {
+            await this.#encodeHeader();
+            await this.#encodeBody();
+            if (this.#header['EncryptionIndicator'] !== WFMSG_NOENCRYPT) {
                 if (!ikm)
-                    throw new Error('Missing encryption key');
+                    throw new WfRuntimeError('Missing encryption key');
                 if (!account)
-                    throw new Error('Missing originator account');
-                const binAddress = await account.getBinAddress();
-                this.#binary = await encryptMessage(this.#binary, header['EncryptionIndicator'], ikm, binAddress, iv, header['Version']);
+                    throw new WfRuntimeError('Missing originator account');
+                await this.#encrypt(account, ikm, iv);
             }
             this.#final = true;
         }
         return this;
     }
+    async decode(account, ikm, iv) {
+        if (this.#final)
+            return this;
+        if (this.#binary.length === 0)
+            throw new WfRuntimeError(`No binary message to decode`);
+        let buffer;
+        if (this.#header['EncryptionIndicator'] === WFMSG_NOENCRYPT) {
+            buffer = this.#binary;
+        }
+        else {
+            if (!ikm)
+                throw new WfRuntimeError('Missing encryption key');
+            if (!account)
+                throw new WfRuntimeError('Missing originator account');
+            buffer = await this.#decrypt(account, ikm, iv);
+        }
+        let errors = [];
+        errors.push(...await this.#decodeHeader(buffer));
+        errors.push(...await this.#decodeBody(buffer));
+        if (errors.length === 0)
+            errors = this.validate();
+        if (errors.length > 0) {
+            throw new WfProtocolError(`Cannot decode ${this.#type} message`, errors, WfErrorCode.FORMAT);
+        }
+        this.#final = true;
+        return this;
+    }
     get(fieldName) {
-        const header = this.#data.MessageHeader;
-        for (const field of Object.keys(header)) {
-            if (field === fieldName)
-                return header[field];
-        }
-        const body = this.#data.MessageBody;
-        for (const field of Object.keys(body)) {
-            if (field === fieldName)
-                return body[field];
-        }
-        return null;
+        return this.getHeaderField(fieldName) || this.getBodyField(fieldName) || null;
     }
     set(fieldName, value) {
         if (this.#final)
             return false;
-        const header = this.#data.MessageHeader;
-        for (const field of Object.keys(header)) {
+        if (this.setHeaderField(fieldName, value))
+            return true;
+        if (this.setBodyField(fieldName, value))
+            return true;
+        return false;
+    }
+    getHeader() {
+        return deepCopy(this.#header);
+    }
+    setHeader(header) {
+        for (const [field, value] of Object.entries(header)) {
+            if (!this.setHeaderField(field, value)) {
+                throw new WfProtocolError(`Header field ${field} could not be set`, null, WfErrorCode.FORMAT);
+            }
+        }
+        return true;
+    }
+    getBody() {
+        return deepCopy(this.#body);
+    }
+    setBody(body) {
+        for (const [field, value] of Object.entries(body)) {
+            if (!this.setBodyField(field, value)) {
+                throw new WfProtocolError(`Body field ${field} could not be set`, null, WfErrorCode.FORMAT);
+            }
+        }
+        return true;
+    }
+    getHeaderField(fieldName) {
+        for (const field of Object.keys(this.#header)) {
+            if (field === fieldName)
+                return this.#header[field];
+        }
+        return null;
+    }
+    setHeaderField(fieldName, value) {
+        if (this.#final)
+            return false;
+        for (const field of Object.keys(this.#header)) {
             if (field === fieldName) {
-                if (field === 'Prefix' && value !== MSG_PREFIX)
+                if (field === 'Prefix' && value !== WFMSG_PREFIX)
                     return false;
-                if (field === 'Version' && value !== header[field])
+                if (field === 'Version' && value !== this.#header[field])
                     return false;
-                if (field === 'MessageCode' && value !== header[field])
-                    return false;
-                header[field] = value;
+                if (field === 'MessageCode') {
+                    if (this.#type === WfMsgType.unknown) {
+                        this.#setType(value);
+                    }
+                    else if (value !== this.#header[field])
+                        return false;
+                }
+                this.#header[field] = value;
                 return true;
             }
         }
-        const body = this.#data.MessageBody;
-        for (const field of Object.keys(body)) {
+        return false;
+    }
+    getBodyField(fieldName) {
+        for (const field of Object.keys(this.#body)) {
+            if (field === fieldName)
+                return this.#body[field];
+        }
+        return null;
+    }
+    setBodyField(fieldName, value) {
+        if (this.#final)
+            return false;
+        for (const field of Object.keys(this.#body)) {
             if (field === fieldName) {
                 if (field === 'PseudoMessageCode') {
-                    this.#data.MessageBody = generateBody(value, this.#version, true);
+                    this.#replaceBody(value, true);
                 }
                 else {
-                    body[field] = value;
+                    this.#body[field] = value;
                 }
                 return true;
             }
@@ -202,13 +236,11 @@ class WfCoreMessage extends DataItem {
     toString() {
         let messageStr = EMPTYSTR;
         if (this.isValid()) {
-            const header = this.#data.MessageHeader;
-            for (const field of Object.keys(header)) {
-                messageStr += header[field];
+            for (const field of Object.keys(this.#header)) {
+                messageStr += this.#header[field];
             }
-            const body = this.#data.MessageBody;
-            for (const field of Object.keys(body)) {
-                messageStr += body[field];
+            for (const field of Object.keys(this.#body)) {
+                messageStr += this.#body[field];
             }
         }
         return messageStr;
@@ -223,7 +255,74 @@ class WfCoreMessage extends DataItem {
             return this.#binary.toU8a();
         return new Uint8Array(0);
     }
+    #setType(type) {
+        if (this.#type !== WfMsgType.unknown) {
+            throw new WfRuntimeError('Message type already set');
+        }
+        this.#type = type;
+        this.#replaceBody(type, false);
+    }
+    async #encodeHeader() {
+        for (const field of Object.keys(this.#header)) {
+            const encoding = MSGSPEC[this.#type][this.#version].header[field].encoding;
+            this.#binary.append(encodeField(this.#header[field], encoding, this.#version));
+        }
+    }
+    async #decodeHeader(buffer) {
+        let errors = [];
+        for (const field of Object.keys(MSGSPEC[this.#type][this.#version].header)) {
+            if (!this.setHeaderField(field, decodeHeaderField(buffer, field, this.#type, this.#version))) {
+                errors.push(`Header field ${field} could not be set`);
+            }
+        }
+        return errors;
+    }
+    async #encodeBody() {
+        let msgType = this.#type;
+        const body = this.#body;
+        for (const field of Object.keys(body)) {
+            const encoding = MSGSPEC[msgType][this.#version].body[field].encoding;
+            this.#binary.append(encodeField(body[field], encoding, this.#version));
+            if (field === 'PseudoMessageCode')
+                msgType = body[field];
+        }
+    }
+    async #decodeBody(buffer) {
+        let errors = [];
+        let msgType = this.#type;
+        let msgSpec = MSGSPEC[this.#type][this.#version];
+        let offset = 0;
+        if (msgType === WfMsgType.T) {
+            const field = 'PseudoMessageCode';
+            if (this.setBodyField(field, decodeBodyField(buffer, field, msgType, offset, this.#version))) {
+                const fieldSpec = msgSpec.body[field];
+                offset = fieldSpec.endBit - fieldSpec.startBit;
+                msgType = this.#body[field];
+            }
+            else {
+                errors.push(`Body field ${field} could not be decoded`);
+            }
+        }
+        msgSpec = MSGSPEC[msgType][this.#version];
+        for (const field of Object.keys(msgSpec.body)) {
+            if (!this.setBodyField(field, decodeBodyField(buffer, field, msgType, offset, this.#version))) {
+                errors.push(`Body field ${field} could not be decoded`);
+            }
+        }
+        return errors;
+    }
+    #replaceBody(type, testMsg = false) {
+        Object.keys(this.#body).forEach(field => delete this.#body[field]);
+        Object.assign(this.#body, _a.generateBody(type, this.#version, testMsg));
+    }
+    async #encrypt(account, ikm, iv) {
+        this.#binary = await encryptMessage(this.#binary, this.#header['EncryptionIndicator'], ikm, account.getBinAddress(), iv, this.#header['Version']);
+    }
+    async #decrypt(account, ikm, iv) {
+        return decryptMessage(this.#binary, this.#header['EncryptionIndicator'], ikm, account.getBinAddress(), iv, this.#header['Version']);
+    }
 }
+_a = WfCoreMessage;
 function isValidMessage(message) {
     if (validateMessage(message).length > 0)
         return false;
@@ -287,28 +386,9 @@ function compileMsgSpecRegex(segSpec) {
     }
     return segSpec;
 }
-function generateHeader(msgType, version = WfVersion.v1) {
-    let header = Object.create(null);
-    for (const field of Object.keys(MSGSPEC[msgType][version].header)) {
-        header[field] = EMPTYSTR;
-    }
-    header['Prefix'] = MSG_PREFIX;
-    header['Version'] = version;
-    header['MessageCode'] = msgType;
-    return header;
-}
 function decodeHeaderField(message, field, msgType, version = WfVersion.v1) {
     const msgSpec = MSGSPEC[msgType][version];
     return decodeField(message.extract(msgSpec.header[field]?.startBit, msgSpec.header[field]?.endBit), msgSpec.header[field]?.encoding);
-}
-function generateBody(msgType, version = WfVersion.v1, testMsg = false) {
-    let body = Object.create(null);
-    if (testMsg)
-        body['PseudoMessageCode'] = msgType;
-    for (const field of Object.keys(MSGSPEC[msgType][version].body)) {
-        body[field] = EMPTYSTR;
-    }
-    return body;
 }
 function decodeBodyField(message, field, msgType, bitOffset = 0, version = WfVersion.v1) {
     const msgSpec = MSGSPEC[msgType][version];
@@ -363,7 +443,7 @@ function checkEncryption(method) {
     if (method === undefined)
         return false;
     if (isString(method)) {
-        if (method === MSG_NOENCRYPT)
+        if (method === WFMSG_NOENCRYPT)
             return true;
         if (Object.keys(WfCryptoMethod).includes(method))
             return true;
@@ -375,7 +455,7 @@ function checkEncryption(method) {
 function checkPrefix(prefix) {
     if (prefix === undefined)
         return false;
-    if (prefix === MSG_PREFIX)
+    if (prefix === WFMSG_PREFIX)
         return true;
     return false;
 }

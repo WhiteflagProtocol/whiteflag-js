@@ -11,8 +11,8 @@
  */
 export {
     Address,
+    Block,
     Blockchain,
-    BlockListener,
     BlockchainConfigData,
     BlockchainStatusData,
     TransactionData
@@ -21,8 +21,19 @@ export {
     WfRuntimeError,
     WfProtocolError,
     WfErrorCode,
-    handleError
+    handleError,
+    noNumber,
+    noString
 } from './lib/errors.ts';
+export {
+    WfLogger,
+    LogData,
+    LogEvent,
+    LogEventData,
+    LogLevel,
+    LogListener,
+    checkLogLevel
+} from './lib/logger.ts';
 export {
     WfVersion,
     WfMsgType,
@@ -30,4 +41,3 @@ export {
     WfAuthMethod,
     WfCryptoMethod
 } from './lib/protocol.ts';
-

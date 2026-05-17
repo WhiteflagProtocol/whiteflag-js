@@ -16,5 +16,6 @@ export * from './lib/encoding.ts';
 export * from './lib/jws.ts';
 export * from './lib/mutex.ts';
 export * from './lib/objects.ts';
-export * from './lib/process.ts';
+export * from './lib/processing.ts';
+export * from './lib/time.ts';
 export * from './lib/types.ts';

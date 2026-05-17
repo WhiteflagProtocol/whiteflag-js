@@ -3,7 +3,7 @@ export { DataItem, DataCollection };
 import { createHash, getRandomValues } from 'node:crypto';
 import { b64ToStr, hexToB64u } from "./encoding.js";
 import { deepCopy, jsonToObj, objToB64 } from "./objects.js";
-import { ignore } from "./process.js";
+import { ignore } from "./processing.js";
 class DataItem {
     #data;
     #ddat;
@@ -32,7 +32,7 @@ class DataItem {
     }
     static fromObject(data, id, ...args) {
         ignore(args);
-        return new DataItem(data, id);
+        return new this(data, id);
     }
     getId() {
         return this._id;
@@ -53,7 +53,7 @@ class DataCollection {
         this.#collection = collection;
     }
     static create() {
-        return new DataCollection(new Map());
+        return new this(new Map());
     }
     static deserialize(collection) {
         const map = new Map();
@@ -65,7 +65,7 @@ class DataCollection {
                 throw new Error(`Cannot deserialize data item ${id}: ${err?.message}`, { cause: err });
             }
         }
-        return new DataCollection(map);
+        return new this(map);
     }
     static fromJson(collection) {
         return this.fromObject(jsonToObj(collection));
@@ -75,7 +75,7 @@ class DataCollection {
         for (const [id, data] of Object.entries(collection)) {
             map.set(id, DataItem.fromObject(data, id));
         }
-        return new DataCollection(map);
+        return new this(map);
     }
     serialize() {
         const obj = {};

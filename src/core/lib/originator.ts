@@ -15,7 +15,7 @@ import { ByteArray, Base64, DataItem, DataId, Hex, Json, Serializable } from '@w
 import { b64ToStr, hexToU8a, jsonToObj } from '@whiteflagprotocol/util';
 
 /* Related singleton classes */
-const keystore = KeyStoreAccess.getInstance();
+const wfKeystore = KeyStoreAccess.getInstance();
 
 /* MODULE DECLARATIONS */
 /**
@@ -68,7 +68,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns the originator
      */
     public static create(name: string): WfOriginator {
-        return new WfOriginator({
+        return new this({
             name: name,
             accounts: []
         });
@@ -97,7 +97,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns a new blockchain account
      */
     public static override fromObject(data: WfOriginatorData, id?: DataId): WfOriginator {
-        return new WfOriginator(data, id);
+        return new this(data, id);
     }
 
     /* PUBLIC CLASS METHODS */
@@ -157,7 +157,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns `true` if succesfully deleted
      */
     public async removePSK(): Promise<boolean> {
-        if (this.#data.pskId) return keystore.removeKey(this.#data.pskId);
+        if (this.#data.pskId) return wfKeystore.removeKey(this.#data.pskId);
         return false;
     }
     /**
@@ -175,7 +175,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns `true` if succesfully deleted
      */
     public async removePSS(): Promise<boolean> {
-        if (this.#data.pssId) return keystore.removeKey(this.#data.pssId);
+        if (this.#data.pssId) return wfKeystore.removeKey(this.#data.pssId);
         return false;
     }
 }
@@ -188,7 +188,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
  * @returns the secret
  */
 async function getSecret(secretId: KeyId): Promise<ByteArray | null> {
-    const secret = await keystore.getKey(secretId);
+    const secret = await wfKeystore.getKey(secretId);
     return secret;
 }
 /**
@@ -199,7 +199,7 @@ async function getSecret(secretId: KeyId): Promise<ByteArray | null> {
  * @returns `true` if secret is successfully stored, else `false`
  */
 async function storeSecret(secretId: KeyId, secret: ByteArray): Promise<KeyId> {
-    const stored = await keystore.upsertKey(secretId, secret);
+    const stored = await wfKeystore.upsertKey(secretId, secret);
     if (!stored) throw new WfRuntimeError('Key store did not store secret for the originator');
     return stored;
 }

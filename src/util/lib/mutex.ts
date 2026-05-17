@@ -8,12 +8,12 @@ export {
 };
 
 /* Module imports */
-import { sleep } from './process.ts';
+import { delay } from './processing.ts';
 
 /* Constants */
-const DEFAULTSLEEP: number = 50;
-const MINSLEEP: number = 10;
-const MAXSLEEP: number = 5000;
+const DEFAULTDELAY = 50;
+const MINSLEEP = 10;
+const MAXSLEEP = 1000;
 
 /**
  * An object to protect a shared resource from simultaneous access
@@ -25,19 +25,19 @@ const MAXSLEEP: number = 5000;
  * anymore, else it waits.
  */
 class Mutex {
+    /** The time to delay in ms before checking for a lock or tracked operations */
+    readonly #delaytime: number = DEFAULTDELAY;
     /** The mutex value counts active read-write operations, or is set to -1 ad a lock */
     #mutex: number = 0;
-    /** The time to sleep in ms before checking for a lock or tracked operations */
-    #sleeptime: number = DEFAULTSLEEP;
 
     /* CONSTRUCTOR */
     /**
      * Constructs the mutex object
-     * @param sleep the time in ms to sleep before checking again if active read-write operations or locked
+     * @param delaytime the time in ms before checking again if active read-write operations or locked
      */
-    constructor(sleep?: number) {
-        if (sleep && sleep >= MINSLEEP && sleep <= MAXSLEEP) {
-            this.#sleeptime = sleep;
+    constructor(delaytime?: number) {
+        if (delaytime && delaytime >= MINSLEEP && delaytime <= MAXSLEEP) {
+            this.#delaytime = delaytime;
         }
     }
 
@@ -62,7 +62,7 @@ class Mutex {
      * @returns the resolved or rejected promise with the mutex value
      */
     public async locked(): Promise<number> {
-        while (this.#mutex < 0) await sleep(this.#sleeptime);
+        while (this.#mutex < 0) await delay(this.#delaytime);
         return this.#mutex;
     }
     /**
@@ -86,7 +86,7 @@ class Mutex {
      * @returns the resolved or rejected promise with the mutex value
      */
     public async tracked(): Promise<number> {
-        while (this.#mutex !== 0) await sleep(this.#sleeptime);
+        while (this.#mutex !== 0) await delay(this.#delaytime);
         return this.#mutex;
     }
 }

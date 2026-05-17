@@ -1,4 +1,5 @@
 {
+    "$description": "Test case 130: Util binary buffer module test data",
     "1": {
         "hex": "f00fff",
         "bitLength": 14,

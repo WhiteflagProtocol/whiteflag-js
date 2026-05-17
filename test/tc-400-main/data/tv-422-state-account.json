@@ -1,0 +1,18 @@
+{
+    "$description": "Test case 422: Account state test data",
+    "1": {
+        "privateKey": "",
+        "publicKey": "",
+        "address": ""
+    },
+    "2": {
+        "privateKey": "",
+        "publicKey": "",
+        "address": ""
+    },
+    "3": {
+        "privateKey": "",
+        "publicKey": "",
+        "address": ""
+    }
+}

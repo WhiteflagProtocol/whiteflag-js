@@ -4,7 +4,7 @@ import { WfKeyType, WfRuntimeError, WfErrorCode, handleError, WfProtocolError } 
 import { KeyStoreAccess, generateEcdhRawKeyPair, getWfKeyId } from '@whiteflagprotocol/crypto';
 import { DataItem } from '@whiteflagprotocol/util';
 import { b64ToStr, jsonToObj, hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
-const keystore = KeyStoreAccess.getInstance();
+const wfKeystore = KeyStoreAccess.getInstance();
 class WfAccount extends DataItem {
     #data;
     constructor(data) {
@@ -28,7 +28,7 @@ class WfAccount extends DataItem {
         if (data?.address !== address) {
             throw new WfRuntimeError(`Account address ${data?.address} does not match account identifier ${address}`);
         }
-        return new WfAccount(data);
+        return new this(data);
     }
     static async create(blockchain) {
         return this.fromSecret(blockchain);
@@ -108,7 +108,7 @@ class WfAccount extends DataItem {
     async getPrivateKey() {
         if (!this.#data?.privateKeyId)
             return null;
-        return keystore.getKey(this.#data.privateKeyId);
+        return wfKeystore.getKey(this.#data.privateKeyId);
     }
     async generateCryptoEcdhKeys() {
         if (!this.isSelf())
@@ -128,7 +128,7 @@ class WfAccount extends DataItem {
     }
 }
 async function storePrivateKey(privateKeyId, privateKey) {
-    const stored = await keystore.upsertKey(privateKeyId, privateKey);
+    const stored = await wfKeystore.upsertKey(privateKeyId, privateKey);
     if (!stored)
         throw new WfRuntimeError('Key store did not store private key of the account');
     return stored;

@@ -1,7 +1,7 @@
 'use strict';
 export { encryptMsg, decryptMsg, deriveKey };
-import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
-import { hexToU8a, noNumber, zeroise } from '@whiteflagprotocol/util';
+import { WfCryptoMethod, WfVersion, noNumber } from '@whiteflagprotocol/common';
+import { hexToU8a, zeroise } from '@whiteflagprotocol/util';
 import { hkdf } from "./hash.js";
 import { createAesKey } from "./keys.js";
 import { BYTELENGTH } from "./constants.js";
@@ -70,10 +70,10 @@ function getAesParameters(method, iv, version = WfVersion.v1) {
         case WfCryptoMethod.ECDH:
         case WfCryptoMethod.PSK: {
             if (!iv) {
-                throw new Error(`Encryption method ${method} requires an initialisation vector`);
+                throw new Error(`Encryption method ${method} requires an initialization vector`);
             }
             if (iv.length !== PARAMS[method][version].ivLength) {
-                throw new Error(`Invalid initialisation vector length for encryption method ${method}`);
+                throw new Error(`Invalid initialization vector length for encryption method ${method}`);
             }
             return {
                 name: PARAMS[method][version].algorithm,

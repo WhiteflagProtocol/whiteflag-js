@@ -50,7 +50,7 @@ class WfSignature extends Jws {
             alg: signAlgorithm
         };
         /* Create payload i.a.w. Whiteflag specification */
-        return new WfSignature(header, payload);
+        return new this(header, payload);
     }
 }
 /**
@@ -83,7 +83,7 @@ async function createAuthSignature(blockchain: Blockchain, account: WfAccount, o
         const signature = u8aToB64u(await blockchain.requestSignature(data, privateKey));
         if (!authSignature.setSignature(signature).isSigned()) throw new Error(`Error setting signtaure on JWS`);
     } catch(err) {
-        handleError(err, `Could not create authentication signature for account ${account.getAddress()}`, WfErrorCode.SIGNATURE)
+        return handleError(err, `Could not create authentication signature for account ${account.getAddress()}`, WfErrorCode.SIGNATURE)
     }
     /* Return JWS */
     return authSignature;

@@ -1,7 +1,7 @@
 'use strict';
 export { WfAccount };
 import { WfKeyType, WfRuntimeError, WfErrorCode, handleError, WfProtocolError } from '@whiteflagprotocol/common';
-import { KeyStoreAccess, generateEcdhRawKeyPair, getWfKeyId } from '@whiteflagprotocol/crypto';
+import { KeyStoreAccess, generateEcdhRawKeyPair, deriveEcdhRawSecret, getWfKeyId } from '@whiteflagprotocol/crypto';
 import { DataItem } from '@whiteflagprotocol/util';
 import { b64ToStr, jsonToObj, hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 const wfKeystore = KeyStoreAccess.getInstance();
@@ -110,6 +110,28 @@ class WfAccount extends DataItem {
             return null;
         return wfKeystore.getKey(this.#data.privateKeyId);
     }
+    async deriveCryptoSharedSecret(account) {
+        if (!this.isSelf())
+            throw new WfProtocolError('Can only negotiate cryptogtaphic keys for own accounts', null, WfErrorCode.ACCOUNT);
+        const publicKey = account.getPublicCryptoEcdhKey();
+        if (!publicKey)
+            throw new WfProtocolError('Other account does not have an ECDH public key for cryptogtaphic key negotiation', null, WfErrorCode.ACCOUNT);
+        const privateKey = await wfKeystore.getKey(this.#data?.privateCryptoEcdhKeyId || null);
+        if (!privateKey)
+            throw new WfProtocolError('No ECDH private key available for cryptogtaphic key negotiation', null, WfErrorCode.ACCOUNT);
+        return deriveEcdhRawSecret(privateKey, publicKey);
+    }
+    async deriveAuthSharedSecret(account) {
+        if (!this.isSelf())
+            throw new WfProtocolError('Can only negotiate  authentication secret for own accounts', null, WfErrorCode.ACCOUNT);
+        const publicKey = account.getPublicAuthEcdhKey();
+        if (!publicKey)
+            throw new WfProtocolError('Other account does not have an ECDH public key for  authentication secret negotiation', null, WfErrorCode.ACCOUNT);
+        const privateKey = await wfKeystore.getKey(this.#data?.privateAuthEcdhKeyId || null);
+        if (!privateKey)
+            throw new WfProtocolError('No ECDH private key available for  authentication secret negotiation', null, WfErrorCode.ACCOUNT);
+        return deriveEcdhRawSecret(privateKey, publicKey);
+    }
     async generateCryptoEcdhKeys() {
         if (!this.isSelf())
             throw new WfProtocolError('Can only generate ECDH key pair for own accounts', null, WfErrorCode.ACCOUNT);
@@ -117,6 +139,7 @@ class WfAccount extends DataItem {
         const keyId = await getWfKeyId(WfKeyType.ECDH_ENCRYPT, this.#data.address);
         this.#data.privateCryptoEcdhKeyId = await storePrivateKey(keyId, rawPrivateKey);
         this.#data.publicCryptoEcdhKey = u8aToHex(rawPublicKey);
+        return this;
     }
     async generateAuthEcdhKeys() {
         if (!this.isSelf())
@@ -125,11 +148,34 @@ class WfAccount extends DataItem {
         const keyId = await getWfKeyId(WfKeyType.ECDH_AUTH, this.#data.address);
         this.#data.privateAuthEcdhKeyId = await storePrivateKey(keyId, rawPrivateKey);
         this.#data.publicAuthEcdhKey = u8aToHex(rawPublicKey);
+        return this;
+    }
+    setPublicCryptoEcdhKey(ecdhPublicKey) {
+        if (this.isSelf())
+            throw new WfProtocolError('Can only set ECDH public for other accounts', null, WfErrorCode.ACCOUNT);
+        this.#data.publicCryptoEcdhKey = ecdhPublicKey;
+        return this;
+    }
+    getPublicCryptoEcdhKey() {
+        if (!this.#data?.publicCryptoEcdhKey)
+            return null;
+        return hexToU8a(this.#data.publicCryptoEcdhKey);
+    }
+    setPublicAuthEcdhKey(ecdhPublicKey) {
+        if (this.isSelf())
+            throw new WfProtocolError('Can only set ECDH public for other accounts', null, WfErrorCode.ACCOUNT);
+        this.#data.publicAuthEcdhKey = ecdhPublicKey;
+        return this;
+    }
+    getPublicAuthEcdhKey() {
+        if (!this.#data?.publicAuthEcdhKey)
+            return null;
+        return hexToU8a(this.#data.publicAuthEcdhKey);
     }
 }
 async function storePrivateKey(privateKeyId, privateKey) {
-    const stored = await wfKeystore.upsertKey(privateKeyId, privateKey);
-    if (!stored)
+    const keyId = await wfKeystore.upsertKey(privateKeyId, privateKey);
+    if (!keyId)
         throw new WfRuntimeError('Key store did not store private key of the account');
-    return stored;
+    return keyId;
 }

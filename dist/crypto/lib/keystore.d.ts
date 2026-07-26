@@ -85,12 +85,12 @@ declare class KeyStoreAccess {
      * @returns the binary raw key from the keystore, or `null` if no key
      * @throws if the keystore is not accessible
      */
-    getKey(kid: KeyId): Promise<ByteArray | null>;
+    getKey(kid: KeyId | null): Promise<ByteArray | null>;
     /**
      * Upserts a key in the keystore
      * @param kid the unique base64url key identifier
      * @param key the binary raw key to be stored in the keystore
-     * @returns `true` if succesfull, else `false`
+     * @returns the key identifier
      * @throws if the keystore is not accessible
      */
     upsertKey(kid: KeyId, key: ByteArray): Promise<KeyId>;

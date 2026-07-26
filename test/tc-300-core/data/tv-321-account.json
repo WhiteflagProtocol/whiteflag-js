@@ -1,0 +1,14 @@
+{
+    "$description": "Test case 321: Core account module test data",
+    "1": {
+        "address": "p7vhlLm10t011Tff1Oqiqw",
+        "ecdhCryptoPubKey": "045ed1ad2370f1af365a8f271879149232495aa0cc6a10a180d256528c789cbe296bf887cd99854689ad94a03d601b4b8518d61c029dbb50f8e2d37a6105be2bd5",
+        "ecdhAuthPubKey": "0470d0f2e3fb0fcc6a0fcddcd4cfbe69639a276e2839a0f47059d85e88bdda6030986a1efee4b00c11770fbe1a280414d1a68b04927a07100dbcb679a28684f362"
+    },
+    "2": {
+        "pubkey": "04b54d8d32c5973970d389b8546178abb6ee51e5fd5f257525e86153cc43087158406f4a6f4e6a4fd19ffabf4d9fba9678cebe2d0fd6cbef78814d08775d51c55f",
+        "address": "uo2istqngkIvZdlB3VHtww",
+        "ecdhCryptoPubKey": "0443cd3b12b24406ce419af0fa6f5e9f82131fecafd00bceac63b5b533fc9accd78e204b6a7c18b2dfa70605e7f8604915bcc95746b48a31097aa5c7290201e64c",
+        "ecdhAuthPubKey": "0442c0a32b77fda94c196b31ebc7e2e99f5232a04274144d62cfed0de20d07857862112a6dfb441463dec690849a75e250f1079fe6d756b0f90e81010c7aa032a9"
+    }
+}

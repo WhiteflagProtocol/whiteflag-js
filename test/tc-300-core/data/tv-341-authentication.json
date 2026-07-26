@@ -1,5 +1,5 @@
 {
-    "$description": "Test case 321: Core authentication module test data",
+    "$description": "Test case 341: Core authentication module test data",
     "1": {
         "pubkey": "04b54d8d32c5973970d389b8546178abb6ee51e5fd5f257525e86153cc43087158406f4a6f4e6a4fd19ffabf4d9fba9678cebe2d0fd6cbef78814d08775d51c55f",
         "wrongkey": "044a346da651df6320ca4ef9b9d17a385dacfaf95757ba22602c089aaab3cf634a136a8014626b0e77168df72a9a87d1071a95ca5a5ffd665af9799cf7f95c80e9",

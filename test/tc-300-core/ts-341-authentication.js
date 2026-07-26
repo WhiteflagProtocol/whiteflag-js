@@ -1,10 +1,7 @@
 'use strict';
 /**
- * @module core/authentication
- * @summary Whiteflag JS core authentication tests
- * @remarks Due to Web Crypto API restrictions, these tests use a
- * specific implementation of the `Account` class, instead of the
- * `WfAccount` from `@hiteflagprotocol/core`.
+ * @module core/account
+ * @summary Whiteflag JS core account module tests
  */
 
 /* Test framework */
@@ -26,10 +23,10 @@ import {
 } from '@whiteflagprotocol/core';
 
 /* Test data */
-import testVector from './data/tv-321-authentication.json' with { type: 'json' };
+import testVector from './data/tv-341-authentication.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 321: Core authentication module', function() {
+testCase('Test case 341: Core authentication module', function() {
     testCase('Whiteflag authentication signatures (method 1)', function() {
         const testchainA = new Blockchain('A', 'ES256');
         assertion(' 1a. should correctly verify existing valid signature', async function() {

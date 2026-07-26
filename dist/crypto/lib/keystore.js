@@ -117,6 +117,8 @@ class KeyStoreAccess {
         return KeyStoreAccess.#instance;
     }
     async getKey(kid) {
+        if (!kid)
+            return null;
         try {
             await _mutex.track();
             return await getKey(kid);

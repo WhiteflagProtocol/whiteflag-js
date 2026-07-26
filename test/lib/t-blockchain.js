@@ -166,8 +166,8 @@ export class Blockchain {
     }
     /**
      * Derives the blockchain address of an account from its public key
-     * @param {string} address the blockchain address in the regular encoding for this blockchain
-     * @returns {Promise} resolves to the binary blockchain address
+     * @param {string} publicKey the public key of the account
+     * @returns {Promise} resolves to the blockchain address
      */
     async deriveAddress(publicKey) {
         const hashedPubkey = await hash(publicKey, 16);
@@ -176,7 +176,7 @@ export class Blockchain {
     /**
      * Returns the binary blockchain address
      * @param {string} address the blockchain address in the regular encoding for this blockchain
-     * @returns {Promise} the binary blockchain address
+     * @returns {Promise} resolves to the binary blockchain address
      */
     async getBinAddress(address) {
         if (isHex(address)) return hexToU8a(noHexPrefix(address));

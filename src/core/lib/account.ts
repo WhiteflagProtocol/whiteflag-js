@@ -10,7 +10,7 @@ export {
 
 /* Dependencies */
 import { Address, Blockchain, WfKeyType, WfRuntimeError, WfErrorCode, handleError, WfProtocolError } from '@whiteflagprotocol/common';
-import { KeyStoreAccess, KeyId, generateEcdhRawKeyPair, getWfKeyId } from '@whiteflagprotocol/crypto';
+import { KeyStoreAccess, KeyId, generateEcdhRawKeyPair, deriveEcdhRawSecret, getWfKeyId } from '@whiteflagprotocol/crypto';
 import { ByteArray, Base64, DataItem, Hex, Json, Serializable } from '@whiteflagprotocol/util';
 import { b64ToStr, jsonToObj, hexToU8a, u8aToHex } from '@whiteflagprotocol/util';
 
@@ -53,8 +53,6 @@ interface WfAccountData extends Serializable {
  * on a blockchain. An account for Whiteflag is nothing else than a key pair
  * for signing blockchain transactions, with some related information,
  * e.g. an address, balance etc.
- * @todo Add ECDH key pair for encryption key negotiation
- * @todo Add ECDH key pair for authentication secret negotiation
  */
 class WfAccount extends DataItem<WfAccountData> {
     /* CLASS PROPERTIES */
@@ -244,10 +242,58 @@ class WfAccount extends DataItem<WfAccountData> {
         return wfKeystore.getKey(this.#data.privateKeyId);
     }
     /**
-     * Generates ECDH key pair for encryption key negotiation
+     * Derives a shared encryption secret with an other account
+     * @param account an other account with an ECDH public key for shared encryption secret negotiation
+     * @returns the negotiated encryption secret
      * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     * @remarks A shared encryption secret may only be derived for own
+     * accounts. A HKDF function must be used i.a.w. the Whiteflag specification
+     * to derive the actual encryption key from this secret.
      */
-    public async generateCryptoEcdhKeys() {
+    public async deriveCryptoSharedSecret(account: WfAccount): Promise<ByteArray> {
+        if (!this.isSelf()) throw new WfProtocolError('Can only negotiate cryptogtaphic keys for own accounts', null, WfErrorCode.ACCOUNT);
+
+        /* Check own ECDH key pair */
+        const publicKey = account.getPublicCryptoEcdhKey();
+        if (!publicKey) throw new WfProtocolError('Other account does not have an ECDH public key for cryptogtaphic key negotiation', null, WfErrorCode.ACCOUNT);
+
+        /* Check public ECDH key of other account */
+        const privateKey = await wfKeystore.getKey(this.#data?.privateCryptoEcdhKeyId || null);
+        if (!privateKey) throw new WfProtocolError('No ECDH private key available for cryptogtaphic key negotiation', null, WfErrorCode.ACCOUNT);
+
+        /* Derive secret */
+        return deriveEcdhRawSecret(privateKey, publicKey);
+    }
+    /**
+     * Derives a shared authentication secret with an other account 
+     * @param account an other account with an ECDH public key for shared authentication secret negotiation
+     * @returns the negotiated authentication secret
+     * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     * @remarks A shared authentication secret may only be derived for own
+     * accounts. A HKDF function must be used i.a.w. the Whiteflag specification
+     * to derive the actual authentication token from this secret.
+     */
+    public async deriveAuthSharedSecret(account: WfAccount): Promise<ByteArray> {
+        if (!this.isSelf()) throw new WfProtocolError('Can only negotiate  authentication secret for own accounts', null, WfErrorCode.ACCOUNT);
+
+        /* Check own ECDH key pair */
+        const publicKey = account.getPublicAuthEcdhKey();
+        if (!publicKey) throw new WfProtocolError('Other account does not have an ECDH public key for  authentication secret negotiation', null, WfErrorCode.ACCOUNT);
+
+        /* Check public ECDH key of other account */
+        const privateKey = await wfKeystore.getKey(this.#data?.privateAuthEcdhKeyId || null);
+        if (!privateKey) throw new WfProtocolError('No ECDH private key available for  authentication secret negotiation', null, WfErrorCode.ACCOUNT);
+
+        /* Derive secret */
+        return deriveEcdhRawSecret(privateKey, publicKey);
+    }
+    /**
+     * Generates ECDH key pair for shared encryption secret negotiation
+     * @returns this account, for chaining functions
+     * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     * @remarks An ECDH key pair may only be generated for own accounts
+     */
+    public async generateCryptoEcdhKeys(): Promise<this> {
         /* Generate new ECDH key pair */
         if (!this.isSelf()) throw new WfProtocolError('Can only generate ECDH key pair for own accounts', null, WfErrorCode.ACCOUNT);
         const { rawPublicKey, rawPrivateKey } = generateEcdhRawKeyPair();
@@ -256,12 +302,15 @@ class WfAccount extends DataItem<WfAccountData> {
         const keyId = await getWfKeyId(WfKeyType.ECDH_ENCRYPT, this.#data.address);
         this.#data.privateCryptoEcdhKeyId = await storePrivateKey(keyId, rawPrivateKey);
         this.#data.publicCryptoEcdhKey = u8aToHex(rawPublicKey);
+        return this;
     }
     /**
-     * Generates ECDH key pair for authentication secret negotiation
+     * Generates ECDH key pair for shared authentication secret negotiation
+     * @returns this account, for chaining functions
      * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     * @remarks An ECDH key pair may only be generated for own accounts
      */
-    public async generateAuthEcdhKeys() {
+    public async generateAuthEcdhKeys(): Promise<this> {
         /* Generate new ECDH key pair */
         if (!this.isSelf()) throw new WfProtocolError('Can only generate ECDH key pair for own accounts', null, WfErrorCode.ACCOUNT);
         const { rawPublicKey, rawPrivateKey } = generateEcdhRawKeyPair();
@@ -270,6 +319,49 @@ class WfAccount extends DataItem<WfAccountData> {
         const keyId = await getWfKeyId(WfKeyType.ECDH_AUTH, this.#data.address);
         this.#data.privateAuthEcdhKeyId = await storePrivateKey(keyId, rawPrivateKey);
         this.#data.publicAuthEcdhKey = u8aToHex(rawPublicKey);
+        return this;
+    }
+    /**
+     * Stores the public public ECDH key for shared encryption secret negotiation
+     * @param ecdhPublicKey the hexedecimal public ECDH key
+     * @returns this account, for chaining functions
+     * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     * @remarks An ECDH public key may only be set for other accounts
+     */
+    public setPublicCryptoEcdhKey(ecdhPublicKey: Hex): this {
+        if (this.isSelf()) throw new WfProtocolError('Can only set ECDH public for other accounts', null, WfErrorCode.ACCOUNT);
+        this.#data.publicCryptoEcdhKey = ecdhPublicKey;
+        return this;
+    }
+    /**
+     * Gets the public public ECDH key for shared encryption secret negotiation
+     * @returns the hexedecimal public ECDH key, or `null` if not available
+     * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     */
+    public getPublicCryptoEcdhKey(): ByteArray | null {
+        if (!this.#data?.publicCryptoEcdhKey) return null;
+        return hexToU8a(this.#data.publicCryptoEcdhKey);
+    }
+    /**
+     * Stores the public public ECDH key for shared authentication secret negotiation
+     * @param ecdhPublicKey the hexedecimal public ECDH key
+     * @returns this account, for chaining functions
+     * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     * @remarks An ECDH public key may only be set for other accounts
+     */
+    public setPublicAuthEcdhKey(ecdhPublicKey: Hex): this {
+        if (this.isSelf()) throw new WfProtocolError('Can only set ECDH public for other accounts', null, WfErrorCode.ACCOUNT);
+        this.#data.publicAuthEcdhKey = ecdhPublicKey;
+        return this;
+    }
+    /**
+     * Gets the public public ECDH key for shared authentication secret negotiation
+     * @returns the hexedecimal public ECDH key, or `null` if not available
+     * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
+     */
+    public getPublicAuthEcdhKey(): ByteArray | null {
+        if (!this.#data?.publicAuthEcdhKey) return null;
+        return hexToU8a(this.#data.publicAuthEcdhKey);
     }
 }
 
@@ -279,11 +371,10 @@ class WfAccount extends DataItem<WfAccountData> {
  * @private
  * @param privateKeyId the private key identifier
  * @param privateKey the private key
- * @returns `true` if key is successfully stored, else `false`
+ * @returns the key identifier
  */
 async function storePrivateKey(privateKeyId: KeyId, privateKey: ByteArray): Promise<KeyId> {
-    const stored = await wfKeystore.upsertKey(privateKeyId, privateKey);
-    if (!stored) throw new WfRuntimeError('Key store did not store private key of the account');
-    return stored;
+    const keyId = await wfKeystore.upsertKey(privateKeyId, privateKey);
+    if (!keyId) throw new WfRuntimeError('Key store did not store private key of the account');
+    return keyId;
 }
-

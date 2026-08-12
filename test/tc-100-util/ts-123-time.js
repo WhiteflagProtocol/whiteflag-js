@@ -21,7 +21,7 @@ const ECMA = 1780846627000;
 const ISO='2026-06-07T15:37:07.000Z';
 
 /* TEST SCRIPT */
-testCase('Test case 123: Util time module', function() {
+testCase('Test Case 123: Util time module', function() {
     testCase('Time conversions', function() {
         assertion(' 1a. should correctly convert ECMA epoch time to Iso8601', function(done) {
             strictEqual(getIso8601(ECMA), ISO);

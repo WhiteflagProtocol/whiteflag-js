@@ -19,7 +19,7 @@ import testVector from './data/tv-220-cipher.json' with { type: 'json' };
 const AES256CTR_PSK = '2';  // pre-shared key
 
 /* TEST SCRIPT */
-testCase('Test case 220: Crypto cipher module', function() {
+testCase('Test Case 220: Crypto cipher module', function() {
     testCase('AES 256 counter mode', function() {
         assertion(' 1. should pass NIST SP 800-38A F.5.5 CTR-AES256 encryption', async function() {
             const plaintext = hexToU8a(

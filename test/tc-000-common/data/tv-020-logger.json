@@ -1,5 +1,5 @@
 {
-    "$description": "Test case 020: Common logger module test data",
+    "$description": "Test Case 020: Common logger module test data",
     "fatal": {
         "level": 1,
         "indicator": "FATAL",

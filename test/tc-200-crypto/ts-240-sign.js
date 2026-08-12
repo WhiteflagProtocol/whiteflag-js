@@ -18,7 +18,7 @@ const TIMEOUT = 15000;  // RSA can be really slow...
 const SLOW = TIMEOUT / 3;
 
 /* TEST SCRIPT */
-testCase('Test case 240: Crypto signing module', function() {
+testCase('Test Case 240: Crypto signing module', function() {
     testCase('Digital signining algorithms', function() {
         const data = hexToU8a('3ea1e82b615a25308f0faed7514dc35da9ea87f5fc053bee522f64fe53bb4aca');
         assertion(' 1a. should correctly sign and verify with RS256: RSASSA-PKCS1-v1_5 using SHA-256', async function() {

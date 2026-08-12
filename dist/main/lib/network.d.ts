@@ -27,7 +27,7 @@ declare class WfNetwork {
      */
     static getInstance(): WfNetwork;
     /**
-     * Waits for the initialized Whiteflag protocol state before instantiating the blockchain layer
+     * Waits for the initialized Whiteflag state before instantiating the blockchain layer
      * @returns the blockchain layer singular instance
      * @remarks This is a safer method to get the blockchain layer instance
      * because it waits for the Whiteflag state to have been initialized.

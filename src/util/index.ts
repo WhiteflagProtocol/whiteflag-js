@@ -11,6 +11,7 @@
  */
 export * from './lib/arrays.ts';
 export * from './lib/binary.ts';
+export * from './lib/checks.ts';
 export * from './lib/data.ts';
 export * from './lib/encoding.ts';
 export * from './lib/jws.ts';

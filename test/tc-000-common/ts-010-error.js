@@ -22,7 +22,7 @@ const MESSAGE_WfError2 = 'Could not authenticate originator'
 const MESSAGE_NoError = 'An error that is not an Error'
 
 /* TEST SCRIPT */
-testCase('Test case 010: Common error module', function() {
+testCase('Test Case 010: Common error module', function() {
     testCase('Error handling', function() {
         assertion(' 1. should correctly handle a SyntaxError', function(done) {
             throws(throwSyntaxError, SyntaxError);

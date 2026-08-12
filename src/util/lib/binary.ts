@@ -11,8 +11,10 @@ export {
     zeroise
 };
 
-/* Module imports */
-import { isHex, hexToU8a, u8aToHex } from './encoding.ts';
+/* Package modules */
+import { isHex } from './checks.ts';
+import { ByteArray, byte } from './types.ts';
+import { hexToU8a, u8aToHex } from './encoding.ts';
 
 /* Constants */
 const BYTELENGTH = 8;
@@ -27,26 +29,33 @@ const BYTELENGTH = 8;
  */
 class BinaryBuffer {
     /* CLASS PROPERTIES */
-
-    /** The Uint8Array that holds the binary content */
-    #buffer: Uint8Array;
+    /** The byte array that holds the binary content */
+    #buffer: ByteArray;
     /** The number of used bits in the buffer */
-    length: number;
+    #length: number;
 
     /* CONSTRUCTOR */
     /**
      * Constructs a binary buffer
-     * @param buffer the Uint8Array typed array to create the binary buffer from
+     * @param buffer the Uint8Array byte array typed array to create the binary buffer from
      * @param nBits the bit length of the buffer
      */
-    private constructor(buffer: Uint8Array = new Uint8Array(0), nBits: number = 0) {
+    private constructor(buffer: ByteArray = new Uint8Array(0), nBits: number = 0) {
         if (buffer.length > 0) {
-            this.length = this.#calcBitLength(buffer.byteLength, nBits);
-            this.#buffer = cropBits(buffer, this.length);
+            this.#length = this.#calcBitLength(buffer.byteLength, nBits);
+            this.#buffer = cropBits(buffer, this.#length);
         } else {
-            this.length = 0;
+            this.#length = 0;
             this.#buffer = buffer;
         }
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the number of bits as a property
+     */
+    get length() {
+        return +this.#length;
     }
 
     /* STATIC FACTORY METHODS */
@@ -67,12 +76,12 @@ class BinaryBuffer {
     }
     /**
      * Creates a binary buffer from bytes in a number array
-     * @param byteArray an array of numbers representing bytes
+     * @param bytes an array of numbers representing bytes
      * @param nBits the number of used bits
      * @returns a new binary buffer
      */
-    public static fromBytes(byteArray: Array<number>, nBits: number = 0): BinaryBuffer {
-        return new this(new Uint8Array(byteArray), nBits);
+    public static fromBytes(bytes: byte[], nBits: number = 0): BinaryBuffer {
+        return new this(new Uint8Array(bytes), nBits);
     }
     /**
      * Creates a binary buffer from a hexadecimal string
@@ -85,13 +94,13 @@ class BinaryBuffer {
         return new this(hexToU8a(hexString), nBits);
     }
     /**
-     * Creates a binary buffer from a Uint8Array
-     * @param u8array an array of 8-bit unsigned integers
+     * Creates a binary buffer from a typed byte array
+     * @param bin an array of 8-bit unsigned integers
      * @param nBits the number of used bits
      * @returns a new binary buffer
      */
-    public static fromU8a(u8array: Uint8Array, nBits: number = 0): BinaryBuffer {
-        return new this(u8array, nBits);
+    public static fromU8a(bin: ByteArray, nBits: number = 0): BinaryBuffer {
+        return new this(bin, nBits);
     }
 
     /* PUBLIC CLASS METHODS */
@@ -105,12 +114,12 @@ class BinaryBuffer {
     }
     /**
      * Appends bytes from a number array to the binary buffer
-     * @param byteArray an array of numbers representing bytes
+     * @param bytes an array of numbers representing bytes
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    public appendBytes(byteArray: Array<number>, nBits: number = 0): this {
-        return this.appendU8a(new Uint8Array(byteArray), nBits);
+    public appendBytes(bytes: byte[], nBits: number = 0): this {
+        return this.appendU8a(new Uint8Array(bytes), nBits);
     }
     /**
      * Appends a hexadecimal string to the binary buffer
@@ -123,15 +132,15 @@ class BinaryBuffer {
         return this.appendU8a(hexToU8a(hexString), nBits);
     }
     /**
-     * Appends a Uint8Array to the binary buffer
-     * @param u8array an array of 8-bit unsigned integers
+     * Appends a typed byte array to the binary buffer
+     * @param bin an array of 8-bit unsigned integers
      * @param nBits the number of used bits to append
      * @returns the updated binary buffer
      */
-    public appendU8a(u8array: Uint8Array, nBits: number = 0): this {
-        const bitLength = this.length;
-        this.#buffer = this.#concatinate(this.#buffer, bitLength, u8array, nBits);
-        this.length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
+    public appendU8a(bin: ByteArray, nBits: number = 0): this {
+        const bitLength = this.#length;
+        this.#buffer = this.#concatinate(this.#buffer, bitLength, bin, nBits);
+        this.#length = bitLength + this.#calcBitLength(bin.byteLength, nBits);
         return this;
     }
     /**
@@ -144,13 +153,13 @@ class BinaryBuffer {
 
         /* Determine resulting buffer length */
         let length = nBits;
-        if (nBits > this.length) length = this.length;
-        if (nBits < 0) length = this.length + nBits;
+        if (nBits > this.#length) length = this.#length;
+        if (nBits < 0) length = this.#length + nBits;
         if (length < 0) length = 0;
 
         /* Crop buffer and set new length */
         this.#buffer = cropBits(this.#buffer, nBits);
-        this.length = length;
+        this.#length = length;
         return this;
     }
     /**
@@ -160,7 +169,7 @@ class BinaryBuffer {
      * @returns a new binary buffer with the extracted bits
      */
     public extract(startBit: number, endBit: number = -1): BinaryBuffer {
-        const lastBit = endBit < 0 ? this.length : endBit;
+        const lastBit = endBit < 0 ? this.#length : endBit;
         const buffer = this.extractU8a(startBit, lastBit);
         const bitLength = lastBit - startBit;
         return new BinaryBuffer(buffer, bitLength);
@@ -175,21 +184,21 @@ class BinaryBuffer {
         return u8aToHex(this.extractU8a(startBit, endBit));
     }
     /**
-     * Extracts the specified bits from the binary buffer to a Uint8Array
+     * Extracts the specified bits from the binary buffer to a typed byte array
      * @param startBit the first bit to extract (inclusive)
      * @param endBit the final bit of the extraction (exclusive), negative means until end of buffer
      * @returns an array of 8-bit unsigned integers with the extracted data
      */
-    public extractU8a(startBit: number, endBit: number = -1): Uint8Array {
+    public extractU8a(startBit: number, endBit: number = -1): ByteArray {
         /* Check range */
-        const lastBit = endBit < 0 ? this.length : endBit;
+        const lastBit = endBit < 0 ? this.#length : endBit;
         if (startBit < 0) throw RangeError('Starting bit cannot be less than 0');
-        if (startBit >= this.length) throw RangeError('Starting bit is larger than binary buffer length');
+        if (startBit >= this.#length) throw RangeError('Starting bit is larger than binary buffer length');
         if (startBit > lastBit) throw RangeError('Starting bit is larger than ending bit');
 
         /* Calculate parameters */
         let bitLength = lastBit - startBit;
-        if (lastBit > this.length) bitLength = this.length - startBit;
+        if (lastBit > this.#length) bitLength = this.#length - startBit;
         const startByte = Math.floor(startBit / BYTELENGTH);
         const byteLength = this.#calcByteLength(bitLength);
         const shift = startBit % BYTELENGTH;
@@ -202,12 +211,12 @@ class BinaryBuffer {
     }
     /**
      * Inserts bytes from a number array at the start of the binary buffer
-     * @param byteArray an array of numbers representing bytes
+     * @param bytes an array of numbers representing bytes
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    public insertBytes(byteArray: Array<number>, nBits: number = 0): this {
-        return this.insertU8a(new Uint8Array(byteArray), nBits);
+    public insertBytes(bytes: byte[], nBits: number = 0): this {
+        return this.insertU8a(new Uint8Array(bytes), nBits);
     }
     /**
      * Inserts a hexadecimal string at the start of the binary buffer
@@ -220,15 +229,15 @@ class BinaryBuffer {
         return this.insertU8a(hexToU8a(hexString), nBits);
     }
     /**
-     * Inserts a Uint8Array at the start of the binary buffer
-     * @param u8array an array of 8-bit unsigned integers
+     * Inserts a typed byte array at the start of the binary buffer
+     * @param bin an array of 8-bit unsigned integers
      * @param nBits the number of used bits to insert
      * @returns the updated binary buffer
      */
-    public insertU8a(u8array: Uint8Array, nBits: number = 0): this {
-        const bitLength = this.length;
-        this.#buffer = this.#concatinate(u8array, nBits, this.#buffer, bitLength);
-        this.length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
+    public insertU8a(bin: ByteArray, nBits: number = 0): this {
+        const bitLength = this.#length;
+        this.#buffer = this.#concatinate(bin, nBits, this.#buffer, bitLength);
+        this.#length = bitLength + this.#calcBitLength(bin.byteLength, nBits);
         return this;
     }
     /**
@@ -240,20 +249,20 @@ class BinaryBuffer {
         if (shift < 0) return this.shiftRight(-shift);
 
         /* Left shift larger than lentgh gives empty buffer */
-        if (shift >= this.length) {
+        if (shift >= this.#length) {
             this.#buffer = new Uint8Array(0);
-            this.length = 0;
+            this.#length = 0;
             return this;
         }
         /* Create new smaller buffer */
-        const bitLength = this.length - shift;
+        const bitLength = this.#length - shift;
         const byteShift =  Math.floor(shift / BYTELENGTH);
         const buffer = new Uint8Array(this.#calcByteLength(bitLength) + 1);
         for (let i = 0; i < buffer.length; i++) {
             buffer[i] = this.#buffer[i + byteShift];
         }
         this.#buffer = cropBits(shiftLeft(buffer, shift), bitLength);
-        this.length = bitLength;
+        this.#length = bitLength;
         return this;
     }
     /**
@@ -267,15 +276,15 @@ class BinaryBuffer {
         /* Create new larger buffer */
         const byteShift = Math.ceil(shift / BYTELENGTH);
         const padding = new Uint8Array(byteShift);
-        this.#buffer = this.#concatinate(padding, shift, this.#buffer, this.length);
-        this.length = this.length + shift;
+        this.#buffer = this.#concatinate(padding, shift, this.#buffer, this.#length);
+        this.#length = this.#length + shift;
         return this;
     }
     /**
-     * Gives the value of the binary buffer as a Uint8Array
+     * Gives the value of the binary buffer as a typed byte array
      * @returns an array of 8-bit unsigned integers
      */
-    public toU8a(): Uint8Array {
+    public toU8a(): ByteArray {
         return new Uint8Array(this.#buffer);
     }
     /**
@@ -310,24 +319,24 @@ class BinaryBuffer {
         return Math.ceil(nBits / BYTELENGTH);
     }
     /**
-     * Concatinates two bitsets
+     * Concatinates two bytea arrays
      * @private
-     * @param u8array1 Uint8Array containing the first bitset
+     * @param bin1 the Uint8Array byte array containing the first bitset
      * @param nBits1 number of bits in the first bitset, i.e. which bits to take from the first Uint8Array
-     * @param u8array2 Uint8Array containing the second bitset
+     * @param bin2 the Uint8Array byte array containing the second bitset
      * @param nBits2 number of bits in the second bitset, i.e. which bits to take from the second Uint8Array
      */
-    #concatinate(u8array1: Uint8Array, nBits1: number, u8array2: Uint8Array, nBits2: number): Uint8Array {
+    #concatinate(bin1: ByteArray, nBits1: number, bin2: ByteArray, nBits2: number): ByteArray {
         /* Calculate paramters */
-        const bitLength1 = this.#calcBitLength(u8array1.byteLength, nBits1);
-        const bitLength2 = this.#calcBitLength(u8array2.byteLength, nBits2);
+        const bitLength1 = this.#calcBitLength(bin1.byteLength, nBits1);
+        const bitLength2 = this.#calcBitLength(bin2.byteLength, nBits2);
         const bitLength = bitLength1 + bitLength2;
         const byteLength = this.#calcByteLength(bitLength);
         const shift = bitLength1 % BYTELENGTH;
 
         /* Prepare byte arrays */
-        const bArray1 = cropBits(u8array1, bitLength1);
-        const bArray2 = shiftRight(cropBits(u8array2, bitLength2), shift);
+        const bArray1 = cropBits(bin1, bitLength1);
+        const bArray2 = shiftRight(cropBits(bin2, bitLength2), shift);
         const buffer = new Uint8Array(byteLength);
 
         /* Add byte arrays to buffer */
@@ -350,13 +359,13 @@ class BinaryBuffer {
 
 /* MODULE FUNCTIONS */
 /**
- * Shortens a Uint8Array to the length of the specified bits
- * @param u8array the Uint8Array containing the bitset
+ * Shortens a typed byte array to the length of the specified bits
+ * @param bin the Uint8Array byte array containing the bitset
  * @param nBits the number of used bits, or, if negative, the number of bits to remove
- * @returns a new Uint8Array with the unused bits cleared
+ * @returns a new Uint8Array byte array with the unused bits cleared
  */
-function cropBits(u8array: Uint8Array, nBits: number): Uint8Array {
-    if (nBits === 0) return new Uint8Array(u8array);
+function cropBits(bin: ByteArray, nBits: number): ByteArray {
+    if (nBits === 0) return new Uint8Array(bin);
 
     /* Determine resulting byte array length and bits to clear */
     let byteLength: number;
@@ -365,79 +374,79 @@ function cropBits(u8array: Uint8Array, nBits: number): Uint8Array {
         byteLength = Math.ceil(nBits / BYTELENGTH);
         clearBits = BYTELENGTH - (nBits % BYTELENGTH);
     } else {
-        byteLength = u8array.byteLength - Math.floor(-nBits / BYTELENGTH);
+        byteLength = bin.byteLength - Math.floor(-nBits / BYTELENGTH);
         clearBits = -nBits % BYTELENGTH;
     }
     /* Return the full buffer if byte length is larger than buffer length */
-    if (byteLength > u8array.byteLength) return new Uint8Array(u8array);
+    if (byteLength > bin.byteLength) return new Uint8Array(bin);
 
     /* Return empty buffer if byte lentgh is zero */
     if (byteLength < 1) return new Uint8Array(0);
 
     /*  Create new buffer of byte length, and clear unused bits in last byte */
-    let buffer = new Uint8Array(u8array.slice(0, byteLength));
+    let buffer = new Uint8Array(bin.slice(0, byteLength));
     if (clearBits < BYTELENGTH) buffer[byteLength - 1] &= (0xFF << clearBits);
     return buffer;
 }
 /**
- * Shifts bits in a Uint8Array to the right modulo 8
- * @param u8array the Uint8Array to be right shifted
+ * Shifts bits in a typed byte array to the right modulo 8
+ * @param bin the Uint8Array byte array to be right shifted
  * @param shift the nummber of bits to be right shifted by modulo 8 bits
- * @returns a new Uint8Array with the right shifted bits
+ * @returns a new Uint8Array byte array with the right shifted bits
  */
-function shiftRight(u8array: Uint8Array, shift: number): Uint8Array {
+function shiftRight(bin: ByteArray, shift: number): ByteArray {
     /* Check negative value */
-    if (shift < 0) return shiftLeft(u8array, -shift);
+    if (shift < 0) return shiftLeft(bin, -shift);
 
     /* Calculate shift parameters */
-    const byteLength = u8array.byteLength + 1;
+    const byteLength = bin.byteLength + 1;
     const mod = shift % BYTELENGTH;
     const mask = (0xFF >>> (BYTELENGTH - mod));
 
     /* Create new byte array */
-    if (mod === 0) return new Uint8Array(u8array);
+    if (mod === 0) return new Uint8Array(bin);
     let buffer = new Uint8Array(byteLength);
 
     /* Fill bytes of new Uint8Array, starting at the end, and return result */
     for (let byteIndex = (byteLength - 1); byteIndex > 0; byteIndex--) {
-        buffer[byteIndex] |= ((0xFF & u8array[byteIndex - 1] & mask) << (BYTELENGTH - mod));
-        buffer[byteIndex - 1] = ((0xFF & u8array[byteIndex - 1]) >>> mod);
+        buffer[byteIndex] |= ((0xFF & bin[byteIndex - 1] & mask) << (BYTELENGTH - mod));
+        buffer[byteIndex - 1] = ((0xFF & bin[byteIndex - 1]) >>> mod);
     }
     return buffer;
 }
 /**
- * Shifts bits in a Uint8Array to the left modulo 8
- * @param u8array the Uint8Array to be left shifted
+ * Shifts bits in a typed byte array to the left modulo 8
+ * @param bin the Uint8Array byte array to be left shifted
  * @param shift the nummber of bits to be left shifted by modulo 8 bits
- * @returns a new Uint8Array with the left shifted bits
+ * @returns a new Uint8Array byte array with the left shifted bits
  */
-function shiftLeft(u8array: Uint8Array, shift: number): Uint8Array {
+function shiftLeft(bin: ByteArray, shift: number): ByteArray {
     /* Check negative value */
-    if (shift < 0) return shiftRight(u8array, -shift);
+    if (shift < 0) return shiftRight(bin, -shift);
 
     /* Calculate shift parameters */
-    const byteLength = u8array.byteLength;
+    const byteLength = bin.byteLength;
     const mod = shift % BYTELENGTH;
     const mask = (0xFF << (BYTELENGTH - mod));
 
     /* Create new byte array */
-    if (mod === 0) return new Uint8Array(u8array);
-    let buffer = new Uint8Array(u8array.byteLength);
+    if (mod === 0) return new Uint8Array(bin);
+    let buffer = new Uint8Array(bin.byteLength);
 
     /* Fill bytes of new byte array in two passes and return result */
     for (let byteIndex = 0; byteIndex < byteLength; byteIndex++) {
-            buffer[byteIndex] = ((0xFF & u8array[byteIndex]) << mod);
+            buffer[byteIndex] = ((0xFF & bin[byteIndex]) << mod);
     }
     for (let byteIndex = 0; byteIndex < (byteLength - 1); byteIndex++) {
-        buffer[byteIndex] |= ((0xFF & u8array[byteIndex + 1] & mask) >>> (BYTELENGTH - mod));
+        buffer[byteIndex] |= ((0xFF & bin[byteIndex + 1] & mask) >>> (BYTELENGTH - mod));
     }
     return cropBits(buffer, -(shift % BYTELENGTH));
 }
 /**
  * Basic zeroisation function
- * @param u8array typed array to zeroise
+ * @param bin typed array to zeroise
  * @returns the zeroised typed array
  */
-function zeroise(u8array: Uint8Array): Uint8Array {
-    return u8array.fill(0);
+function zeroise(bin: ByteArray): ByteArray {
+    return bin.fill(0);
 }

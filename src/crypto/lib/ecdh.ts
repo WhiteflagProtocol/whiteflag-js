@@ -12,9 +12,9 @@ export {
 /* Dependencies */
 import { createECDH } from 'node:crypto';
 import { noString } from '@whiteflagprotocol/common';
-import { ByteArray, objectHas } from '@whiteflagprotocol/util';
+import { ByteArray, objHas } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { ExtCryptoKey, ExtCryptoKeyPair, RawKeyPair, useExtKey } from './keys.ts';
 import {
     ECDH,
@@ -54,10 +54,10 @@ function deriveEcdhRawSecret(privateKey: ByteArray, publicKey: ByteArray, curve:
  */
 async function deriveEcdhSecret(keypair: ExtCryptoKeyPair, pubkey: ExtCryptoKey): Promise<ByteArray> {
     /* Check private key */
-    if (!objectHas(keypair, 'privateKey')) throw new TypeError(`Key pair does not contain private key`);
+    if (!objHas(keypair, 'privateKey')) throw new TypeError(`Key pair does not contain private key`);
     if (keypair.privateKey?.type !== 'private') throw new TypeError(`Key pair contains invalid private key`);
     if (keypair.privateKey?.algorithm?.name !== ECDH) throw TypeError(`Private key algorithm is not for ${ECDH} secret negotiation`);
-    const curve = keypair.privateKey?.algorithm?.namedCurve || noString(`Private key is missing the named curve paramter`);
+    const curve = keypair.privateKey.algorithm.namedCurve || noString(`Private key is missing the named curve paramter`);
 
     /* Check public key */
     if (pubkey?.type !== 'public') throw new TypeError(`Invalid public key`);

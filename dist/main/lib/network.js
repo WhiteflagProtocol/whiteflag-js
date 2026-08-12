@@ -3,7 +3,7 @@ export { WfNetwork };
 import { WfLogger } from '@whiteflagprotocol/common';
 import { WfErrorCode, WfProtocolError, WfRuntimeError, handleError } from '@whiteflagprotocol/common';
 import { WfAccount } from '@whiteflagprotocol/core';
-import { isString } from '@whiteflagprotocol/util';
+import { isString, objHas } from '@whiteflagprotocol/util';
 import { WfState } from "./state.js";
 import { WfBlockListener } from "./blockchain.js";
 import { WfEvent, WfEventEmitter } from "./events.js";
@@ -112,7 +112,7 @@ class WfNetwork {
         return false;
     }
     async sendMessage(blockchain, message) {
-        if (!message.isFinal())
+        if (!message.encoded)
             throw new WfRuntimeError(`Message to send on blockchain ${blockchain} has not been encoded`);
         const sender = message.getMeta(WfMetaField.ORIGINATOR_ADDR);
         if (!sender)
@@ -155,7 +155,7 @@ class WfNetwork {
         return this.#emitTransactionResult(tx);
     }
     #emitTransactionResult(tx) {
-        if (Object.hasOwn(tx, 'success')) {
+        if (objHas(tx, 'success')) {
             if (tx.success)
                 wfEvent.emit(WfEvent.TRANSACTION_INCLUDED, tx);
         }

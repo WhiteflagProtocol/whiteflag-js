@@ -19,7 +19,7 @@ import { KeyStoreAccess, KeyStoreCtrl, getWfKeyId } from '@whiteflagprotocol/cry
 import testVector from './data/tv-270-keystore.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 270: Crypto keystore module', function() {
+testCase('Test Case 270: Crypto keystore module', function() {
     const wfKeyAccess = KeyStoreAccess.getInstance();
     const wfKeyCtrl = KeyStoreCtrl.getInstance();
     testCase('Keystore access', function() {

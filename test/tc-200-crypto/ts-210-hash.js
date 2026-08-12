@@ -18,7 +18,7 @@ import { hkdf, hmac, hash } from '@whiteflagprotocol/crypto';
 import testVector from './data/tv-210-hash.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 210: Crypto hashing module', function() {
+testCase('Test Case 210: Crypto hashing module', function() {
     testCase('Basic hash function using SHA-256', function() {
         assertion(' 1. should pass FIPS 180-4 SHA-256 32 bit message test', async function() {
             const msg = hexToU8a(testVector['1'].Msg);

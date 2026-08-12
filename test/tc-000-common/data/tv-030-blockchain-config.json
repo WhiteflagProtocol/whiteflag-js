@@ -1,5 +1,5 @@
 {
-    "$description": "Test case 030: Common blockchain interface test data",
+    "$description": "Test Case 030: Common blockchain interface test data",
     "testchain": {
         "name": "testchain",
         "testnet": true,

@@ -1,5 +1,5 @@
 {
-    "$description": "Test case 321: Core account module test data",
+    "$description": "Test Case 321: Core account module test data",
     "1": {
         "address": "p7vhlLm10t011Tff1Oqiqw",
         "ecdhCryptoPubKey": "045ed1ad2370f1af365a8f271879149232495aa0cc6a10a180d256528c789cbe296bf887cd99854689ad94a03d601b4b8518d61c029dbb50f8e2d37a6105be2bd5",

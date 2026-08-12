@@ -1,6 +1,6 @@
 'use strict';
 export { getIso8601, getPosixEpoch, getEcmaEpoch };
-import { isNumber } from "./types.js";
+import { isNumber } from "./checks.js";
 const MILLISECONDS = 1000;
 const POSIXEPOCH_DIGITS = 11;
 function getIso8601(value = Date.now()) {

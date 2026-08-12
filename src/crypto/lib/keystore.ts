@@ -4,6 +4,7 @@
  * @summary Whiteflag JS cryptographic keystore module
  */
 export {
+    KeyId,
     KeyStoreCtrl,
     KeyStoreAccess,
     getWfKeyId
@@ -14,7 +15,7 @@ import { WfKeyType, WfRuntimeError, handleError } from '@whiteflagprotocol/commo
 import { ByteArray, Base64url, isBase64u, isByteArray, Mutex } from '@whiteflagprotocol/util';
 import { b64uToU8a, hexToU8a, mapToU8a, strToU8a, u8aToB64u, u8aToMap } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { hash, hkdf } from './hash.ts';
 import {
     EncryptedData,
@@ -45,7 +46,7 @@ let _mutex: Mutex = new Mutex();
 
 /* MODULE DECLARATIONS */
 /** A unique value to identify a key in the keystore */
-export type KeyId = Base64url;
+type KeyId = Base64url;
 
 /**
  * The keystore access control to import and export cryptographic keys and secrets
@@ -60,6 +61,7 @@ export type KeyId = Base64url;
  * of encrypted keys are possible.
  */
 class KeyStoreCtrl {
+    /* CLASS PROPERTIES */
     /** Singleton instantiation token */
     static readonly #sit: Symbol = Symbol('KeyStoreCtrl');
     /** Property to keep a single instance of the class */
@@ -192,6 +194,7 @@ class KeyStoreCtrl {
  * Therefore it is not part of the main programming interface.
  */
 class KeyStoreAccess {
+    /* CLASS PROPERTIES */
     /** Singleton instantiation token */
     static readonly #sit: Symbol = Symbol('KeyStoreAccess');
     /** Property to keep a single instance of the class */

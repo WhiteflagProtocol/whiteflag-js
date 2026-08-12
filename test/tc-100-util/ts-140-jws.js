@@ -15,7 +15,7 @@ import { Jws } from '@whiteflagprotocol/util';
 import testVector from './data/tv-140-jws.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 140: Util JWS module', function() { 
+testCase('Test Case 140: Util JWS module', function() { 
     testCase('JWS variants i.a.w. Whiteflag Standard Annex C example', function() {
         assertion(' 1a. should correctly transform flattened JWS to compact JWS', function(done) {
             const jws = Jws.fromObject(testVector['1'].flat);

@@ -26,7 +26,7 @@ import {
 import testVector from './data/tv-121-objects.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 121: Util objects module', function() {
+testCase('Test Case 121: Util objects module', function() {
     testCase('JSON object encoding', function() {
         const obj = { prop1: 'string', prop2: { key: 'value'}, prop3: [ "one", "two" ] };
         assertion(' 1. should correctly convert random object to JSON and back', function(done) {

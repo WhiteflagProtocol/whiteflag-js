@@ -23,7 +23,7 @@ import {
 import testVector from './data/tv-130-binary.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 130: Util binary buffer module', function() {
+testCase('Test Case 130: Util binary buffer module', function() {
     testCase('Binary manupulation functions', function() {
         assertion(' 1. should correctly crop bits of UInt8Array', function(done) {
             const C1 = cropBits(hexToU8a(testVector['1'].hex), testVector['1'].bitLength);

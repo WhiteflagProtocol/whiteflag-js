@@ -18,7 +18,7 @@ import { encodeField, decodeField } from '@whiteflagprotocol/core';
 import testVector from './data/tv-310-codec.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 310: Core codec module', function() {
+testCase('Test Case 310: Core codec module', function() {
     testCase('Field encoding', function() {
         assertion(' 1. should correctly encode (hexa)decimal fields', function(done) {
             const BDX = encodeField(testVector['bdx'].string, 'hexadecimal');

@@ -1,8 +1,8 @@
 'use strict';
 export { Jws };
-import { isBase64u, strToU8a } from "./encoding.js";
+import { strToU8a } from "./encoding.js";
+import { isBase64u, isObject, isString } from "./checks.js";
 import { deepCopy, objToB64u, b64uToObj, jsonToObj } from "./objects.js";
-import { isObject, isString } from "./types.js";
 const EMPTYSTR = '';
 const JWSSEPARATOR = '.';
 const REGEX_JWS_FLAT = /e[yw][A-Za-z0-9-_]+/;
@@ -39,10 +39,10 @@ class Jws {
     static fromObject(jws) {
         switch (jwsType(jws)) {
             case JwsFormat.FULL: {
-                return new this(jws?.protected, jws?.payload, jws?.signature);
+                return new this(jws.protected, jws.payload, jws.signature);
             }
             case JwsFormat.FLAT: {
-                return new this(b64uToObj(jws?.protected), b64uToObj(jws?.payload), jws?.signature);
+                return new this(b64uToObj(jws.protected), b64uToObj(jws.payload), jws.signature);
             }
             case JwsFormat.COMPACT: {
                 return this.fromCompact(jws);

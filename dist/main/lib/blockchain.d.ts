@@ -28,7 +28,7 @@ interface WfBlockchainData extends Serializable {
 /**
  * The status of a blockchain
  * @remarks This class only keeps track of the status of a blockchain;
- * it doens not provide any functions for blockchain operations, such
+ * it does not provide any functionality for blockchain operations, such
  * as processing transactions.
  */
 declare class WfBlockchainState extends DataItem<WfBlockchainData> {
@@ -69,6 +69,22 @@ declare class WfBlockchainState extends DataItem<WfBlockchainData> {
      */
     static fromObject(data: WfBlockchainData, blockchain?: string): WfBlockchainState;
     /**
+     * Returns the blockchain name as a property
+     */
+    get name(): string;
+    /**
+     * Returns the number of the highest known block as a property
+     */
+    get highestBlock(): number;
+    /**
+     * Returns the number of the block currently processed as a property
+     */
+    get currentBlock(): number;
+    /**
+     * Returns the number of the highest block that has been processed as a property
+     */
+    get processedBlock(): number;
+    /**
      * Provides the name of the blockchain
      * @returns the human readible name of the blockchain
      */
@@ -86,8 +102,6 @@ declare class WfBlockchainState extends DataItem<WfBlockchainData> {
  */
 declare class WfBlockListener {
     #private;
-    /** The blockchain name */
-    readonly blockchain: string;
     /**
      * Constructor to create a blockchain account
      * @param bc the blockchain instance to listen on
@@ -101,6 +115,22 @@ declare class WfBlockListener {
      */
     static init(bc: Blockchain): WfBlockListener;
     /**
+     * Returns the blockchain name as a property
+     */
+    get blockchain(): string;
+    /**
+     * Returns the blockchain name as a property
+     */
+    get name(): string;
+    /**
+     * Returns listening status as a property
+     */
+    active(): boolean;
+    /**
+     * Returns the block cursor as a property
+     */
+    get cursor(): number;
+    /**
      * Starts listening to the blockchain
      * @returns `true` if the listener is active, else `false`
      */
@@ -110,8 +140,12 @@ declare class WfBlockListener {
      * @returns `true` if the listener is stopped, else `false`
      */
     stop(): boolean;
-    /** Checks if the listener is listening
+    /** Checks if the listener is active, i.e. listening
      * @returns `true` if the listener is active, else `false`
+    */
+    isActive(): boolean;
+    /** Checks if the listener is listening
+     * @returns `true` if the listener is listening, else `false`
     */
     isListening(): boolean;
     /**

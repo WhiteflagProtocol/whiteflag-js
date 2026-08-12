@@ -32,8 +32,6 @@ export {
 export {
     WfCoreMessage,
     WfCoreMessageData,
-    WfMsgHeader,
-    WfMsgBody,
     isValidMessage,
     validateMessage,
     encryptMessage,

@@ -4,10 +4,13 @@
  * @summary Whiteflag JS common blockchain interface module
  */
 export {
+    Address,
+    Block,
     Blockchain,
     BlockchainConfigData,
     BlockchainStatusData,
-    TransactionData
+    TransactionData,
+    TransactionHash
 };
 
 /* Dependencies */
@@ -15,9 +18,11 @@ import { ByteArray, Hex, posixtime, Serializable, serializable } from '@whitefla
 
 /* MODULE DECLARATIONS */
 /** A blockchain address in the encoding specified for that blockchain */
-export type Address = string;
+type Address = string;
+/** The hexadecimal hash of a blockchian transaction */
+type TransactionHash = Hex;
 /** A block is defined as an array with transactions */
-export type Block = Array<TransactionData>;
+type Block = Array<TransactionData>;
 
 /**
  * The blockchain used to send Whiteflag messages
@@ -236,7 +241,7 @@ interface TransactionData extends Serializable {
     /** The address of the receiving account */
     receiver?: Address;
     /** The hexadecimal encoded transaction hash */
-    hash?: Hex;
+    hash?: TransactionHash;
     /** The block number of the transaction */
     block?: number;
     /** The index of the transaction in the block */

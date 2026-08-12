@@ -20,7 +20,7 @@ import { Blockchain } from  '../lib/t-blockchain.js';
 import bcConfig from './data/tv-030-blockchain-config.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 030: Blockchain interface test implementation', function() {
+testCase('Test Case 030: Blockchain interface test implementation', function() {
     const testchain = new Blockchain('testchain');
     testCase('Simulated initialization and control', function() {
         assertion(' 1a. should not connect before initialization', async function() {

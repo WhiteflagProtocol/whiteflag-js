@@ -2,15 +2,9 @@
 /**
  * @module util/encoding
  * @summary Whiteflag JS encoding and data conversions utility module
- * @todo Replace `Buffer` with the new native `Uint8Array` methods
+ * @todo Replace `Buffer` with the new native `Uint8Array` methods with node.js 25+
  */
 export {
-    isBase58,
-    isBase64,
-    isBase64u,
-    isByteArray,
-    isHex,
-    noHexPrefix,
     b58ToU8a,
     b64ToB64u,
     b64ToHex,
@@ -33,90 +27,33 @@ export {
     u8aToB64u,
     u8aToHex,
     u8aToStr,
+    noHexPrefix
 };
 
 /* Dependencies */
 import { Buffer } from 'node:buffer';
 
-/* Module imports */
+/* Package modules */
 import { ByteArray, Base58, Base64, Base64url, Hex } from './types.ts';
 
 /* Constants */
+export const UTF8ENCODING = 'utf8';
+export const HEXENCODING = 'hex';
+export const BASE64ENCODING = 'base64';
+export const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+export const HEX_CHARS = 'a-fA-F0-9';
+export const BASE64_CHARS = 'A-Za-z0-9+/';
+export const BASE64U_CHARS = 'A-Za-z0-9_-';
 const EMPTYSTR = '';
 const NOSEPARATOR = EMPTYSTR;
+const ZEROCHAR = '0';
 const BYTELENGTH = 8;
-const UTF8 = 'utf8';
-const HEXENCODING = 'hex';
-const HEXRADIX = 16;
 const HEXBYTELENGTH = 2;
 const HEXPREFIX = '0x';
-const HEX_CHARS = 'a-fA-F0-9';
+const HEXRADIX = 16;
 const BASE58RADIX = 58;
-const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-const BASE64ENCODING = 'base64';
-const BASE64_CHARS = 'A-Za-z0-9+/';
-const BASE64U_CHARS = 'A-Za-z0-9_-';
-const REGEX_BASE58 = new RegExp(`^(?:[${BASE58_CHARS}]+)$`);
-const REGEX_BASE64 =  new RegExp(`^(?:[${BASE64_CHARS}]{4})*(?:[${BASE64_CHARS}]{2}==|[${BASE64_CHARS}]{3}=)?$`);
-const REGEX_BASE64U =  new RegExp(`^(?:[${BASE64U_CHARS}]+)$`);
-const REGEX_HEXSTRING = new RegExp(`^(0x|0X)?(?:[${HEX_CHARS}]{2})+$`);
 
 /* MODULE FUNCTIONS */
-/**
- * Checks if a string contains base58 encoded data
- * @param str a string that might be base58 encoded
- * @returns `true` if base58 encoded, else `false`
- */
-function isBase58(str: string): boolean {
-    return REGEX_BASE58.test(str);
-}
-/**
- * Checks if a string contains base64 encoded data
- * @param str a string that might be base64 encoded
- * @returns `true` if base64 encoded, else `false`
- */
-function isBase64(str: string): boolean {
-    if (str === EMPTYSTR) return true;     // Empty string is valid base64
-    return REGEX_BASE64.test(str);
-}
-/**
- * Checks if a string contains base64url encoded data
- * @param str a string that might be base64url encoded
- * @returns `true` if base64url encoded, else `false`
- */
-function isBase64u(str: string): boolean {
-    if (str === EMPTYSTR) return true;     // Empty string is valid base64url
-    return REGEX_BASE64U.test(str);
-}
-/**
- * Checks if a buffer is an 8-bit unsigned integer typed array
- * @param buffer the buffer that might respresent a byte array
- * @returns `true` 8-bit unsigned integer typed array, else `false`
- */
-
-function isByteArray(buffer: ByteArray): boolean {
-    if (buffer instanceof Uint8Array) return true;
-    return false;
-}
-/**
- * Checks if a string contains hexadecimal encoded data
- * @param str a string that might be hexadecimal encoded
- * @returns `true` if hexadecimal encoded, else `false`
- */
-function isHex(str: string): boolean {
-    return REGEX_HEXSTRING.test(str);
-}
-/**
- * Removes the '0x' hex prefix if present
- * @param hexStr a hexadecimal encoded string
- * @returns the the string without the hex prefix
- */
-function noHexPrefix(hexStr: Hex): string {
-    if (hexStr.startsWith(HEXPREFIX)) {
-        return hexStr.substring(HEXPREFIX.length).toLowerCase();
-    }
-    return hexStr.toLowerCase();
-}
 /**
  * Creates a byte array from a base58 encoded string
  * @param b58Str a base58 encoded string
@@ -179,7 +116,7 @@ function b64ToHex(b64Str: Base64): Hex {
  * @returns a regular character string
  */
 function b64ToStr(b64Str: Base64): string {
-    return Buffer.from(b64Str, BASE64ENCODING).toString(UTF8);
+    return Buffer.from(b64Str, BASE64ENCODING).toString(UTF8ENCODING);
 }
 /**
  * Creates a byte array from a base64 encoded string
@@ -271,7 +208,7 @@ function hexToU8a(hexStr: Hex): ByteArray {
  * @returns a base64 encoded string
  */
 function strToB64(charStr: string): Base64 {
-    return Buffer.from(charStr, UTF8).toString(BASE64ENCODING);
+    return Buffer.from(charStr, UTF8ENCODING).toString(BASE64ENCODING);
 }
 /**
  * Creates a base64url encoded string from a regular character string
@@ -291,7 +228,7 @@ function strToHex(charStr: string): Hex {
     for (let i = 0; i < charStr.length; i++) {
         hexStr += charStr
             .charCodeAt(i).toString(HEXRADIX)
-            .padStart(HEXBYTELENGTH, '0');
+            .padStart(HEXBYTELENGTH, ZEROCHAR);
     }
     return hexStr.toLowerCase();
 }
@@ -368,7 +305,7 @@ function u8aToHex(u8array: Uint8Array): Hex {
     for (const byte of u8array) {
         hexArray.push(byte
             .toString(HEXRADIX)
-            .padStart(HEXBYTELENGTH, '0')
+            .padStart(HEXBYTELENGTH, ZEROCHAR)
         );
     }
     return hexArray.join(NOSEPARATOR).toLowerCase();
@@ -380,4 +317,15 @@ function u8aToHex(u8array: Uint8Array): Hex {
  */
 function u8aToStr(u8array: Uint8Array): string {
     return String.fromCharCode(...u8array);
+}
+/**
+ * Removes the '0x' hex prefix if present
+ * @param hexStr a hexadecimal encoded string
+ * @returns the the string without the hex prefix
+ */
+function noHexPrefix(hexStr: Hex): string {
+    if (hexStr.startsWith(HEXPREFIX)) {
+        return hexStr.substring(HEXPREFIX.length).toLowerCase();
+    }
+    return hexStr.toLowerCase();
 }

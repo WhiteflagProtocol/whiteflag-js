@@ -1,0 +1,76 @@
+{
+    "$description": "Test Case 426: Message queue test data",
+    "1": {
+        "type": "A1(0)",
+        "encodedMessage": "5746313020800000000000000000000000000000000000000000000000000000000000000000b43a3a38399d1797b7b933b0b734b9b0ba34b7b71734b73a17bbb434ba32b33630b380",
+        "wfMessage": {
+            "MetaHeader": {
+                "test": true,
+                "originatorAddress": "1C8KSK68SJjfDSBx9BpSx3qB3bePf23r77",
+                "transactionHash": "5a52ee487f246e16dd55a187b346d1c41a32608f2c788f28189af3523b305dd4"
+            },
+            "MessageHeader": {
+                "Prefix": "WF",
+                "Version": "1",
+                "EncryptionIndicator": "0",
+                "DuressIndicator": "0",
+                "MessageCode": "A",
+                "ReferenceIndicator": "0",
+                "ReferencedMessage": "0000000000000000000000000000000000000000000000000000000000000000"
+            },
+            "MessageBody": {
+                "VerificationMethod": "1",
+                "VerificationData": "https://organisation.int/whiteflag"
+            }
+        }
+    },
+    "2": {
+        "type": "F(0)",
+        "encryptionKeyInput": "32676187ba7badda85ea63a69870a7133909f1999774abb2eed251073616a6e7",
+        "encodedMessage": "574631326d7658e7d17479677a0de95076989fcd7825b709349b143f2b17644e5cb2c8ded5c7f18d77447cf9dc2115e0c1c81d717b57fadaeedf27bfef8926448ff666d3d9a65168827c94b393974ebbe6b7f0599e184bfd1ace3569117c23ae17c5640f2f2d",
+        "unencryptedMessage": "5746313223000000000088888889111111119999999a22222222aaaaaaab33333333bbbbbbbb0983098309830983118b118b118b118b1993199319931993219b219b219b219b29a329a329a329a331ab31ab31ab31a9b1b9b1b9b1b9b1b9c1c9c1c9c1c9c1c8",
+        "wfMessage": {
+            "MetaHeader": {
+                "test": true,
+                "originatorAddress": "ZWbyMszMQqpjQPwHqajUuw",
+                "transactionHash": "92e6e51e35907e57c580e2cead20505bac5ad80aa10eb1b1db3997cb9665d7e8"
+            },
+            "MessageHeader": {
+                "Prefix": "WF",
+                "Version": "1",
+                "EncryptionIndicator": "2",
+                "MessageCode": "F",
+                "DuressIndicator": "0",
+                "ReferenceIndicator": "0",
+                "ReferencedMessage": "0000000011111111222222223333333344444444555555556666666677777777"
+            },
+            "MessageBody": {
+                "Text": "a0a0a0a0b1b1b1b1c2c2c2c2d3d3d3d3e4e4e4e4f5f5f5f56767676789898989"
+            }
+        }
+    },
+    "3": {
+        "type": "K(5)",
+        "encodedMessage": "574631326d7658e7d17479677a0de95076989fcd7825b709349b143f2b17644e5cb2c8ded5c7f18d77447cf9dc2115e0c1c81d717b57fadaeedf27bfef8926448ff666d3d9a65168827c94b393974ebbe6b7f0599e184bfd1ace3569117c23ae17c5640f2f2d",
+        "wfMessage": {
+            "MetaHeader": {
+                "test": true,
+                "originatorAddress": "ZWbyMszMQqpjQPwHqajUuw",
+                "transactionHash": "b5bc3ea2d4c80d8f2ae355360b103ac8a2b6683655e02301fee4e6920aa8871a"
+            },
+            "MessageHeader": {
+                "Prefix": "WF",
+                "Version": "1",
+                "EncryptionIndicator": "0",
+                "MessageCode": "K",
+                "DuressIndicator": "0",
+                "ReferenceIndicator": "0",
+                "ReferencedMessage": "92e6e51e35907e57c580e2cead20505bac5ad80aa10eb1b1db3997cb9665d7e8"
+            },
+            "MessageBody": {
+                "CryptoDataType": "21",
+                "CryptoData": "40aa85015d24e4601448c1ba8d7bf1aa"
+            }
+        }
+    }
+}

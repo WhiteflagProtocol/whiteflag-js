@@ -6,7 +6,7 @@
 
 /* Test framework */
 import { describe as testCase, it as assertion } from 'mocha';
-import { strictEqual } from 'node:assert';
+import { strictEqual, deepStrictEqual } from 'node:assert';
 
 /* Classes and Functions required for test */
 import { Account } from  '../lib/t-account.js';
@@ -14,15 +14,14 @@ import { Blockchain } from  '../lib/t-blockchain.js';
 import { hexToU8a } from '@whiteflagprotocol/util';
 
 /* Functions to test */
-import { WfState, WfOriginator } from '@whiteflagprotocol/main';
+import { WfState, WfOriginator, WfMessage, WfMsgType } from '@whiteflagprotocol/main';
 import { KeyStoreCtrl } from '@whiteflagprotocol/crypto';
 
 /* Test data */
-const ORGNAME = 'Organisation 1';
-const BCNAME = 'testchain';
+import testVector6 from './data/tv-426-state-queue.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 420: Main state module', function() {
+testCase('Test Case 420: Main state module', function() {
     let state;
     testCase('State creation', function() {
         assertion(' 1a. should initialize clean state', async function() {
@@ -38,6 +37,7 @@ testCase('Test case 420: Main state module', function() {
             return strictEqual(result1, false);
         });
     });
+    const BCNAME = 'testchain';
     const testchain = new Blockchain(BCNAME, 'ES256');
     testCase('Blockchain state', async function() {
         let id;
@@ -55,6 +55,7 @@ testCase('Test case 420: Main state module', function() {
             return done();
         });
     });
+    const ORGNAME = 'Organisation 1';
     testCase('Originator state', function() {
         let id;
         let address;
@@ -106,6 +107,63 @@ testCase('Test case 420: Main state module', function() {
         assertion(' 5c. should get null when retrieving non-existing account', function(done) {
             const account = state.getAccount('138dc8f17375d884');
             strictEqual(account, null);
+            return done();
+        });
+    });
+    testCase('Message queue', async function() {
+        let msg1;
+        let msg2;
+        let msg3;
+        assertion(' 5a. should store message in queue', async function() {
+            msg1 = await WfMessage.fromObject(testVector6['1'].wfMessage);
+            msg2 = await WfMessage.fromObject(testVector6['2'].wfMessage);
+            msg3 = await WfMessage.fromObject(testVector6['3'].wfMessage);
+            /* Queue messages */
+            const id1 = state.putOnQueue(msg1);
+            const id2 = state.putOnQueue(msg2);
+            const id3 = state.putOnQueue(msg3);
+            strictEqual(id1, msg1.id);   // account id should be equal to address
+            strictEqual(id2, msg2.id);
+            strictEqual(id3, msg3.getMeta('transactionHash'));
+            return;
+        });
+        assertion(' 5b. should get queued message by id, i.e. transaction hash', function(done) {
+            const rmsg1 = state.getQueuedById(testVector6['1'].wfMessage.MetaHeader.transactionHash);
+            strictEqual(rmsg1.getMeta('transactionHash'), msg1.id);
+            const rmsg2 = state.getQueuedById(testVector6['3'].wfMessage.MessageHeader.ReferencedMessage);
+            strictEqual(rmsg2.getMeta('transactionHash'), msg2.id);
+            return done();
+        });
+        assertion(' 5c. should get queued message by reference', function(done) {
+            const messages1 = state.getQueuedByRef(testVector6['2'].wfMessage.MetaHeader.transactionHash);
+            strictEqual(messages1[0].id, msg3.id);        // Only message 3 refers to message 2 in test data
+            strictEqual(messages1.length, 1);
+            const messages2 = state.getQueuedByRef(testVector6['2'].wfMessage.MetaHeader.transactionHash, WfMsgType.K);
+            strictEqual(messages2[0].id, msg3.id);
+            strictEqual(messages2.length, 1);
+            const messages3 = state.getQueuedByRef(testVector6['2'].wfMessage.MetaHeader.transactionHash, WfMsgType.T);
+            deepStrictEqual(messages3, []);
+            return done();
+        });
+        assertion(' 5d. should get queued message by type', function(done) {
+            const messages = state.getQueuedByType(WfMsgType.A);
+            strictEqual(messages[0].id, msg1.id);   // Only 1 message of type A in test data
+            strictEqual(messages.length, 1);
+            return done();
+        });
+        assertion(' 5e. should get null or empty array when retrieving non-existing messages', function(done) {
+            const messageA = state.getQueuedById('138dc8f17375d884');
+            strictEqual(messageA, null);        // No such message in test data
+            const messagesB = state.getQueuedByRef('138dc8f17375d884');
+            deepStrictEqual(messagesB, []);     // No such messages in test data
+            const messagesC = state.getQueuedByType(WfMsgType.R);
+            deepStrictEqual(messagesC, []);     // No such messages in test data
+            return done();
+        });
+        assertion(' 5f. should successfully remove message from queue', function(done) {
+            strictEqual(state.removeFromQueue(msg1.id), true);
+            strictEqual(state.getQueuedById(msg1.id), null);
+            strictEqual(state.removeFromQueue(msg1.id), false);
             return done();
         });
     });

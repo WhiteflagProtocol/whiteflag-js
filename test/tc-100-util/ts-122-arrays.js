@@ -20,7 +20,7 @@ import {
 import testVector from './data/tv-122-arrays.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 122: Util arrays module', function() {
+testCase('Test Case 122: Util arrays module', function() {
     testCase('Equality of arrays', function() {
         assertion(' 1. should correctly determine arrays are not equal', function(done) {
             strictEqual(arrayEquals(testVector['1'].arr1, testVector['1'].arr2), false);

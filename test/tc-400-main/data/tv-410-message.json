@@ -1,5 +1,5 @@
 {
-    "$description": "Test case 410: Main message module test data",
+    "$description": "Test Case 410: Main message module test data",
     "1": {
         "type": "A1(0)",
         "encodedMessage": "5746313020800000000000000000000000000000000000000000000000000000000000000000b43a3a38399d1797b7b933b0b734b9b0ba34b7b71734b73a17bbb434ba32b33630b380",
@@ -111,7 +111,7 @@
         }
     },
     "5": {
-        "type": "[F(0)]",
+        "type": "F(0)",
         "originatorAddress": "007a0baf6f84f0fa7402ea972686e56d50b707c9b67b108866",
         "unencryptedMessage": "5746313223000000000088888889111111119999999a22222222aaaaaaab33333333bbbbbbbb0983098309830983118b118b118b118b1993199319931993219b219b219b219b29a329a329a329a331ab31ab31ab31a9b1b9b1b9b1b9b1b9c1c9c1c9c1c9c1c8",
         "encryptionIndicator": "2",

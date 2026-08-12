@@ -19,7 +19,7 @@ import testVector from './data/tv-020-logger.json' with { type: 'json' };
 const LOGLEVEL = 5;
 
 /* TEST SCRIPT */
-testCase('Test case 020: Common logger module', function() {
+testCase('Test Case 020: Common logger module', function() {
     testCase('Initialize logger', function() {
         assertion(' 1a. should not instantiate directly', function(done) {
             throws(() => { new WfLogger(3, Symbol()) }, WfRuntimeError);

@@ -38,7 +38,7 @@ import {
 import testVector from './data/tv-110-encoding.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 110: Util encoding module', function() {
+testCase('Test Case 110: Util encoding module', function() {
     const testVectorU8a = Uint8Array.from(testVector['0'].Uint8Array);
     testCase('Character string encoding', function() {
         assertion(' 1a. should correctly convert to byte array', function(done) {

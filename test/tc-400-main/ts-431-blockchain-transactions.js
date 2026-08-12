@@ -20,7 +20,7 @@ import testVector from './data/tv-431-blockchain-transactions.json' with { type:
 const BCNAME = bcConfig.testchain.name;
 
 /* TEST SCRIPT */
-testCase('Test case 431: Main blockchain transaction functionality', function() {
+testCase('Test Case 431: Main blockchain transaction functionality', function() {
     testCase('Message extraction from transaction data', function() {
         assertion(' 1a. should return null if no message in transaction', async function() {
             const message = extractMessage(testVector.transactions[0]);

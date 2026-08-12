@@ -4,6 +4,7 @@
  * @summary Whiteflag JS message encryption module
  */
 export {
+    AesParams,
     encryptMsg,
     decryptMsg,
     deriveKey
@@ -13,7 +14,7 @@ export {
 import { WfCryptoMethod, WfVersion, noNumber } from '@whiteflagprotocol/common';
 import { ByteArray, hexToU8a, zeroise } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { hkdf } from './hash.ts';
 import { createAesKey } from './keys.ts';
 import { BYTELENGTH } from './constants.ts';
@@ -23,7 +24,7 @@ import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'jso
 
 /* MODULE DECLARATIONS */
 /** AES Parameters */
-export type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
+type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
 
 /** Whiteflag encryption parameters for each method */
 const PARAMS = compileCryptoParams();
@@ -44,7 +45,7 @@ async function encryptMsg(message: ByteArray,
                           key: CryptoKey,
                           iv?: ByteArray,
                           version = WfVersion.v1
-                        ): Promise<Uint8Array> {
+                        ): Promise<ByteArray> {
     /* Choose encryption based on encryption method */
     switch (method) {
         case WfCryptoMethod.ECDH:
@@ -72,7 +73,7 @@ async function decryptMsg(message: ByteArray,
                           key: CryptoKey,
                           iv?: ByteArray,
                           version = WfVersion.v1
-                        ): Promise<Uint8Array> {
+                        ): Promise<ByteArray> {
     /* Choose decryption based on encryption method */
     switch (method) {
         case WfCryptoMethod.ECDH:
@@ -165,7 +166,7 @@ function compileCryptoParams(): WfCryptoParams {
 async function encryptAes(data: ByteArray,
                           key: CryptoKey,
                           parameters: AesParams
-                        ): Promise<Uint8Array> {
+                        ): Promise<ByteArray> {
     const encrypted = await crypto.subtle.encrypt(
         parameters, key, data
     );
@@ -182,7 +183,7 @@ async function encryptAes(data: ByteArray,
 async function decryptAes(data: ByteArray,
                           key: CryptoKey,
                           parameters: AesParams
-                        ): Promise<Uint8Array> {
+                        ): Promise<ByteArray> {
     const decrypted = await crypto.subtle.decrypt(
         parameters, key, data
     );

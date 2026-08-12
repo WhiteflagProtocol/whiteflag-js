@@ -12,10 +12,11 @@ export {
     JwsCompact
 };
 
-/* Module imports */
-import { isBase64u, strToU8a } from './encoding.ts';
+/* Package modules */
+import { strToU8a } from './encoding.ts';
+import { isBase64u, isObject, isString } from './checks.ts';
 import { deepCopy, objToB64u, b64uToObj, jsonToObj } from './objects.ts';
-import { ByteArray, Json, Base64url, Serializable, serializable, isObject, isString } from './types.ts';
+import { ByteArray, Json, Base64url, Serializable, serializable } from './types.ts';
 
 /* Constants */
 const EMPTYSTR = '';
@@ -44,7 +45,6 @@ enum JwsFormat {
  */
 class Jws {
     /* CLASS PROPERTIES */
-
     /** The protected the JWS protected header */
     public protected: JwsHeader = Object.create(null);
     /** The JWS payload */
@@ -104,16 +104,16 @@ class Jws {
         switch (jwsType(jws)) {
             case JwsFormat.FULL: {
                 return new this(
-                    jws?.protected as JwsHeader,
-                    jws?.payload as JwsPayload,
-                    jws?.signature as Base64url
+                    jws.protected as JwsHeader,
+                    jws.payload as JwsPayload,
+                    jws.signature as Base64url
                 );
             }
             case JwsFormat.FLAT: {
                 return new this(
-                    b64uToObj(jws?.protected) as JwsHeader,
-                    b64uToObj(jws?.payload) as JwsPayload,
-                    jws?.signature as Base64url
+                    b64uToObj(jws.protected) as JwsHeader,
+                    b64uToObj(jws.payload) as JwsPayload,
+                    jws.signature as Base64url
                 );
             }
             case JwsFormat.COMPACT: {
@@ -247,7 +247,7 @@ class Jws {
      * Returns the JWS as a plain JavaScript object
      * @returns the JWS as a full JWS plain JavaScript object
      */
-    public toObject(): Object {
+    public toObject(): object {
         return this.toFull();
     }
     /**
@@ -298,7 +298,7 @@ interface JwsPayload extends Serializable {
  * @param jws a JSON Web Signature
  * @returns the JWS format, or `null` if invalid format
  */
-function jwsType(jws: any): JwsFormat | null {
+function jwsType(jws: JwsCompact| JwsFlatObject | JwsFullObject): JwsFormat | null {
     if (isString(jws) && REGEX_JWS_COMPACT.test(jws)) {
         return JwsFormat.COMPACT;
     }

@@ -20,7 +20,7 @@ import bcConfig from './data/tv-400-blockchain-config.json' with { type: 'json' 
 const BCNAME = bcConfig.testchain.name;
 
 /* TEST SCRIPT */
-testCase('Test case 440: Main blockchain overlay network module', function() {
+testCase('Test Case 440: Main blockchain overlay network module', function() {
     let wfNetwork;
     const testchain = new Blockchain(BCNAME);
     testCase('Network layer instantiation', function() {
@@ -59,8 +59,8 @@ testCase('Test case 440: Main blockchain overlay network module', function() {
         });
         assertion(' 2g. should be able to retrieve blockchain status data', async function() {
             const status = await wfNetwork.status(BCNAME);
-            strictEqual(status?.name, BCNAME);
-            strictEqual(status?.connected, true);
+            strictEqual(status.name, BCNAME);
+            strictEqual(status.connected, true);
             return;
         });
         assertion(' 2h. should stop blockchain listener when disconnecting from node', async function() {

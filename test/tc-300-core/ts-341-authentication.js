@@ -26,7 +26,7 @@ import {
 import testVector from './data/tv-341-authentication.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 341: Core authentication module', function() {
+testCase('Test Case 341: Core authentication module', function() {
     testCase('Whiteflag authentication signatures (method 1)', function() {
         const testchainA = new Blockchain('A', 'ES256');
         assertion(' 1a. should correctly verify existing valid signature', async function() {

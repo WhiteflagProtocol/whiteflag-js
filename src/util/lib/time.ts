@@ -4,21 +4,19 @@
  * @summary Whiteflag JS utility time functions module
  */
 export {
+    Time,
     getIso8601,
     getPosixEpoch,
     getEcmaEpoch
 }
 
-/* Module imports */
-import { isNumber, Iso8601, ecmatime, posixtime } from './types.ts';
+/* Package modules */
+import { isNumber } from './checks.ts';
+import { Time, Iso8601, ecmatime, posixtime } from './types.ts';
 
 /* Constants */
 const MILLISECONDS = 1000;
 const POSIXEPOCH_DIGITS = 11;
-
-/* MODULE DECLARATIONS */
-/** Time representation */
-export type Time = ecmatime | posixtime | Iso8601 | Date;
 
 /* MOUDLE FUNCTIONS */
 /**

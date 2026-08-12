@@ -1,9 +1,9 @@
 'use strict';
 export { WfState };
-import { WfRuntimeError, handleError, noString } from '@whiteflagprotocol/common';
+import { WfMsgField, WfRuntimeError, handleError, noString } from '@whiteflagprotocol/common';
 import { KeyStoreCtrl, generateDEK, encryptData, decryptData, hkdf } from '@whiteflagprotocol/crypto';
 import { DataCollection } from '@whiteflagprotocol/util';
-import { delay, objectHas, getPosixEpoch, hexToU8a, objToU8a, strToU8a, u8aToObj } from '@whiteflagprotocol/util';
+import { delay, objHas, getPosixEpoch, hexToU8a, objToU8a, strToU8a, u8aToObj } from '@whiteflagprotocol/util';
 import { WfBlockchainState } from "./blockchain.js";
 import { WfEvent, WfEventEmitter } from "./events.js";
 const DELAYTIME = 50;
@@ -17,6 +17,7 @@ let _masterKey;
 let _blockchains = DataCollection.create();
 let _originators = DataCollection.create();
 let _accounts = DataCollection.create();
+let _queue = DataCollection.create();
 class WfState {
     static #sit = Symbol('WfState');
     static #instance;
@@ -64,6 +65,7 @@ class WfState {
             exportCollection(_blockchains, encrypt, 'WfBlockchainState'),
             exportCollection(_originators, encrypt, 'WfOriginatorState'),
             exportCollection(_accounts, encrypt, 'WfAccountState'),
+            exportCollection(_queue, encrypt, 'WfMessageQueue'),
             wfKeystore.export()
         ];
         let data = [];
@@ -78,7 +80,8 @@ class WfState {
             blockchains: data[0],
             originators: data[1],
             accounts: data[2],
-            secrets: data[3]
+            queue: data[3],
+            secrets: data[4]
         };
     }
     hasBlockchain(blockchain) {
@@ -117,6 +120,35 @@ class WfState {
     upsertOriginator(originator) {
         return _originators.upsert(originator);
     }
+    putOnQueue(message) {
+        return _queue.upsert(message);
+    }
+    removeFromQueue(txHash) {
+        return _queue.remove(txHash);
+    }
+    getQueuedById(txHash) {
+        return _queue.retrieve(txHash);
+    }
+    getQueuedByRef(reference, type) {
+        const messages = [];
+        for (const message of _queue.items()) {
+            if (type && message.type !== type)
+                continue;
+            if (message.getHeaderField(WfMsgField.H_REFERENCEDMSG) === reference) {
+                messages.push(message);
+            }
+        }
+        return messages;
+    }
+    getQueuedByType(type) {
+        const messages = [];
+        for (const message of _queue.items()) {
+            if (message.getHeaderField(WfMsgField.H_MSGCODE) === type) {
+                messages.push(message);
+            }
+        }
+        return messages;
+    }
 }
 async function setMasterKey(masterKey) {
     const rawKey = hexToU8a(masterKey);
@@ -130,17 +162,20 @@ async function generateMEK(mek) {
     return hkdf(mek, MEK_SALT, MEK_INFO, KEY_LENGTH);
 }
 async function importData(data) {
-    if (data?.blockchains) {
+    if (data.blockchains) {
         _blockchains = await importCollection(data.blockchains);
     }
-    if (data?.originators) {
+    if (data.originators) {
         _originators = await importCollection(data.originators);
     }
-    if (data?.accounts) {
+    if (data.accounts) {
         _accounts = await importCollection(data.accounts);
     }
-    if (data?.secrets) {
-        const success = await wfKeystore.import(data?.secrets);
+    if (data.queue) {
+        _queue = await importCollection(data.queue);
+    }
+    if (data.secrets) {
+        const success = await wfKeystore.import(data.secrets);
         if (!success)
             throw new Error('Could not import keystore data');
     }
@@ -148,7 +183,7 @@ async function importData(data) {
 }
 async function importCollection(data) {
     let collection;
-    if (objectHas(data, 'encrypted')) {
+    if (objHas(data, 'encrypted')) {
         collection = await decryptCollection(data);
     }
     else {

@@ -1,5 +1,5 @@
 {
-    "$description": "Test case 4xx: Main blockchain configuration test data",
+    "$description": "Test Case 4xx: Main blockchain configuration test data",
     "testchain": {
         "name": "testchain",
         "testnet": true,

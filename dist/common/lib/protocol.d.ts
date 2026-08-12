@@ -2,48 +2,13 @@
  * @module common/protocol
  * @summary Whiteflag JS common protocol definitions module
  */
-export { WfVersion, WfMsgType, WfKeyType, WfAuthMethod, WfCryptoMethod };
+export { WfVersion, WfKeyType, WfAuthMethod, WfCryptoMethod };
 /**
  * Defines Whiteflag versions
  */
 declare enum WfVersion {
     /** Whiteflag version 1 */
     v1 = "1"
-}
-/**
- * Whiteflag message types, defining the types of Whiteflag message
- * as specified by the Whiteflag standard
- * @wfversion v1-draft.7
- * @wfreference 2.4.2.1 Functional Messages, 2.4.2.2 Management Messages
- *
- */
-declare enum WfMsgType {
-    /** unknown message type, e.g. when encrypted  */
-    unknown = "unknown",
-    /** Authentication message */
-    A = "A",
-    /** Cryptographic support message */
-    K = "K",
-    /** Test message */
-    T = "T",
-    /** Protection sign */
-    P = "P",
-    /** Protection sign */
-    D = "D",
-    /** Status signal */
-    S = "S",
-    /** Emergency signal */
-    E = "E",
-    /** Infrstructure sign */
-    I = "I",
-    /** Mission signal */
-    M = "M",
-    /** Request signal */
-    Q = "Q",
-    /** Reference message */
-    R = "R",
-    /** Free text message */
-    F = "F"
 }
 /**
  * Cryptograhphic keys and secret usages

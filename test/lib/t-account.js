@@ -20,7 +20,7 @@ const DUMMY_KEYID = '_FPC8ht-BjxkX2gmcKZiUg';
  * fictive blockchain.
  */
 export class Account extends WfAccount {
-    /* PROPERTIES */
+    /* CLASS PROPERTIES */
     #publicKey;
     #privateKey;
 
@@ -31,7 +31,7 @@ export class Account extends WfAccount {
      * @param {string} address the address of the account
      * @param {string} binAddress the hexadecimal encoded binary address of the account
      * @param {CryptoKey} [publicKey] the public key of the account
-     * @param {CryptoKey} [privateKey] the private key of teh account
+     * @param {CryptoKey} [privateKey] the private key of the account
      */
     constructor(blockchain, address, binAddress, publicKey = null, privateKey = null) {
         if (!blockchain) throw new Error('Cannot create a test account without a blockchain');

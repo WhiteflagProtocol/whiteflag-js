@@ -2,11 +2,11 @@
  * @module crypto/cipher
  * @summary Whiteflag JS message encryption module
  */
-export { encryptMsg, decryptMsg, deriveKey };
+export { AesParams, encryptMsg, decryptMsg, deriveKey };
 import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
 import { ByteArray } from '@whiteflagprotocol/util';
 /** AES Parameters */
-export type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
+type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
 /**
  * Encrypts a Whiteflag message based on the specified encryption method
  * @wfversion v1-draft.7
@@ -17,7 +17,7 @@ export type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
  * @param iv the initialization vector, if required for the method
  * @param version the Whiteflag protocol version
  */
-declare function encryptMsg(message: ByteArray, method: WfCryptoMethod, key: CryptoKey, iv?: ByteArray, version?: WfVersion): Promise<Uint8Array>;
+declare function encryptMsg(message: ByteArray, method: WfCryptoMethod, key: CryptoKey, iv?: ByteArray, version?: WfVersion): Promise<ByteArray>;
 /**
  * Decrypts a Whiteflag message based on the specified encryption method
  * @wfversion v1-draft.7
@@ -28,7 +28,7 @@ declare function encryptMsg(message: ByteArray, method: WfCryptoMethod, key: Cry
  * @param iv the initialization vector, if required for the method
  * @param version the Whiteflag protocol version
  */
-declare function decryptMsg(message: ByteArray, method: WfCryptoMethod, key: CryptoKey, iv?: ByteArray, version?: WfVersion): Promise<Uint8Array>;
+declare function decryptMsg(message: ByteArray, method: WfCryptoMethod, key: CryptoKey, iv?: ByteArray, version?: WfVersion): Promise<ByteArray>;
 /**
  * Derives the encryption key based on the Whiteflag encryption method
  * @wfversion v1-draft.7

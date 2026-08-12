@@ -22,7 +22,7 @@ import testVector from '../lib/data/t-blockchain-data.json' with { type: 'json' 
 const BCNAME = bcConfig.testchain.name;
 
 /* TEST SCRIPT */
-testCase('Test case 432: Main blockchain listener functionality', function() {
+testCase('Test Case 432: Main blockchain listener functionality', function() {
     let state;
     let listener;
     const logger = WfLogger.getInstance();

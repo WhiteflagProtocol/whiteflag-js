@@ -7,13 +7,14 @@ export {
     sign,
     verify,
     SignAlgorithm,
+    SignParams,
     getSignParams
 };
 
 /* Dependecies */
 import { ByteArray } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import {
     DEFAULT_HASHALG,
     ECDSA,
@@ -27,7 +28,7 @@ import {
 
 /* MODULE DECLARATIONS */
 /** Signature parameters */
-export type SignParams = RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams
+type SignParams = RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams
 
 /**
  * Supported digital signature algorithms

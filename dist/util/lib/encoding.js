@@ -1,51 +1,21 @@
 'use strict';
-export { isBase58, isBase64, isBase64u, isByteArray, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64ToHex, b64ToStr, b64ToU8a, b64uToB64, b64uToHex, b64uToStr, b64uToU8a, hexToB64, hexToB64u, hexToStr, hexToU8a, strToB64, strToB64u, strToHex, strToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToStr, };
+export { b58ToU8a, b64ToB64u, b64ToHex, b64ToStr, b64ToU8a, b64uToB64, b64uToHex, b64uToStr, b64uToU8a, hexToB64, hexToB64u, hexToStr, hexToU8a, strToB64, strToB64u, strToHex, strToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToStr, noHexPrefix };
 import { Buffer } from 'node:buffer';
+export const UTF8ENCODING = 'utf8';
+export const HEXENCODING = 'hex';
+export const BASE64ENCODING = 'base64';
+export const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+export const HEX_CHARS = 'a-fA-F0-9';
+export const BASE64_CHARS = 'A-Za-z0-9+/';
+export const BASE64U_CHARS = 'A-Za-z0-9_-';
 const EMPTYSTR = '';
 const NOSEPARATOR = EMPTYSTR;
+const ZEROCHAR = '0';
 const BYTELENGTH = 8;
-const UTF8 = 'utf8';
-const HEXENCODING = 'hex';
-const HEXRADIX = 16;
 const HEXBYTELENGTH = 2;
 const HEXPREFIX = '0x';
-const HEX_CHARS = 'a-fA-F0-9';
+const HEXRADIX = 16;
 const BASE58RADIX = 58;
-const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-const BASE64ENCODING = 'base64';
-const BASE64_CHARS = 'A-Za-z0-9+/';
-const BASE64U_CHARS = 'A-Za-z0-9_-';
-const REGEX_BASE58 = new RegExp(`^(?:[${BASE58_CHARS}]+)$`);
-const REGEX_BASE64 = new RegExp(`^(?:[${BASE64_CHARS}]{4})*(?:[${BASE64_CHARS}]{2}==|[${BASE64_CHARS}]{3}=)?$`);
-const REGEX_BASE64U = new RegExp(`^(?:[${BASE64U_CHARS}]+)$`);
-const REGEX_HEXSTRING = new RegExp(`^(0x|0X)?(?:[${HEX_CHARS}]{2})+$`);
-function isBase58(str) {
-    return REGEX_BASE58.test(str);
-}
-function isBase64(str) {
-    if (str === EMPTYSTR)
-        return true;
-    return REGEX_BASE64.test(str);
-}
-function isBase64u(str) {
-    if (str === EMPTYSTR)
-        return true;
-    return REGEX_BASE64U.test(str);
-}
-function isByteArray(buffer) {
-    if (buffer instanceof Uint8Array)
-        return true;
-    return false;
-}
-function isHex(str) {
-    return REGEX_HEXSTRING.test(str);
-}
-function noHexPrefix(hexStr) {
-    if (hexStr.startsWith(HEXPREFIX)) {
-        return hexStr.substring(HEXPREFIX.length).toLowerCase();
-    }
-    return hexStr.toLowerCase();
-}
 function b58ToU8a(b58Str) {
     if (b58Str === EMPTYSTR)
         return new Uint8Array(0);
@@ -83,7 +53,7 @@ function b64ToHex(b64Str) {
     return Buffer.from(b64Str, BASE64ENCODING).toString(HEXENCODING);
 }
 function b64ToStr(b64Str) {
-    return Buffer.from(b64Str, BASE64ENCODING).toString(UTF8);
+    return Buffer.from(b64Str, BASE64ENCODING).toString(UTF8ENCODING);
 }
 function b64ToU8a(b64Str) {
     return new Uint8Array(Buffer.from(b64Str, BASE64ENCODING));
@@ -130,7 +100,7 @@ function hexToU8a(hexStr) {
     return u8array;
 }
 function strToB64(charStr) {
-    return Buffer.from(charStr, UTF8).toString(BASE64ENCODING);
+    return Buffer.from(charStr, UTF8ENCODING).toString(BASE64ENCODING);
 }
 function strToB64u(charStr) {
     return b64ToB64u(strToB64(charStr));
@@ -140,7 +110,7 @@ function strToHex(charStr) {
     for (let i = 0; i < charStr.length; i++) {
         hexStr += charStr
             .charCodeAt(i).toString(HEXRADIX)
-            .padStart(HEXBYTELENGTH, '0');
+            .padStart(HEXBYTELENGTH, ZEROCHAR);
     }
     return hexStr.toLowerCase();
 }
@@ -185,10 +155,16 @@ function u8aToHex(u8array) {
     for (const byte of u8array) {
         hexArray.push(byte
             .toString(HEXRADIX)
-            .padStart(HEXBYTELENGTH, '0'));
+            .padStart(HEXBYTELENGTH, ZEROCHAR));
     }
     return hexArray.join(NOSEPARATOR).toLowerCase();
 }
 function u8aToStr(u8array) {
     return String.fromCharCode(...u8array);
+}
+function noHexPrefix(hexStr) {
+    if (hexStr.startsWith(HEXPREFIX)) {
+        return hexStr.substring(HEXPREFIX.length).toLowerCase();
+    }
+    return hexStr.toLowerCase();
 }

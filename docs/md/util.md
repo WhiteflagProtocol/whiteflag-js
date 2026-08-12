@@ -46,6 +46,8 @@ Public methods to manipulate a binary buffer:
 Some of these functions have an equivalent that allow to use a different
 binary representation, e.g. `appendHex(...)` or `insertU8a(...)`.
 
+The `BinaryBuffer.length` property gives the number of used bits in the buffer.
+
 ## Data items and collections
 
 The `DataItem` class of the `util/data` module is a generic class to hold a
@@ -107,6 +109,21 @@ Public methods to get the JWS in different formats:
 * `Jws.toFull()`: returns the JWS as a full JWS plain JavaScript object
 * `Jws.toObject()`: returns the JWS as a plain JavaScript object
 * `Jws.toJSON()`: returns the JWS as a JSON string
+
+## Generic processing patterns
+
+The `processing` modules provides reusable generic processing patterns.
+
+For example, the `ProcessingChain` class is used to chain functions that
+operate sequentially on the same data element, the asynchronous `readStream`
+function for consuming a readable stream, and the asynchronous `delay`
+function just resolves after a given timeout.
+
+The module also provides two wrappers for promises, with specific error
+classes if they reject:
+
+* `retryPromise(promise, retries...)` retries a promise a given number of time if it rejects, resulting in a `Failed` error if it eventually does not resolve
+* `timeoutPromise(promise, timeout)` executes a promise, rejecting with a `Timeout` error if it does not resolve in time
 
 ## Arrays and Objects
 

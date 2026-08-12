@@ -25,7 +25,7 @@ import {
 import testVector from './data/tv-230-ecdh.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 230: Crypto ECDH module', function() {
+testCase('Test Case 230: Crypto ECDH module', function() {
     testCase('Shared secret negotiation', function() {
         const ECDHALG = { name: 'ECDH', namedCurve: 'brainpoolP256r1', };
         assertion(' 1. should pass RFC 6932 Test Vector A.2', async function() {

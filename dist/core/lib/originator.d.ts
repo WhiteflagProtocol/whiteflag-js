@@ -41,6 +41,14 @@ declare class WfOriginator extends DataItem<WfOriginatorData> {
      */
     constructor(data: WfOriginatorData, id?: DataId);
     /**
+     * Returns the originator name as a property
+     */
+    get name(): string;
+    /**
+     * Returns the accounts associated with this originator
+     */
+    get accounts(): Address[];
+    /**
      * Creates a new originator
      * @param name a human readible name for the originator
      * @returns the originator
@@ -78,8 +86,8 @@ declare class WfOriginator extends DataItem<WfOriginatorData> {
      */
     getName(): string;
     /**
-     * Adds an account to the originator, if not yet owned
-     * @param address the address of the account owned by the originator
+     * Adds an account to the originator, if not yet associated
+     * @param address the address of the account associated with the originator
      * @returns the number of accounts
      */
     addAccount(address: Address): number;
@@ -87,11 +95,11 @@ declare class WfOriginator extends DataItem<WfOriginatorData> {
      * Lists the addresses of the accounts of the originator
      * @returns an array of account addresses
      */
-    listAccounts(): Array<Address>;
+    listAccounts(): Address[];
     /**
-     * Checks if the originator owns the specified account
+     * Checks if the originator is associated with the specified account
      * @param address the address of the account
-     * @returns `true` if the originator owns the account, else `false`
+     * @returns `true` if the originator is associated with the account, else `false`
      */
     ownsAccount(address: Address): boolean;
     /**

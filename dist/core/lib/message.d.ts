@@ -2,26 +2,17 @@
  * @module core/message
  * @summary Whiteflag JS core message module
  */
-export { WfCoreMessage, WfCoreMessageData, WfMsgHeader, WfMsgBody, isValidMessage, validateMessage, encryptMessage, decryptMessage };
-import { WfVersion, WfMsgType, WfCryptoMethod } from '@whiteflagprotocol/common';
-import { ByteArray, BinaryBuffer, DataItem, DataId, Hex, Serializable } from '@whiteflagprotocol/util';
+export { WfCoreMessage, WfCoreMessageData, isValidMessage, validateMessage, encryptMessage, decryptMessage };
+import { WfVersion, WfMsgType, WfCoreMessageData, WfMsgHeader, WfMsgBody, WfCryptoMethod } from '@whiteflagprotocol/common';
+import { ByteArray, BinaryBuffer, DataItem, DataId, Hex } from '@whiteflagprotocol/util';
 import { WfAccount } from './account.ts';
 export declare const WFMSG_PREFIX = "WF";
 export declare const WFMSG_NOENCRYPT = "0";
 /**
- * Whiteflag core message data structure as used by the `WfCoreMessage` class
- */
-interface WfCoreMessageData extends Serializable {
-    /** The header of the Whiteflag message */
-    MessageHeader: WfMsgHeader;
-    /** The body of the Whiteflag message */
-    MessageBody: WfMsgBody;
-}
-/**
  * A core Whiteflag message as defined by the Whiteflag specification
  * @wfversion v1-draft.7
  * @wfreference 4 Message Format
- * @remarks Ths class represents a core Whiteflag message as
+ * @remarks This class represents a core Whiteflag message as
  * defined by the Whiteflag specification. It has a message header and
  * a message body which contain the message fields as specified for the
  * message type. It performs the encoding/encryption and decoding/decryption
@@ -81,10 +72,21 @@ declare class WfCoreMessage extends DataItem<WfCoreMessageData> {
      */
     static generateBody(msgType: WfMsgType, version?: WfVersion, testMsg?: boolean): WfMsgBody;
     /**
-     * Indicates if the message has been fully encoded or decoded
-     * @returns `true` if message has been encoded, else `false`
+     * Indicates if the message has been encoded
      */
-    isFinal(): boolean;
+    get encoded(): boolean;
+    /**
+     * Indicates if the message has been decoded
+     */
+    get decoded(): boolean;
+    /**
+     * Returns the WHiteflag message type
+     */
+    get type(): WfMsgType;
+    /**
+     * Returns the WHiteflag message version
+     */
+    get version(): WfVersion;
     /**
      * Indicates if the message is valid, i.e. if all fields contain valid values
      * @returns `true` if message is valid, else `false`
@@ -186,7 +188,7 @@ declare class WfCoreMessage extends DataItem<WfCoreMessageData> {
      * Returns the encoded Whiteflag message as a byte array
      * @returns a UInt8array with the encoded message
      */
-    toU8a(): Uint8Array;
+    toU8a(): ByteArray;
 }
 /**
  * Checks if an object is a valid Whiteflag message
@@ -199,7 +201,7 @@ declare function isValidMessage(message: any): boolean;
  * @param message the message object to validate
  * @returns an array of validation errors
  */
-declare function validateMessage(message: any): string[];
+declare function validateMessage(message: WfCoreMessage | WfCoreMessageData): string[];
 /**
  * Encrypts a binary encoded message
  * @param message a binary buffer with the binary encoded message
@@ -222,45 +224,3 @@ declare function encryptMessage(message: BinaryBuffer, method: WfCryptoMethod, i
  * @returns the decrypted binary encoded message
  */
 declare function decryptMessage(message: BinaryBuffer, method: WfCryptoMethod, ikm: ByteArray, address: ByteArray, iv?: ByteArray, version?: WfVersion): Promise<BinaryBuffer>;
-/**
- * Whiteflag message header as defined by the Whiteflag specification
- * @private
- * @wfversion v1-draft.7
- * @wfreference 4 Message Format
- */
-interface WfMsgHeader extends Serializable {
-    [key: string]: string | undefined;
-    Prefix?: string;
-    Version?: string;
-    EncryptionIndicator?: string;
-    DuressIndicator?: string;
-    MessageCode?: string;
-    ReferenceIndicator?: string;
-    ReferencedMessage?: string;
-}
-/**
- * Whiteflag message body as defined by the Whiteflag specification
- * @private
- * @wfversion v1-draft.7
- * @wfreference 4 Message Format
- */
-interface WfMsgBody extends Serializable {
-    [key: string]: string | undefined;
-    VerificationMethod?: string;
-    VerificationData?: string;
-    CryptoDataType?: string;
-    CryptoData?: string;
-    PseudoMessageCode?: string;
-    SubjectCode?: string;
-    DateTime?: string;
-    Duration?: string;
-    ObjectType?: string;
-    ObjectLatitude?: string;
-    ObjectLongitude?: string;
-    ObjectSizeDim1?: string;
-    ObjectSizeDim2?: string;
-    ObjectOrientation?: string;
-    ReferenceMethod?: string;
-    ReferenceData?: string;
-    Text?: string;
-}

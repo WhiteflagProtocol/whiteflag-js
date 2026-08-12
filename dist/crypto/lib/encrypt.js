@@ -1,7 +1,7 @@
 'use strict';
 export { encryptData, decryptData, generateDEK };
 import { handleError } from '@whiteflagprotocol/common';
-import { isBase64, objectHas, b64ToU8a, hexToU8a, u8aToB64 } from '@whiteflagprotocol/util';
+import { isBase64, objHas, b64ToU8a, hexToU8a, u8aToB64 } from '@whiteflagprotocol/util';
 import { hkdf } from "./hash.js";
 import { createAesKey } from "./keys.js";
 import { random } from "./random.js";
@@ -24,9 +24,9 @@ async function encryptData(key, plain, info) {
     };
 }
 async function decryptData(key, edo) {
-    if (!objectHas(edo, 'iv') || !isBase64(edo?.iv))
+    if (!objHas(edo, 'iv') || !isBase64(edo.iv))
         throw new TypeError('Encrypted data object does not contain a base64 encoded initialization vector');
-    if (!objectHas(edo, 'encrypted') || !isBase64(edo?.encrypted))
+    if (!objHas(edo, 'encrypted') || !isBase64(edo.encrypted))
         throw new TypeError('Encrypted data object does not contain base64 encoded encrypted data');
     let decrypted;
     try {

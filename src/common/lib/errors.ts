@@ -46,11 +46,10 @@ enum WfErrorCode {
  */
 class WfProtocolError extends Error {
     /* CLASS PROPERTIES */
-
     /** The Whiteflag protocol error code */
-    public code: string;
+    #code: string;
     /** Underlying causes of the error */
-    public causes: string[] = [];
+    #causes: string[] = [];
 
     /**
      * Constructs Whiteflag protocol errors
@@ -58,7 +57,7 @@ class WfProtocolError extends Error {
      * @param reasons underlying error(s) causing this error
      * @param code the code identifying the Whiteflag error type
      */
-    constructor(message: string, reasons?: Error | Array<string> | string | null, code: WfErrorCode = WfErrorCode.GENERIC) {
+    constructor(message: string, reasons?: Error | string[] | string | null, code: WfErrorCode = WfErrorCode.GENERIC) {
         /* Call parent constructor and set properties */
         if (reasons && reasons instanceof Error) {
             super(message, { cause: reasons });
@@ -66,8 +65,22 @@ class WfProtocolError extends Error {
             super(message);
         }
         this.name = this.constructor.name;
-        this.code = code;
-        this.causes = processReasons(reasons);
+        this.#code = code;
+        this.#causes = processReasons(reasons);
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the protocol error code as a property
+     */
+    get code(): string {
+        return this.#code;
+    }
+    /**
+     * Returns causes of the error as a property
+     */
+    get causes(): string[] {
+        return [...this.#causes];
     }
 }
 /**
@@ -80,16 +93,15 @@ class WfProtocolError extends Error {
  */
 class WfRuntimeError extends Error {
     /* CLASS PROPERTIES */
-
     /** Underlying causes of the error */
-    public causes: string[] = [];
+    #causes: string[] = [];
     
     /**
      * Constructs Whiteflag JS runtime errors
      * @param message a human readable error message
      * @param reasons underlying error(s) causing this error
      */
-    constructor(message: string, reasons?: Error | Array<string> | string | null) {
+    constructor(message: string, reasons?: Error | string[] | string | null) {
         /* Call parent constructor and set properties */
         if (reasons && reasons instanceof Error) {
             super(message, { cause: reasons });
@@ -97,7 +109,15 @@ class WfRuntimeError extends Error {
             super(message);
         }
         this.name = this.constructor.name;
-        this.causes = processReasons(reasons);
+        this.#causes = processReasons(reasons);
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns causes of the error as a property
+     */
+    get causes(): string[] {
+        return [...this.#causes];
     }
 }
 
@@ -112,7 +132,7 @@ class WfRuntimeError extends Error {
 function handleError(err: unknown, msg?: string, code?: WfErrorCode): any {
     /* Check error */
     let message = 'Unspecified error occured';
-    if (err instanceof Error) message = err?.message
+    if (err instanceof Error) message = err.message
     if (msg) message = `${msg}: ${message}`;
 
     /* Handle error according to type */
@@ -170,7 +190,7 @@ function noString(descr?: string): string {
  * @param reasons underlying error(s) causing this error
  * @returns a string array with the reasons
  */
-function processReasons(reasons?: Error | Array<string> | string | null) : string[] {
+function processReasons(reasons?: Error | string[] | string | null) : string[] {
     if (!reasons) return [];
     if (Array.isArray(reasons)) return reasons;
     if (reasons instanceof Error) return [ reasons.message ];

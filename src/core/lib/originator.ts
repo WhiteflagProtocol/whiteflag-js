@@ -61,6 +61,20 @@ class WfOriginator extends DataItem<WfOriginatorData> {
         this.#data = super.getDataReference(ddat) as WfOriginatorData;
     }
 
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the originator name as a property
+     */
+    get name(): string {
+        return this.#data.name;
+    }
+    /**
+     * Returns the accounts associated with this originator
+     */
+    get accounts(): Address[] {
+        return this.listAccounts();
+    }
+
     /* STATIC FACTORY METHODS */
     /**
      * Creates a new originator
@@ -114,11 +128,11 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns the human readible name of the originator
      */
     public getName(): string {
-        return this.#data?.name;
+        return this.#data.name;
     }
     /**
-     * Adds an account to the originator, if not yet owned
-     * @param address the address of the account owned by the originator
+     * Adds an account to the originator, if not yet associated
+     * @param address the address of the account associated with the originator
      * @returns the number of accounts
      */
     public addAccount(address: Address): number {
@@ -131,13 +145,13 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * Lists the addresses of the accounts of the originator
      * @returns an array of account addresses
      */
-    public listAccounts(): Array<Address> {
+    public listAccounts(): Address[] {
         return Array.from(this.#data.accounts);
     }
     /**
-     * Checks if the originator owns the specified account
+     * Checks if the originator is associated with the specified account
      * @param address the address of the account
-     * @returns `true` if the originator owns the account, else `false`
+     * @returns `true` if the originator is associated with the account, else `false`
      */
     public ownsAccount(address: Address): boolean {
         return this.#data.accounts.includes(address);
@@ -148,7 +162,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns `true` if succesfully stored
      */
     public async storePSK(psk: Hex): Promise<boolean> {
-        const secretId = await getWfKeyId(WfKeyType.ENCRYPT_PSK, this._id);
+        const secretId = await getWfKeyId(WfKeyType.ENCRYPT_PSK, this.id);
         this.#data.pskId = await storeSecret(secretId, hexToU8a(psk));
         return !!this.#data.pskId;
     }
@@ -166,7 +180,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns 
      */
     public async storePSS(pss: Hex): Promise<boolean> {
-        const secretId = await getWfKeyId(WfKeyType.AUTH_PSS, this._id);
+        const secretId = await getWfKeyId(WfKeyType.AUTH_PSS, this.id);
         this.#data.pssId = await storeSecret(secretId, hexToU8a(pss));
         return !!this.#data.pssId;
     }

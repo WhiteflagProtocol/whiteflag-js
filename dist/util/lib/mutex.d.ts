@@ -20,6 +20,10 @@ declare class Mutex {
      */
     constructor(delaytime?: number);
     /**
+     * Returns the mutex state as a property
+     */
+    get state(): number;
+    /**
      * Locks to prevent read-write operations
      * @returns the resolved or rejected promise with the mutex value
      */

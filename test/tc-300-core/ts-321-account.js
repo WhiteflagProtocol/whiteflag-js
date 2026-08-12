@@ -24,7 +24,7 @@ import { WfAccount } from '@whiteflagprotocol/core';
 import testVector from './data/tv-321-account.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 321: Core account module', function() {
+testCase('Test Case 321: Core account module', function() {
     let accountX;
     let accountA;
     let accountB;

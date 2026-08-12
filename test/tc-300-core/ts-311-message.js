@@ -23,7 +23,7 @@ import { WfCoreMessage, encryptMessage, decryptMessage } from '@whiteflagprotoco
 import testVector from './data/tv-311-message.json' with { type: 'json' };
 
 /* TEST SCRIPT */
-testCase('Test case 311: Core message module', function() {
+testCase('Test Case 311: Core message module', function() {
     const testchain = new Blockchain('testchain');
     testCase('Message creation', function() {
         assertion(' 1a. should create new message object', function(done) {

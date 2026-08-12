@@ -7,7 +7,7 @@ export {
     Mutex
 };
 
-/* Module imports */
+/* Package modules */
 import { delay } from './processing.ts';
 
 /* Constants */
@@ -25,6 +25,7 @@ const MAXSLEEP = 1000;
  * anymore, else it waits.
  */
 class Mutex {
+    /* CLASS PROPERTIES */
     /** The time to delay in ms before checking for a lock or tracked operations */
     readonly #delaytime: number = DEFAULTDELAY;
     /** The mutex value counts active read-write operations, or is set to -1 ad a lock */
@@ -39,6 +40,14 @@ class Mutex {
         if (delaytime && delaytime >= MINSLEEP && delaytime <= MAXSLEEP) {
             this.#delaytime = delaytime;
         }
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the mutex state as a property
+     */
+    get state(): number {
+        return this.#mutex
     }
 
     /* PUBLIC CLASS METHODS */

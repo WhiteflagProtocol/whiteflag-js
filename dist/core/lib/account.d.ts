@@ -7,7 +7,7 @@ import { Address, Blockchain } from '@whiteflagprotocol/common';
 import { KeyId } from '@whiteflagprotocol/crypto';
 import { ByteArray, Base64, DataItem, Hex, Json, Serializable } from '@whiteflagprotocol/util';
 /**
- * Whiteflag account data structure as used by the `WfOriginator` class
+ * Whiteflag account data structure as used by the `WfAccount` class
  */
 interface WfAccountData extends Serializable {
     /** The name identifying the blockchain of the account */

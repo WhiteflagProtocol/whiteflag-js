@@ -1,46 +1,17 @@
 /**
  * @module util/encoding
  * @summary Whiteflag JS encoding and data conversions utility module
- * @todo Replace `Buffer` with the new native `Uint8Array` methods
+ * @todo Replace `Buffer` with the new native `Uint8Array` methods with node.js 25+
  */
-export { isBase58, isBase64, isBase64u, isByteArray, isHex, noHexPrefix, b58ToU8a, b64ToB64u, b64ToHex, b64ToStr, b64ToU8a, b64uToB64, b64uToHex, b64uToStr, b64uToU8a, hexToB64, hexToB64u, hexToStr, hexToU8a, strToB64, strToB64u, strToHex, strToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToStr, };
+export { b58ToU8a, b64ToB64u, b64ToHex, b64ToStr, b64ToU8a, b64uToB64, b64uToHex, b64uToStr, b64uToU8a, hexToB64, hexToB64u, hexToStr, hexToU8a, strToB64, strToB64u, strToHex, strToU8a, u8aToB58, u8aToB64, u8aToB64u, u8aToHex, u8aToStr, noHexPrefix };
 import { ByteArray, Base58, Base64, Base64url, Hex } from './types.ts';
-/**
- * Checks if a string contains base58 encoded data
- * @param str a string that might be base58 encoded
- * @returns `true` if base58 encoded, else `false`
- */
-declare function isBase58(str: string): boolean;
-/**
- * Checks if a string contains base64 encoded data
- * @param str a string that might be base64 encoded
- * @returns `true` if base64 encoded, else `false`
- */
-declare function isBase64(str: string): boolean;
-/**
- * Checks if a string contains base64url encoded data
- * @param str a string that might be base64url encoded
- * @returns `true` if base64url encoded, else `false`
- */
-declare function isBase64u(str: string): boolean;
-/**
- * Checks if a buffer is an 8-bit unsigned integer typed array
- * @param buffer the buffer that might respresent a byte array
- * @returns `true` 8-bit unsigned integer typed array, else `false`
- */
-declare function isByteArray(buffer: ByteArray): boolean;
-/**
- * Checks if a string contains hexadecimal encoded data
- * @param str a string that might be hexadecimal encoded
- * @returns `true` if hexadecimal encoded, else `false`
- */
-declare function isHex(str: string): boolean;
-/**
- * Removes the '0x' hex prefix if present
- * @param hexStr a hexadecimal encoded string
- * @returns the the string without the hex prefix
- */
-declare function noHexPrefix(hexStr: Hex): string;
+export declare const UTF8ENCODING = "utf8";
+export declare const HEXENCODING = "hex";
+export declare const BASE64ENCODING = "base64";
+export declare const BASE58_CHARS = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+export declare const HEX_CHARS = "a-fA-F0-9";
+export declare const BASE64_CHARS = "A-Za-z0-9+/";
+export declare const BASE64U_CHARS = "A-Za-z0-9_-";
 /**
  * Creates a byte array from a base58 encoded string
  * @param b58Str a base58 encoded string
@@ -173,3 +144,9 @@ declare function u8aToHex(u8array: Uint8Array): Hex;
  * @returns a regular character string
  */
 declare function u8aToStr(u8array: Uint8Array): string;
+/**
+ * Removes the '0x' hex prefix if present
+ * @param hexStr a hexadecimal encoded string
+ * @returns the the string without the hex prefix
+ */
+declare function noHexPrefix(hexStr: Hex): string;

@@ -4,8 +4,9 @@
  * @summary Whiteflag JS objects utility module
  */
 export {
-    objectHas,
     deepCopy,
+    objectHas,
+    objectHasNot,
     objToJson,
     objToMap,
     objToB64,
@@ -22,10 +23,10 @@ export {
     u8aToMap
 };
 
-/* Module imports */
+/* Package modules */
 import { b64ToStr, b64uToStr, strToB64, strToB64u, strToU8a, u8aToStr } from './encoding.ts';
-import { ByteArray, Base64, Base64url, Json } from './types.ts';
-import { isObject } from './types.ts';
+import { ByteArray, Base64, Base64url, Json, Serializable, serializable, primitive } from './types.ts';
+import { isArray, isObject } from './types.ts';
 
 /* Constants */
 const illegalKeys = new Set(['__proto__', 'constructor', 'prototype']);
@@ -36,54 +37,79 @@ const illegalKeys = new Set(['__proto__', 'constructor', 'prototype']);
  * @param obj the object to check
  * @param key the name of the property
  * @returns `true` if property exists, else `false`
+ * @throws if first argument is not an object
  */
-function objectHas(obj: Object, key: string): boolean {
-    return (isObject(obj) && Object.hasOwn(obj, key));
+function objectHas(obj: object, key: string): boolean {
+    if (!isObject(obj)) throw new TypeError('Not an object');
+    return Object.hasOwn(obj, key);
+}
+/**
+ * Checks if an object does not have a property identified by key
+ * @param obj the object to check
+ * @param key the name of the missing property
+ * @returns `true` if property does not exists, else `false`
+ * @throws if first argument is not an object
+ */
+function objectHasNot(obj: object, key: string): boolean {
+    if (!isObject(obj)) throw new TypeError('Not an object');
+    return !Object.hasOwn(obj, key);
 }
 /**
  * Provides a plain serializable deep copy of an object
- * @param entity the object to copy
- * @returns a plain JavaScript object with a deep copy of the entity
+ * @param obj the object to copy
+ * @returns a plain JavaScript object with a deep copy of the object
  * @remarks Copies of objects created by this functions are without any
  * inherited properties to prevent prototype poisoning. Complex objects
  * (Map, Set, Date, RegExp) are converted to plain objects or a primitive
  * value, allowing the deep copy to be serialized.
  */
-function deepCopy(entity: any): any {
-    /* Returns as a value if not an object or array */
-    if (!isObject(entity)) return entity;
-
-    /* Null and undefined */
-    switch (entity) {
-        case null:
-        case undefined: {
+function deepCopy(obj: object): {};
+function deepCopy(obj: primitive): serializable;
+function deepCopy(obj: Array<unknown>): Array<Serializable | serializable>;
+function deepCopy(obj: Set<unknown>): Array<Serializable | serializable>;
+function deepCopy(obj: Map<unknown,unknown>): Serializable;
+function deepCopy(obj: Date): string;
+function deepCopy(obj: RegExp): string;
+function deepCopy(obj: undefined): null;
+function deepCopy(obj: unknown): {} | serializable | Serializable | Array<Serializable | serializable> {
+    if (obj === null) return null;
+    switch (typeof obj) {
+        case 'undefined': {
             return null;
         }
+        case 'boolean':
+        case 'string': {
+            return obj;
+        }
+        case 'number': {
+            if (Number.isFinite(obj)) return obj;
+        }
+        case 'object': {
+            /* Array: calls itself on each element of an array */
+            if (isArray(obj)) return obj.map(deepCopy);
+
+            /* Convert complex objects */
+            if (obj instanceof Set) return deepCopy(Array.from(obj));
+            if (obj instanceof Map) return deepCopy(Object.fromEntries(obj));
+            if (obj instanceof Date) return obj.toISOString();
+            if (obj instanceof RegExp) return obj.toString();
+
+            /* Create object copy */
+            const copy = Object.create(null);
+            for (const [k, o] of Object.entries(obj)) {
+                copy[k] = deepCopy(o);
+            }
+            return obj;
+        }
     }
-    /* Handle complex objects */
-    switch (true) {
-        case entity instanceof Map: return deepCopy(Object.fromEntries(entity));
-        case entity instanceof Set: return deepCopy(Array.from(entity));
-        case entity instanceof Date: return entity.toISOString();
-        case entity instanceof RegExp: return entity.toString();
-    }
-    /* Calls itself on each element of an array*/
-    if (Array.isArray(entity)) {
-        return entity.map(deepCopy);
-    }
-    /* Copy each element of the object */
-    const obj = Object.create(null);
-    for (const [key, value] of Object.entries(entity)) {
-        obj[key] = deepCopy(value);
-    }
-    return obj;
+    return String(obj);
 }
 /**
  * Creates a base64 encoded JSON serialized object
  * @param obj the object to be base64 encoded
  * @returns a base64 encoded JSON serialized object
  */
-function objToB64(obj: Object): Base64 {
+function objToB64(obj: object): Base64 {
     return strToB64(JSON.stringify(obj));
 }
 /**
@@ -91,7 +117,7 @@ function objToB64(obj: Object): Base64 {
  * @param obj the object to be base64url encoded
  * @returns a base64url encoded JSON serialized object
  */
-function objToB64u(obj: Object): Base64url {
+function objToB64u(obj: object): Base64url {
     return strToB64u(JSON.stringify(obj));
 }
 /**
@@ -99,7 +125,7 @@ function objToB64u(obj: Object): Base64url {
  * @param base64 a base64 encoded JSON serialized object
  * @returns a plain object with the data from the JSON object
  */
-function b64ToObj(base64: Base64): Object {
+function b64ToObj(base64: Base64): Serializable {
     return jsonToObj(b64ToStr(base64));
 }
 /**
@@ -107,7 +133,7 @@ function b64ToObj(base64: Base64): Object {
  * @param base64u a base64url encoded JSON serialized object
  * @returns a plain object with the data from the JSON object
  */
-function b64uToObj(base64u: Base64url): Object {
+function b64uToObj(base64u: Base64url): Serializable {
     return jsonToObj(b64uToStr(base64u));
 }
 /**
@@ -116,7 +142,7 @@ function b64uToObj(base64u: Base64url): Object {
  * @returns a JSON serialized object
  * @remarks Just a wrapper for `JSON.stringify`, included for completeness
  */
-function objToJson(obj: Object): Json {
+function objToJson(obj: object): Json {
     return JSON.stringify(obj);
 }
 /**
@@ -124,8 +150,8 @@ function objToJson(obj: Object): Json {
  * @param obj the object to be transformed to a map
  * @returns a map
  */
-function objToMap(obj: Object): Map<string,any> {
-    if (!isObject(obj)) throw new TypeError('Argument is not an object');
+function objToMap(obj: object): Map<string,any> {
+    if (!isObject(obj)) throw new TypeError('Not an object');
     return new Map(Object.entries(obj));
 }
 /**
@@ -137,7 +163,7 @@ function objToMap(obj: Object): Map<string,any> {
  * because it creates an object without any inherited properties to prevent
  * prototype poisoning.
  */
-function jsonToObj(json: Json): Object {
+function jsonToObj(json: Json): Serializable {
     try {
         /* Create object without prototype from JSON serialized object */
         return Object.assign(Object.create(null), JSON.parse(json, (key, value) => {
@@ -165,7 +191,7 @@ function jsonToMap(json: Json): Map<string,any> {
  * @remarks This function creates an object without any inherited properties
  * to prevent prototype poisoning.
  */
-function mapToObj(map: Map<string,any>): Object {
+function mapToObj(map: Map<string,any>): Serializable {
     for (const key of illegalKeys) {
         /* Checks for illegal keys in map */
         if (map.has(key)) throw TypeError(`Map contains illegal key: ${key}`);
@@ -194,7 +220,7 @@ function mapToU8a(map: Map<string,any>): ByteArray {
  * @param obj the object to be binary encoded
  * @returns a binary encoded object
  */
-function objToU8a(obj: Object): ByteArray {
+function objToU8a(obj: object): ByteArray {
     return strToU8a(JSON.stringify(obj));
 }
 /**
@@ -210,6 +236,6 @@ function u8aToMap(u8array: Uint8Array): Map<string,any> {
  * @param u8array a binary encoded JSON serialized object
  * @returns a plain object with the decoded binary data
  */
-function u8aToObj(u8array: Uint8Array): Object {
+function u8aToObj(u8array: Uint8Array): Serializable {
     return jsonToObj(u8aToStr(u8array));
 }

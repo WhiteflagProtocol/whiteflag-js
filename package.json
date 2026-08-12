@@ -40,7 +40,7 @@
     "devDependencies": {
         "@types/node": "^25.5.0",
         "copyfiles": "latest",
-        "mocha": "^11.7.5",
+        "mocha": "^11.8.0",
         "npm-run-all": "latest",
         "rimraf": "latest",
         "typedoc": "latest",
@@ -60,6 +60,6 @@
         "build": "npm-run-all build:*"
     },
     "engines": {
-        "node": ">=22"
+        "node": ">=24"
     }
 }

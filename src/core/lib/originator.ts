@@ -61,6 +61,14 @@ class WfOriginator extends DataItem<WfOriginatorData> {
         this.#data = super.getDataReference(ddat) as WfOriginatorData;
     }
 
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the originator name as a property
+     */
+    get name(): string {
+        return this.#data.name;
+    }
+
     /* STATIC FACTORY METHODS */
     /**
      * Creates a new originator
@@ -114,7 +122,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns the human readible name of the originator
      */
     public getName(): string {
-        return this.#data?.name;
+        return this.#data.name;
     }
     /**
      * Adds an account to the originator, if not yet owned
@@ -148,7 +156,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns `true` if succesfully stored
      */
     public async storePSK(psk: Hex): Promise<boolean> {
-        const secretId = await getWfKeyId(WfKeyType.ENCRYPT_PSK, this._id);
+        const secretId = await getWfKeyId(WfKeyType.ENCRYPT_PSK, this.id);
         this.#data.pskId = await storeSecret(secretId, hexToU8a(psk));
         return !!this.#data.pskId;
     }
@@ -166,7 +174,7 @@ class WfOriginator extends DataItem<WfOriginatorData> {
      * @returns 
      */
     public async storePSS(pss: Hex): Promise<boolean> {
-        const secretId = await getWfKeyId(WfKeyType.AUTH_PSS, this._id);
+        const secretId = await getWfKeyId(WfKeyType.AUTH_PSS, this.id);
         this.#data.pssId = await storeSecret(secretId, hexToU8a(pss));
         return !!this.#data.pssId;
     }

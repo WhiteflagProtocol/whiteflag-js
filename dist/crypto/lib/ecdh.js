@@ -24,7 +24,7 @@ async function deriveEcdhSecret(keypair, pubkey) {
         throw new TypeError(`Key pair contains invalid private key`);
     if (keypair.privateKey?.algorithm?.name !== ECDH)
         throw TypeError(`Private key algorithm is not for ${ECDH} secret negotiation`);
-    const curve = keypair.privateKey?.algorithm?.namedCurve || noString(`Private key is missing the named curve paramter`);
+    const curve = keypair.privateKey.algorithm.namedCurve || noString(`Private key is missing the named curve paramter`);
     if (pubkey?.type !== 'public')
         throw new TypeError(`Invalid public key`);
     if (pubkey?.algorithm?.name !== ECDH)

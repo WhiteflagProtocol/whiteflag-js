@@ -13,8 +13,8 @@ var WfErrorCode;
     WfErrorCode["ENCRYPTION"] = "WF_ENCRYPTION_ERROR";
 })(WfErrorCode || (WfErrorCode = {}));
 class WfProtocolError extends Error {
-    code;
-    causes = [];
+    #code;
+    #causes = [];
     constructor(message, reasons, code = WfErrorCode.GENERIC) {
         if (reasons && reasons instanceof Error) {
             super(message, { cause: reasons });
@@ -23,12 +23,18 @@ class WfProtocolError extends Error {
             super(message);
         }
         this.name = this.constructor.name;
-        this.code = code;
-        this.causes = processReasons(reasons);
+        this.#code = code;
+        this.#causes = processReasons(reasons);
+    }
+    get code() {
+        return this.#code;
+    }
+    get causes() {
+        return [...this.#causes];
     }
 }
 class WfRuntimeError extends Error {
-    causes = [];
+    #causes = [];
     constructor(message, reasons) {
         if (reasons && reasons instanceof Error) {
             super(message, { cause: reasons });
@@ -37,13 +43,16 @@ class WfRuntimeError extends Error {
             super(message);
         }
         this.name = this.constructor.name;
-        this.causes = processReasons(reasons);
+        this.#causes = processReasons(reasons);
+    }
+    get causes() {
+        return [...this.#causes];
     }
 }
 function handleError(err, msg, code) {
     let message = 'Unspecified error occured';
     if (err instanceof Error)
-        message = err?.message;
+        message = err.message;
     if (msg)
         message = `${msg}: ${message}`;
     switch (true) {

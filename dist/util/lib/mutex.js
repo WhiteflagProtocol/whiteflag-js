@@ -12,6 +12,9 @@ class Mutex {
             this.#delaytime = delaytime;
         }
     }
+    get state() {
+        return this.#mutex;
+    }
     async lock() {
         await this.tracked();
         return this.#mutex = -1;

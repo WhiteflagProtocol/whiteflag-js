@@ -2,10 +2,10 @@
  * @module crypto/sign
  * @summary Whiteflag JS cryptographic signatures module
  */
-export { sign, verify, SignAlgorithm, getSignParams };
+export { sign, verify, SignAlgorithm, SignParams, getSignParams };
 import { ByteArray } from '@whiteflagprotocol/util';
 /** Signature parameters */
-export type SignParams = RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams;
+type SignParams = RsaHashedKeyGenParams | RsaPssParams | EcdsaParams | EcKeyGenParams;
 /**
  * Supported digital signature algorithms
  */

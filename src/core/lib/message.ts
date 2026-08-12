@@ -16,10 +16,10 @@ export {
 
 /* Dependencies */
 import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode, WfRuntimeError } from '@whiteflagprotocol/common';
-import { ByteArray, BinaryBuffer, DataItem, DataId, Hex, Serializable, isString, deepCopy } from '@whiteflagprotocol/util';
+import { ByteArray, BinaryBuffer, DataItem, DataId, Hex, Serializable, isObject, isString, objectHasNot, deepCopy } from '@whiteflagprotocol/util';
 import { encryptMsg, decryptMsg, deriveKey } from '@whiteflagprotocol/crypto';
 
-/* Module imports */
+/* Package modules */
 import { WfAccount } from './account.ts';
 import { WfCodec, decodeField, encodeField, isValidValue } from './codec.ts';
 
@@ -49,7 +49,7 @@ interface WfCoreMessageData extends Serializable {
  * A core Whiteflag message as defined by the Whiteflag specification
  * @wfversion v1-draft.7
  * @wfreference 4 Message Format
- * @remarks Ths class represents a core Whiteflag message as
+ * @remarks This class represents a core Whiteflag message as
  * defined by the Whiteflag specification. It has a message header and
  * a message body which contain the message fields as specified for the
  * message type. It performs the encoding/encryption and decoding/decryption
@@ -90,10 +90,10 @@ class WfCoreMessage extends DataItem<WfCoreMessageData> {
         if (binary) this.#binary = binary;
 
         /* References to data */
-        this.#header = this.#data?.MessageHeader;
-        this.#body = this.#data?.MessageBody;
-        this.#type = this.#data?.MessageHeader['MessageCode'] as WfMsgType;
-        this.#version = this.#data?.MessageHeader['Version'] as WfVersion;
+        this.#header = this.#data.MessageHeader;
+        this.#body = this.#data.MessageBody;
+        this.#type = this.#data.MessageHeader['MessageCode'] as WfMsgType;
+        this.#version = this.#data.MessageHeader['Version'] as WfVersion;
     }
     /**
      * Creates a new Whiteflag message
@@ -640,17 +640,17 @@ function isValidMessage(message: any): boolean {
  * @param message the message object to validate
  * @returns an array of validation errors
  */
-function validateMessage(message: any): string[] {
+function validateMessage(message: WfCoreMessage | WfCoreMessageData): string[] {
     /* Check object */
-    if (!(message instanceof Object)) throw new TypeError('Not an object');
+    if (!isObject(message)) throw new TypeError('Invalid message object');
     if (message instanceof WfCoreMessage) return message.validate();
 
     /* Check if message header and body exist */
     let errors: string[] = [];
-    if (!message?.MessageHeader || !(message?.MessageHeader instanceof Object)) {
+    if (!isObject(message.MessageHeader)) {
         errors.push('Missing or invalid message header');
     }
-    if (!message?.MessageBody || !(message?.MessageBody instanceof Object)) {
+    if (!isObject(message.MessageBody)) {
         errors.push('Missing or invalid message body');
     }
     if (errors.length > 0) return errors;
@@ -846,7 +846,7 @@ function compileMsgSpec(): WfMsgSpec {
  */
 function compileMsgSpecRegex(segSpec: any): any {
     for (const field of Object.keys(segSpec)) {
-        if (segSpec[field]?.pattern) {
+        if (segSpec[field].pattern) {
             segSpec[field].regex = new RegExp(segSpec[field].pattern);
         }
     }
@@ -864,10 +864,10 @@ function decodeHeaderField(message: BinaryBuffer, field: string, msgType: WfMsgT
     const msgSpec = MSGSPEC[msgType][version];
     return decodeField(
         message.extract(
-            msgSpec.header[field]?.startBit,
-            msgSpec.header[field]?.endBit
+            msgSpec.header[field].startBit,
+            msgSpec.header[field].endBit
         ),
-    msgSpec.header[field]?.encoding as WfCodec);
+    msgSpec.header[field].encoding as WfCodec);
 }
 /**
  * Decodes a field from a binary encoded message body
@@ -881,9 +881,9 @@ function decodeHeaderField(message: BinaryBuffer, field: string, msgType: WfMsgT
 function decodeBodyField(message: BinaryBuffer, field: string, msgType: WfMsgType, bitOffset: number = 0, version = WfVersion.v1): string {
     const msgSpec = MSGSPEC[msgType][version];
     return decodeField(message.extract(
-        msgSpec.body[field]?.startBit + bitOffset,
-        msgSpec.body[field]?.endBit + bitOffset
-    ), msgSpec.body[field]?.encoding as WfCodec);
+        msgSpec.body[field].startBit + bitOffset,
+        msgSpec.body[field].endBit + bitOffset
+    ), msgSpec.body[field].encoding as WfCodec);
 }
 /**
  * Checks the message header and body
@@ -942,7 +942,7 @@ function checkFields(segment: WfMsgHeader | WfMsgBody, segSpec: any, version = W
     let errors: string[] = [];
     for (const field of Object.keys(segSpec)) {
         /* Check if field exists */
-        if (!Object.hasOwn(segment, field)) {
+        if (objectHasNot(segment, field)) {
             errors.push(`Missing ${field} field`);
             continue;
         }
@@ -955,7 +955,7 @@ function checkFields(segment: WfMsgHeader | WfMsgBody, segSpec: any, version = W
             continue;
         }
         /* Specific pattern for field defined in message specification */
-        if (segSpec[field]?.regex instanceof RegExp) {
+        if (segSpec[field].regex instanceof RegExp) {
             if (!segSpec[field].regex.test(segment[field])) {
                 errors.push(`Value of ${field} field does not match ${segSpec[field].pattern} pattern`)
             }

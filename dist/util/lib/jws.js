@@ -39,10 +39,10 @@ class Jws {
     static fromObject(jws) {
         switch (jwsType(jws)) {
             case JwsFormat.FULL: {
-                return new this(jws?.protected, jws?.payload, jws?.signature);
+                return new this(jws.protected, jws.payload, jws.signature);
             }
             case JwsFormat.FLAT: {
-                return new this(b64uToObj(jws?.protected), b64uToObj(jws?.payload), jws?.signature);
+                return new this(b64uToObj(jws.protected), b64uToObj(jws.payload), jws.signature);
             }
             case JwsFormat.COMPACT: {
                 return this.fromCompact(jws);

@@ -12,7 +12,7 @@ export {
 /* Dependencies */
 import { ByteArray } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { createHmacKey } from './keys.ts';
 import {
     HMAC,

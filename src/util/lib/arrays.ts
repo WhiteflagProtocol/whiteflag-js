@@ -4,7 +4,6 @@
  * @summary Whiteflag JS arrays utility module
  */
 export {
-    isArray,
     arrayEquals,
     arrayFind,
     arrayIncludes,
@@ -12,21 +11,13 @@ export {
     arrayPluckSub
 };
 
-/* Module imports */
-import { objectHas } from './objects.ts';
+/* Package modules */
+import { isArray } from './types.ts';
 
 /* MODULE FUNCTIONS */
 /**
- * Checks if something is an array
- * @param arr something that might be an array
- * @returns `true` if array, else `false`
- */
-function isArray(arr: any): boolean {
-    return Array.isArray(arr);
-}
-/**
- * Checks if two arrays contain equal values
- * @param arr1 the first array
+ * Checks if two arrays or iterables contain equal values
+ * @param arr1 the first array like
  * @param arr2 the second array
  * @returns `true` if arrays and values are equal, else `false`
  */
@@ -53,11 +44,16 @@ function arrayEquals(arr1: any, arr2: any): boolean {
  * @param key object property name
  * @param value the value to match
  * @returns the requested object
+ * @throws if first argument is not an array
  */
-function arrayFind(arr: Array<any>, key: string, value: any): any {
-    if (!isArray(arr)) throw new TypeError('First argument is not an array');
+function arrayFind(arr: object[], key: string, value: any): any {
+    if (!isArray(arr)) throw new TypeError('Not an array');
     return arr.find(obj => {
-        return objectHas(obj, key) && obj[key] === value;
+        return (
+            !!obj &&
+            Object.hasOwn(obj, key) &&
+            obj[key as keyof typeof obj] === value
+        );
     });
 }
 /**
@@ -66,11 +62,16 @@ function arrayFind(arr: Array<any>, key: string, value: any): any {
  * @param key object property name
  * @param value the value to match
  * @returns `true` if object exists, else `false`
+ * @throws if first argument is not an array
  */
-function arrayIncludes(arr: Array<any>, key: string, value: any): boolean {
-    if (!isArray(arr)) throw new TypeError('First argument is not an array');
+function arrayIncludes(arr: object[], key: string, value: any): boolean {
+    if (!isArray(arr)) throw new TypeError('Not an array');
     return arr.some(obj => {
-        return objectHas(obj, key) && obj[key] === value;
+        return (
+            !!obj &&
+            Object.hasOwn(obj, key) &&
+            obj[key as keyof typeof obj] === value
+        );
     });
 }
 /**
@@ -78,11 +79,14 @@ function arrayIncludes(arr: Array<any>, key: string, value: any): boolean {
  * @param arr array of objects
  * @param key object property name
  * @returns an array with the values of the objects' property
+ * @throws if first argument is not an array
  */
-function arrayPluck(arr: Array<any>, key: string): Array<any> {
-    if (!isArray(arr)) throw new TypeError('First argument is not an array');
+function arrayPluck(arr: object[], key: string): any[] {
+    if (!isArray(arr)) throw new TypeError('Not an array');
     return arr.map(obj => {
-        if (objectHas(obj, key)) return obj[key];
+        if (!!obj && Object.hasOwn(obj, key)) {
+            return obj[key as keyof typeof obj];
+        }
     }).filter(element => element !== undefined);
 }
 /**
@@ -91,10 +95,13 @@ function arrayPluck(arr: Array<any>, key: string): Array<any> {
  * @param key object property name
  * @param subkey subobject property name
  * @returns an array with the values of the objects' subproperty
+ * @throws if first argument is not an array
  */
-function arrayPluckSub(arr: Array<any>, key: string, subkey: string): Array<any> {
-    if (!isArray(arr)) throw new TypeError('First argument is not an array');
+function arrayPluckSub(arr: object[], key: string, subkey: string): any[] {
+    if (!isArray(arr)) throw new TypeError('Not an array');
     return arr.map(obj => {
-        if (objectHas(obj, key)) return obj[key][subkey];
+        if (!!obj && Object.hasOwn(obj, key)) {
+            return obj[key as keyof typeof obj][subkey];
+        }
     }).filter(element => element !== undefined);
 }

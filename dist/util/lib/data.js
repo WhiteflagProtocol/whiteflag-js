@@ -3,39 +3,41 @@ export { DataItem, DataCollection };
 import { createHash, getRandomValues } from 'node:crypto';
 import { b64ToStr, hexToB64u } from "./encoding.js";
 import { deepCopy, jsonToObj, objToB64 } from "./objects.js";
-import { ignore } from "./processing.js";
+import { isObject } from "./types.js";
 class DataItem {
     #data;
     #ddat;
-    _id;
+    #id;
     constructor(data, id, ddat = Symbol()) {
+        if (!isObject(data))
+            throw TypeError('Invalid data: not an object');
         this.#data = deepCopy(data);
         if (id) {
-            this._id = id;
+            this.#id = id;
         }
         else {
-            this._id = hexToB64u(generateId());
+            this.#id = hexToB64u(generateId());
         }
         this.#ddat = ddat;
+    }
+    get id() {
+        return this.#id;
     }
     getDataReference(ddat) {
         if (ddat === this.#ddat)
             return this.#data;
     }
-    static deserialize(data, id, ...args) {
-        ignore(args);
+    static deserialize(data, id) {
         return this.fromJson(b64ToStr(data), id);
     }
-    static fromJson(data, id, ...args) {
-        ignore(args);
+    static fromJson(data, id) {
         return this.fromObject(jsonToObj(data), id);
     }
-    static fromObject(data, id, ...args) {
-        ignore(args);
+    static fromObject(data, id) {
         return new this(data, id);
     }
     getId() {
-        return this._id;
+        return this.#id;
     }
     serialize() {
         return objToB64(this.#data);
@@ -51,6 +53,9 @@ class DataCollection {
     #collection;
     constructor(collection) {
         this.#collection = collection;
+    }
+    get size() {
+        return +this.#collection.size;
     }
     static create() {
         return new this(new Map());

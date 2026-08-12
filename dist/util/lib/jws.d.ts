@@ -105,7 +105,7 @@ declare class Jws {
      * Returns the JWS as a plain JavaScript object
      * @returns the JWS as a full JWS plain JavaScript object
      */
-    toObject(): Object;
+    toObject(): object;
     /**
      * Returns the JWS as a JSON string
      * @returns the JWS as a JSON string

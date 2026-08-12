@@ -3,6 +3,7 @@
  * @summary Whiteflag JS main message module
  */
 export { WfMessage, WfMessageData, WfMetaHeader, WfMetaField, getMessageType };
+import { TransactionHash } from '@whiteflagprotocol/common';
 import { WfCoreMessage, WfCoreMessageData } from '@whiteflagprotocol/core';
 import { BinaryBuffer, ByteArray, Base64, DataId, Hex, Iso8601, Json, Serializable, serializable } from '@whiteflagprotocol/util';
 /**
@@ -30,6 +31,10 @@ declare class WfMessage extends WfCoreMessage {
      * @param ddat a data acces stoken for access to the private data property
      */
     constructor(data: WfMessageData, binary?: BinaryBuffer, id?: DataId, ddat?: symbol);
+    /**
+     * Returns the unique id as a property
+     */
+    get id(): TransactionHash;
     /**
      * Creates a new Whiteflag message
      * @param type the Whiteflag message type

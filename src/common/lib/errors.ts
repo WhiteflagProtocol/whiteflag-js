@@ -46,11 +46,10 @@ enum WfErrorCode {
  */
 class WfProtocolError extends Error {
     /* CLASS PROPERTIES */
-
     /** The Whiteflag protocol error code */
-    public code: string;
+    #code: string;
     /** Underlying causes of the error */
-    public causes: string[] = [];
+    #causes: string[] = [];
 
     /**
      * Constructs Whiteflag protocol errors
@@ -66,8 +65,22 @@ class WfProtocolError extends Error {
             super(message);
         }
         this.name = this.constructor.name;
-        this.code = code;
-        this.causes = processReasons(reasons);
+        this.#code = code;
+        this.#causes = processReasons(reasons);
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the protocol error code as a property
+     */
+    get code(): string {
+        return this.#code;
+    }
+    /**
+     * Returns causes of the error as a property
+     */
+    get causes(): string[] {
+        return [...this.#causes];
     }
 }
 /**
@@ -80,9 +93,8 @@ class WfProtocolError extends Error {
  */
 class WfRuntimeError extends Error {
     /* CLASS PROPERTIES */
-
     /** Underlying causes of the error */
-    public causes: string[] = [];
+    #causes: string[] = [];
     
     /**
      * Constructs Whiteflag JS runtime errors
@@ -97,7 +109,15 @@ class WfRuntimeError extends Error {
             super(message);
         }
         this.name = this.constructor.name;
-        this.causes = processReasons(reasons);
+        this.#causes = processReasons(reasons);
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns causes of the error as a property
+     */
+    get causes(): string[] {
+        return [...this.#causes];
     }
 }
 
@@ -112,7 +132,7 @@ class WfRuntimeError extends Error {
 function handleError(err: unknown, msg?: string, code?: WfErrorCode): any {
     /* Check error */
     let message = 'Unspecified error occured';
-    if (err instanceof Error) message = err?.message
+    if (err instanceof Error) message = err.message
     if (msg) message = `${msg}: ${message}`;
 
     /* Handle error according to type */

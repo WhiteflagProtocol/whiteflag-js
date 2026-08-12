@@ -12,14 +12,16 @@ export { BinaryBuffer, cropBits, shiftRight, shiftLeft, zeroise };
  */
 declare class BinaryBuffer {
     #private;
-    /** The number of used bits in the buffer */
-    length: number;
     /**
      * Constructs a binary buffer
      * @param buffer the Uint8Array typed array to create the binary buffer from
      * @param nBits the bit length of the buffer
      */
     private constructor();
+    /**
+     * Returns the number of bits as a property
+     */
+    get length(): number;
     /**
      * Creates an empty binary buffer
      * @returns a new binary buffer

@@ -3,7 +3,7 @@ export { WfSignature, createAuthSignature, createAuthToken, isValidAuthSignature
 import { WfVersion, WfAuthMethod, WfProtocolError, WfErrorCode, handleError } from '@whiteflagprotocol/common';
 import { deriveToken } from '@whiteflagprotocol/crypto';
 import { Jws } from '@whiteflagprotocol/util';
-import { arrayEquals, b64uToU8a, strToU8a, u8aToB64u } from '@whiteflagprotocol/util';
+import { arrayEquals, objectHasNot, b64uToU8a, strToU8a, u8aToB64u } from '@whiteflagprotocol/util';
 class WfSignature extends Jws {
     static create(signAlgorithm, payload) {
         if (!payload?.addr)
@@ -49,19 +49,19 @@ async function isValidAuthSignature(blockchain, account, signature, url) {
 }
 async function validateAuthSignature(blockchain, account, signature, url) {
     let errors = [];
-    if (!Object.hasOwn(signature.payload, 'addr')) {
+    if (objectHasNot(signature?.payload, 'addr')) {
         errors.push('Missing address in signature payload');
     }
     else if (signature.payload.addr !== account.getAddress()) {
         errors.push('Signature address does not match account address');
     }
-    if (!Object.hasOwn(signature.payload, 'url')) {
+    if (objectHasNot(signature?.payload, 'url')) {
         errors.push('Missing URL in signature payload');
     }
     else if (signature.payload.url !== url.toString()) {
         errors.push('Signature URL does not match provided URL');
     }
-    if (!Object.hasOwn(signature.payload, 'orgname')) {
+    if (objectHasNot(signature?.payload, 'orgname')) {
         errors.push('Missing originator name in signature payload');
     }
     const publicKey = account.getPublicKey();

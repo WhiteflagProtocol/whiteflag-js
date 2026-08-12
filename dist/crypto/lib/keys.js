@@ -1,5 +1,6 @@
 'use strict';
 export { ExtCryptoKey, createExtKey, useExtKey, exportExtKey, createKeyPair, createExtKeyPair, generateEcdhKeyPair, generateSignKeyPair, createAesKey, createHmacKey, createEcdhPubkey, createSignPubkey };
+import { objectHasNot } from '@whiteflagprotocol/util';
 import { getSignParams, SignAlgorithm } from "./sign.js";
 import { generateEcdhRawKeyPair } from "./ecdh.js";
 import { BYTELENGTH, DEFAULT_WF_ECDHCURVE, DEFAULT_WF_ENCRYPTALG, DEFAULT_HASHALG, ECDH, HMAC } from "./constants.js";
@@ -59,9 +60,9 @@ async function generateEcdhKeyPair(curve = DEFAULT_WF_ECDHCURVE) {
 }
 async function generateSignKeyPair(algorithm = SignAlgorithm.ES256, extractable = NOTEXTRACTABLE) {
     const keyPair = await crypto.subtle.generateKey(getSignParams(algorithm), extractable, ['sign', 'verify']);
-    if (!Object.hasOwn(keyPair, 'privateKey'))
+    if (objectHasNot(keyPair, 'privateKey'))
         throw new TypeError('Generated key pair is missing private key');
-    if (!Object.hasOwn(keyPair, 'publicKey'))
+    if (objectHasNot(keyPair, 'publicKey'))
         throw new TypeError('Generated key pair is missing public key');
     return keyPair;
 }

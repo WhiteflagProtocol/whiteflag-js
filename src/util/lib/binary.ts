@@ -11,7 +11,7 @@ export {
     zeroise
 };
 
-/* Module imports */
+/* Package modules */
 import { isHex, hexToU8a, u8aToHex } from './encoding.ts';
 
 /* Constants */
@@ -27,11 +27,10 @@ const BYTELENGTH = 8;
  */
 class BinaryBuffer {
     /* CLASS PROPERTIES */
-
     /** The Uint8Array that holds the binary content */
     #buffer: Uint8Array;
     /** The number of used bits in the buffer */
-    length: number;
+    #length: number;
 
     /* CONSTRUCTOR */
     /**
@@ -41,12 +40,20 @@ class BinaryBuffer {
      */
     private constructor(buffer: Uint8Array = new Uint8Array(0), nBits: number = 0) {
         if (buffer.length > 0) {
-            this.length = this.#calcBitLength(buffer.byteLength, nBits);
-            this.#buffer = cropBits(buffer, this.length);
+            this.#length = this.#calcBitLength(buffer.byteLength, nBits);
+            this.#buffer = cropBits(buffer, this.#length);
         } else {
-            this.length = 0;
+            this.#length = 0;
             this.#buffer = buffer;
         }
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the number of bits as a property
+     */
+    get length() {
+        return +this.#length;
     }
 
     /* STATIC FACTORY METHODS */
@@ -129,9 +136,9 @@ class BinaryBuffer {
      * @returns the updated binary buffer
      */
     public appendU8a(u8array: Uint8Array, nBits: number = 0): this {
-        const bitLength = this.length;
+        const bitLength = this.#length;
         this.#buffer = this.#concatinate(this.#buffer, bitLength, u8array, nBits);
-        this.length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
+        this.#length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
         return this;
     }
     /**
@@ -144,13 +151,13 @@ class BinaryBuffer {
 
         /* Determine resulting buffer length */
         let length = nBits;
-        if (nBits > this.length) length = this.length;
-        if (nBits < 0) length = this.length + nBits;
+        if (nBits > this.#length) length = this.#length;
+        if (nBits < 0) length = this.#length + nBits;
         if (length < 0) length = 0;
 
         /* Crop buffer and set new length */
         this.#buffer = cropBits(this.#buffer, nBits);
-        this.length = length;
+        this.#length = length;
         return this;
     }
     /**
@@ -160,7 +167,7 @@ class BinaryBuffer {
      * @returns a new binary buffer with the extracted bits
      */
     public extract(startBit: number, endBit: number = -1): BinaryBuffer {
-        const lastBit = endBit < 0 ? this.length : endBit;
+        const lastBit = endBit < 0 ? this.#length : endBit;
         const buffer = this.extractU8a(startBit, lastBit);
         const bitLength = lastBit - startBit;
         return new BinaryBuffer(buffer, bitLength);
@@ -182,14 +189,14 @@ class BinaryBuffer {
      */
     public extractU8a(startBit: number, endBit: number = -1): Uint8Array {
         /* Check range */
-        const lastBit = endBit < 0 ? this.length : endBit;
+        const lastBit = endBit < 0 ? this.#length : endBit;
         if (startBit < 0) throw RangeError('Starting bit cannot be less than 0');
-        if (startBit >= this.length) throw RangeError('Starting bit is larger than binary buffer length');
+        if (startBit >= this.#length) throw RangeError('Starting bit is larger than binary buffer length');
         if (startBit > lastBit) throw RangeError('Starting bit is larger than ending bit');
 
         /* Calculate parameters */
         let bitLength = lastBit - startBit;
-        if (lastBit > this.length) bitLength = this.length - startBit;
+        if (lastBit > this.#length) bitLength = this.#length - startBit;
         const startByte = Math.floor(startBit / BYTELENGTH);
         const byteLength = this.#calcByteLength(bitLength);
         const shift = startBit % BYTELENGTH;
@@ -226,9 +233,9 @@ class BinaryBuffer {
      * @returns the updated binary buffer
      */
     public insertU8a(u8array: Uint8Array, nBits: number = 0): this {
-        const bitLength = this.length;
+        const bitLength = this.#length;
         this.#buffer = this.#concatinate(u8array, nBits, this.#buffer, bitLength);
-        this.length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
+        this.#length = bitLength + this.#calcBitLength(u8array.byteLength, nBits);
         return this;
     }
     /**
@@ -240,20 +247,20 @@ class BinaryBuffer {
         if (shift < 0) return this.shiftRight(-shift);
 
         /* Left shift larger than lentgh gives empty buffer */
-        if (shift >= this.length) {
+        if (shift >= this.#length) {
             this.#buffer = new Uint8Array(0);
-            this.length = 0;
+            this.#length = 0;
             return this;
         }
         /* Create new smaller buffer */
-        const bitLength = this.length - shift;
+        const bitLength = this.#length - shift;
         const byteShift =  Math.floor(shift / BYTELENGTH);
         const buffer = new Uint8Array(this.#calcByteLength(bitLength) + 1);
         for (let i = 0; i < buffer.length; i++) {
             buffer[i] = this.#buffer[i + byteShift];
         }
         this.#buffer = cropBits(shiftLeft(buffer, shift), bitLength);
-        this.length = bitLength;
+        this.#length = bitLength;
         return this;
     }
     /**
@@ -267,8 +274,8 @@ class BinaryBuffer {
         /* Create new larger buffer */
         const byteShift = Math.ceil(shift / BYTELENGTH);
         const padding = new Uint8Array(byteShift);
-        this.#buffer = this.#concatinate(padding, shift, this.#buffer, this.length);
-        this.length = this.length + shift;
+        this.#buffer = this.#concatinate(padding, shift, this.#buffer, this.#length);
+        this.#length = this.#length + shift;
         return this;
     }
     /**

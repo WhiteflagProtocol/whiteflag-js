@@ -202,7 +202,7 @@ class WfAccount extends DataItem<WfAccountData> {
      * @returns `true` if the account has a private key, else `false`
      */
     public isSelf(): boolean {
-        return !!this.#data?.privateKeyId;
+        return !!this.#data.privateKeyId;
     }
     /**
      * Provides the blockchain name of the account
@@ -230,7 +230,7 @@ class WfAccount extends DataItem<WfAccountData> {
      * @returns a byte array with the private key, or `null` if the public key is unknown
      */
     public getPublicKey(): ByteArray | null {
-        if (!this.#data?.publicKey) return null;
+        if (!this.#data.publicKey) return null;
         return hexToU8a(this.#data.publicKey);
     }
     /**
@@ -238,7 +238,7 @@ class WfAccount extends DataItem<WfAccountData> {
      * @returns a byte array with the private key, or `null` if no private key available
      */
     public async getPrivateKey(): Promise<ByteArray | null> {
-        if (!this.#data?.privateKeyId) return null;
+        if (!this.#data.privateKeyId) return null;
         return wfKeystore.getKey(this.#data.privateKeyId);
     }
     /**
@@ -258,7 +258,7 @@ class WfAccount extends DataItem<WfAccountData> {
         if (!publicKey) throw new WfProtocolError('Other account does not have an ECDH public key for cryptogtaphic key negotiation', null, WfErrorCode.ACCOUNT);
 
         /* Check public ECDH key of other account */
-        const privateKey = await wfKeystore.getKey(this.#data?.privateCryptoEcdhKeyId || null);
+        const privateKey = await wfKeystore.getKey(this.#data.privateCryptoEcdhKeyId || null);
         if (!privateKey) throw new WfProtocolError('No ECDH private key available for cryptogtaphic key negotiation', null, WfErrorCode.ACCOUNT);
 
         /* Derive secret */
@@ -274,14 +274,14 @@ class WfAccount extends DataItem<WfAccountData> {
      * to derive the actual authentication token from this secret.
      */
     public async deriveAuthSharedSecret(account: WfAccount): Promise<ByteArray> {
-        if (!this.isSelf()) throw new WfProtocolError('Can only negotiate  authentication secret for own accounts', null, WfErrorCode.ACCOUNT);
+        if (!this.isSelf()) throw new WfProtocolError('Can only negotiate authentication secret for own accounts', null, WfErrorCode.ACCOUNT);
 
         /* Check own ECDH key pair */
         const publicKey = account.getPublicAuthEcdhKey();
         if (!publicKey) throw new WfProtocolError('Other account does not have an ECDH public key for  authentication secret negotiation', null, WfErrorCode.ACCOUNT);
 
         /* Check public ECDH key of other account */
-        const privateKey = await wfKeystore.getKey(this.#data?.privateAuthEcdhKeyId || null);
+        const privateKey = await wfKeystore.getKey(this.#data.privateAuthEcdhKeyId || null);
         if (!privateKey) throw new WfProtocolError('No ECDH private key available for  authentication secret negotiation', null, WfErrorCode.ACCOUNT);
 
         /* Derive secret */
@@ -339,7 +339,7 @@ class WfAccount extends DataItem<WfAccountData> {
      * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
      */
     public getPublicCryptoEcdhKey(): ByteArray | null {
-        if (!this.#data?.publicCryptoEcdhKey) return null;
+        if (!this.#data.publicCryptoEcdhKey) return null;
         return hexToU8a(this.#data.publicCryptoEcdhKey);
     }
     /**
@@ -360,7 +360,7 @@ class WfAccount extends DataItem<WfAccountData> {
      * @wfreference 5.2.2 Encryption Key and Authentication Token Negotiation
      */
     public getPublicAuthEcdhKey(): ByteArray | null {
-        if (!this.#data?.publicAuthEcdhKey) return null;
+        if (!this.#data.publicAuthEcdhKey) return null;
         return hexToU8a(this.#data.publicAuthEcdhKey);
     }
 }

@@ -1,7 +1,6 @@
 /**
  * @module main/state
  * @summary Whiteflag JS state module
- * @todo State closure?
  */
 export { WfState, WfStateData };
 import { Address } from '@whiteflagprotocol/common';
@@ -28,7 +27,7 @@ interface WfStateData extends Serializable {
     secrets: EncryptedData;
 }
 /**
- * The Whiteflag protocol state
+ * The Whiteflag state
  * @remarks This singleton class defines an object that holds the current
  * Whiteflag state. It holds account data, keeps track of other originators
  * and processes incoming messages.
@@ -36,33 +35,33 @@ interface WfStateData extends Serializable {
 declare class WfState {
     #private;
     /**
-     * Constructs the Whiteflag protocol state
+     * Constructs the Whiteflag state
      * @param sit the singleton instantiation token
      */
     private constructor();
     /**
-     * Initializes the Whiteflag protocol state
+     * Initializes the Whiteflag state
      * @param masterKey the raw master encryption key
      * @param data the Whiteflag state data object
-     * @returns the Whiteflag protocol state singular instance
+     * @returns the Whiteflag state singular instance
      */
     static init(masterKey: Hex, data?: WfStateData): Promise<WfState>;
     /**
-     * Gets the Whiteflag protocol state
-     * @returns the Whiteflag protocol state singular instance
+     * Gets the Whiteflag state
+     * @returns the Whiteflag state singular instance
      * @throws if the Whiteflag state has not been initialized
      */
     static getInstance(): WfState;
     /**
-     * Waits for the initialized Whiteflag protocol state
-     * @returns the Whiteflag protocol state singular instance
-     * @remarks This is a safer method to get the Whiteflag protocol state
+     * Waits for the initialized Whiteflag state
+     * @returns the Whiteflag state singular instance
+     * @remarks This is a safer method to get the Whiteflag state
      * instance, because it waits for the Whiteflag state to have been
      * initialized.
      */
     static readyInstance(): Promise<WfState>;
     /**
-     * Exports the Whiteflag protocol state
+     * Exports the Whiteflag state
      * @param encrypt indicates if the export must be encrypted
      * @returns the Whiteflag state data object
      */

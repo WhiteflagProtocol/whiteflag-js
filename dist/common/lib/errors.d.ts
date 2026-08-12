@@ -35,10 +35,7 @@ declare enum WfErrorCode {
  * from the blockchain. It should be handled by the application.
  */
 declare class WfProtocolError extends Error {
-    /** The Whiteflag protocol error code */
-    code: string;
-    /** Underlying causes of the error */
-    causes: string[];
+    #private;
     /**
      * Constructs Whiteflag protocol errors
      * @param message a human readable error message
@@ -46,6 +43,14 @@ declare class WfProtocolError extends Error {
      * @param code the code identifying the Whiteflag error type
      */
     constructor(message: string, reasons?: Error | Array<string> | string | null, code?: WfErrorCode);
+    /**
+     * Returns the protocol error code as a property
+     */
+    get code(): string;
+    /**
+     * Returns causes of the error as a property
+     */
+    get causes(): string[];
 }
 /**
  * Error class for Whiteflag JS runtime errors
@@ -56,14 +61,17 @@ declare class WfProtocolError extends Error {
  * or invalid configuration data.
  */
 declare class WfRuntimeError extends Error {
-    /** Underlying causes of the error */
-    causes: string[];
+    #private;
     /**
      * Constructs Whiteflag JS runtime errors
      * @param message a human readable error message
      * @param reasons underlying error(s) causing this error
      */
     constructor(message: string, reasons?: Error | Array<string> | string | null);
+    /**
+     * Returns causes of the error as a property
+     */
+    get causes(): string[];
 }
 /**
  * Handles a catched error as a Whiteflag error in a type safe manner

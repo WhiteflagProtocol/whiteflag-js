@@ -11,7 +11,7 @@ export {
 import { WfVersion, WfAuthMethod, noNumber, noString } from '@whiteflagprotocol/common';
 import { ByteArray, hexToU8a } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { hkdf } from './hash.ts';
 
 /* Whiteflag specification */

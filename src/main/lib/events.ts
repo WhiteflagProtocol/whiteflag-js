@@ -2,45 +2,41 @@
 /**
  * @module main/events
  * @summary Whiteflag JS protocol events module
- * @todo Connect events for full protocol message handling
  */
 export {
     WfEvent,
     WfEventType,
-    WfEventData,
-    WfEventEmitter
+    WfEvents,
+    WfEventEmitter,
+    WfEventListener,
+    WfEventData
 };
 
 /* Dependecies */
 import { EventEmitter } from 'node:events';
-import { WfRuntimeError, WfLogger, Blockchain, TransactionData, LogLevel, checkLogLevel } from '@whiteflagprotocol/common';
+import { WfRuntimeError, Blockchain, TransactionData, LogLevel } from '@whiteflagprotocol/common';
 import { WfAccount, WfOriginator } from '@whiteflagprotocol/core';
 
-/* Module imports */
-import { WfMessage } from './message.ts';
-import { WfBlockListener } from './blockchain.ts';
+/* Package modules */
 import { WfState } from './state.ts';
-
-/* Related singleton classes */
-const wfLogger = WfLogger.getInstance();
-
-/* Module varibales */
-let _logAllEvents: boolean = false;
-let _logLevel: LogLevel = LogLevel.DEBUG;
-let _logName: string = 'event';
+import { WfBlockListener } from './blockchain.ts';
+import { WfMessage } from './message.ts';
+import { logWfEvents } from './logger.ts';
 
 /* MODULE DECLARATIONS */
-/** Function that listens to log events */
-export type EventListener = (data: EventData) => void;
+/** Function that listens to Whiteflag protocol events */
+type WfEventListener = (data: WfEventData) => void;
 /** All data types that can be emitted with an event */
-export type EventData = WfState | WfMessage | WfAccount | WfOriginator | WfBlockListener | Blockchain | TransactionData | TransactionData[];
+type WfEventData = WfState | WfMessage | WfAccount | WfOriginator | WfBlockListener | Blockchain | TransactionData | TransactionData[];
 
 /**
  * Whiteflag protocol event types
  */
 enum WfEventType {
-    /** Events related to the Whiteflag protocol state */
+    /** Events related to the Whiteflag state */
     STATE = 'state',
+    /** Events related to the Whiteflag protocol */
+    PROTOCOL = 'protocol',
     /** Events related to Whiteflag messages */
     MESSAGE = 'message',
     /** Events related to a blockchain */
@@ -58,9 +54,12 @@ enum WfEventType {
  * Whiteflag protocol event definitions
  */
 enum WfEvent {
-    /** Emitted when the Whiteflag protocol state,
+    /** Emitted when the Whiteflag state
      *  has been initialized */
     STATE_INITIALIZED = `${WfEventType.STATE}:initialized`,
+    /** Emitted when the Whiteflag protocol
+     *  has been initialized */
+    PROTOCOL_INITIALIZED = `${WfEventType.PROTOCOL}:initialized`,
     /** Emitted when a message has been received,
      *  but not yet decrypted, decoded and verified*/
     MESSAGE_RECEIVED = `${WfEventType.MESSAGE}:received`,
@@ -90,7 +89,7 @@ enum WfEvent {
     BLOCKCHAIN_DISCONNECTED = `${WfEventType.BLOCKCHAIN}:disconnected`,
     /** Emitted when the block listener is started,
      *  i.e. when started listening for messages in blocks */
-    BLOCKCHAIN_LISTENING = `${WfEventType.BLOCKCHAIN}:paused`,
+    BLOCKCHAIN_LISTENING = `${WfEventType.BLOCKCHAIN}:listening`,
     /** Emitted when the block listener is paused,
      *  i.e. not listening for messages in blocks */
     BLOCKCHAIN_PAUSED = `${WfEventType.BLOCKCHAIN}:paused`,
@@ -125,7 +124,7 @@ enum WfEvent {
 /**
  * Whiteflag protocol events and associated data
  */
-interface WfEventData {
+interface WfEvents {
     [WfEvent.STATE_INITIALIZED]: [state: WfState];
     [WfEvent.MESSAGE_RECEIVED]: [message: WfMessage];
     [WfEvent.MESSAGE_DECODED]: [message: WfMessage];
@@ -156,7 +155,8 @@ interface WfEventData {
  * originator, etc. This allows different parts of a Whiteflag application to
  * notify and transfer data to other parts.
  */
-class WfEventEmitter extends EventEmitter<WfEventData> {
+class WfEventEmitter extends EventEmitter<WfEvents> {
+    /* CLASS PROPERTIES */
     /** Singleton instantiation token */
     static readonly #sit: Symbol = Symbol('WfEventEmitter');
     /** Property to keep a single instance of the class */
@@ -173,6 +173,7 @@ class WfEventEmitter extends EventEmitter<WfEventData> {
             throw new WfRuntimeError('Cannot directly instantiate Whiteflag event emitter');
         }
         super();
+        Object.freeze(this);
     }
     /**
      * Gets the Whiteflag event emitter
@@ -191,7 +192,7 @@ class WfEventEmitter extends EventEmitter<WfEventData> {
      * @param listener the callback function to be called upon all events
      * @returns this Whiteflag event emitter, for chaining functions
      */
-    public onAllEvents(listener: EventListener): this {
+    public onAllEvents(listener: WfEventListener): this {
         for (const event of Object.values(WfEvent)) {
             this.addListener(event, listener);
         }
@@ -202,73 +203,26 @@ class WfEventEmitter extends EventEmitter<WfEventData> {
      * @param listener the callback function to be removed from all events
      * @returns this Whiteflag event emitter, for chaining functions
      */
-    public offAllEvents(listener: EventListener): this {
+    public offAllEvents(listener: WfEventListener): this {
         for (const event of Object.values(WfEvent)) {
             this.removeListener(event, listener);
         }
         return this;
     }
     /**
-     * Activates the logging of all protocol events
-     * @param level the minimum level of the generated logs, default is `INFO`
+     * Activates the logging of protocol events
+     * @param level the highest level of the generated logs, default is `INFO`
      * @returns this Whiteflag event emitter, for chaining functions
-     * @remarks The logging level determines the minumum level at which the
+     * @remarks The logging level determines the highest level at which the
      * logs are generated, not which events are logged. If set at `INFO` it
      * means that the logs will be at `INFO`, `DEBUG` and `TRACE`, depending
-     * on the event. If set to the highest level `TRACE`, all logs will be at
+     * on the event. If set to the lowest level `TRACE`, all logs will be at
      * level `TRACE`. It does not affect the level at which logs are kept, as
      * that is determined by the logger. Once logging of events is activated,
      * it cannot be deactivated, but the log level can still be changed.
      */
-    public logAllEvents(level: LogLevel = LogLevel.INFO): this {
-        _logLevel = checkLogLevel(level);
-        logAllEvents(this);
+    public logEvents(level: LogLevel = LogLevel.INFO): this {
+        logWfEvents(this, level);
         return this;
     }
-}
-
-/* PRIVATE MODULE FUNCTIONS */
-/**
- * Activates the logging of all protocol events
- * @private
- * @param emitter the Whiteflag event emitter
- * @remarks Once logging of all events is activated, it cannot be deactivated.
- */
-function logAllEvents(emitter: WfEventEmitter = WfEventEmitter.getInstance()): void {
-    if (!_logAllEvents) {
-        emitter.on(WfEvent.STATE_INITIALIZED, state => logEvent(LogLevel.INFO, `Protocol state initialized`, WfEventType.STATE));
-        emitter.on(WfEvent.MESSAGE_RECEIVED, message => logEvent(LogLevel.TRACE, `Incoming ${message.getType()} message: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_DECODED, message => logEvent(LogLevel.DEBUG, `Incoming ${message.getType()} message decoded: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_VALIDATED, message => logEvent(LogLevel.TRACE, `Incoming ${message.getType()} message validated: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_SUBMITTED, message => logEvent(LogLevel.TRACE, `Outbound ${message.getType()} message submitted: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_ENCODED, message => logEvent(LogLevel.TRACE, `Outbound ${message.getType()} message encoded: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_TRANSMITTED, message => logEvent(LogLevel.DEBUG, `Outbound ${message.getType()} message transmitted: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.BLOCKCHAIN_INITIALIZED, blockchain => logEvent(LogLevel.INFO, `Initialized blockchain`, blockchain.name));
-        emitter.on(WfEvent.BLOCKCHAIN_CONNECTED, blockchain => logEvent(LogLevel.INFO, `Connected to blockchain`, blockchain.name));
-        emitter.on(WfEvent.BLOCKCHAIN_DISCONNECTED, blockchain => logEvent(LogLevel.INFO, `Disconnected from blockchain`, blockchain.name));
-        emitter.on(WfEvent.BLOCKCHAIN_LISTENING, listener => logEvent(LogLevel.INFO, `Listening for messages on blockchain`, listener.blockchain));
-        emitter.on(WfEvent.BLOCKCHAIN_PAUSED, listener => logEvent(LogLevel.INFO, `Paused listening for messages on blockchain`, listener.blockchain));
-        emitter.on(WfEvent.BLOCK_DISCOVERED, transactions => logEvent(LogLevel.TRACE, `Discovered ${transactions.length} transactions in block ${transactions[0]?.block}`, transactions[0]?.blockchain));
-        emitter.on(WfEvent.TRANSACTION_PENDING, transaction => logEvent(LogLevel.DEBUG, `Transaction has been sent to the chain: ${transaction?.hash}`, transaction?.blockchain));
-        emitter.on(WfEvent.TRANSACTION_INCLUDED, transaction => logEvent(LogLevel.DEBUG, `Transaction is included in block ${transaction?.block}: ${transaction?.hash}`, transaction?.blockchain));
-        emitter.on(WfEvent.TRANSACTION_CONFIRMED, transaction => logEvent(LogLevel.DEBUG, `Transaction has been confirmed: ${transaction?.hash}`, transaction?.blockchain));
-        emitter.on(WfEvent.ACCOUNT_CREATED, account => logEvent(LogLevel.INFO, `Created account: ${account.getAddress()}`, account.getBlockchainName()));
-        emitter.on(WfEvent.ACCOUNT_DISCOVERED, account => logEvent(LogLevel.INFO, `Discovered account: ${account.getAddress()}`, account.getBlockchainName()));
-        emitter.on(WfEvent.ACCOUNT_VALIDATED, account => logEvent(LogLevel.INFO, `Validated account: ${account.getAddress()}`, account.getBlockchainName()));
-        emitter.on(WfEvent.ORIGINATOR_AUTHENTICATED, originator => logEvent(LogLevel.DEBUG, `Originator discovered: ${originator.getName()}`, WfEventType.ORIGINATOR));
-        emitter.on(WfEvent.ORIGINATOR_AUTHENTICATED, originator => logEvent(LogLevel.INFO, `Originator authenticated: ${originator.getName()}`, WfEventType.ORIGINATOR));
-        _logAllEvents = true;
-    }
-}
-/**
- * Logs the specified message
- * @private
- * @param message the message to log
- * @param level the logging level
- * @param source the name of the source generating the debug data
- */
-function logEvent(level: LogLevel, message: string, source = _logName) {
-    if (level > LogLevel.TRACE) level = LogLevel.TRACE;
-    if (level < _logLevel) level = _logLevel;
-    wfLogger.log(level, message, source);
 }

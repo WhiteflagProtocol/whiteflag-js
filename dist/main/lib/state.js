@@ -130,17 +130,17 @@ async function generateMEK(mek) {
     return hkdf(mek, MEK_SALT, MEK_INFO, KEY_LENGTH);
 }
 async function importData(data) {
-    if (data?.blockchains) {
+    if (data.blockchains) {
         _blockchains = await importCollection(data.blockchains);
     }
-    if (data?.originators) {
+    if (data.originators) {
         _originators = await importCollection(data.originators);
     }
-    if (data?.accounts) {
+    if (data.accounts) {
         _accounts = await importCollection(data.accounts);
     }
-    if (data?.secrets) {
-        const success = await wfKeystore.import(data?.secrets);
+    if (data.secrets) {
+        const success = await wfKeystore.import(data.secrets);
         if (!success)
             throw new Error('Could not import keystore data');
     }

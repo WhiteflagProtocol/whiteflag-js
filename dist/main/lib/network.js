@@ -3,7 +3,7 @@ export { WfNetwork };
 import { WfLogger } from '@whiteflagprotocol/common';
 import { WfErrorCode, WfProtocolError, WfRuntimeError, handleError } from '@whiteflagprotocol/common';
 import { WfAccount } from '@whiteflagprotocol/core';
-import { isString } from '@whiteflagprotocol/util';
+import { isString, objectHas } from '@whiteflagprotocol/util';
 import { WfState } from "./state.js";
 import { WfBlockListener } from "./blockchain.js";
 import { WfEvent, WfEventEmitter } from "./events.js";
@@ -155,7 +155,7 @@ class WfNetwork {
         return this.#emitTransactionResult(tx);
     }
     #emitTransactionResult(tx) {
-        if (Object.hasOwn(tx, 'success')) {
+        if (objectHas(tx, 'success')) {
             if (tx.success)
                 wfEvent.emit(WfEvent.TRANSACTION_INCLUDED, tx);
         }

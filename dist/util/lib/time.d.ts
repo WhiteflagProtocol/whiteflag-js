@@ -2,10 +2,10 @@
  * @module util/time
  * @summary Whiteflag JS utility time functions module
  */
-export { getIso8601, getPosixEpoch, getEcmaEpoch };
+export { Time, getIso8601, getPosixEpoch, getEcmaEpoch };
 import { Iso8601, ecmatime, posixtime } from './types.ts';
 /** Time representation */
-export type Time = ecmatime | posixtime | Iso8601 | Date;
+type Time = ecmatime | posixtime | Iso8601 | Date;
 /**
  * Gives the time in Iso8601 format
  * @param value the time value to convert (epoch, Iso8601, or Date), else current time is used

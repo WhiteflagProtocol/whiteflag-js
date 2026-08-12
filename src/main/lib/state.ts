@@ -2,7 +2,6 @@
 /**
  * @module main/state
  * @summary Whiteflag JS state module
- * @todo State closure?
  */
 export {
     WfState,
@@ -10,13 +9,13 @@ export {
 };
 
 /* Dependencies */
-import { Address, WfLogger, WfRuntimeError, handleError, noString } from '@whiteflagprotocol/common';
+import { Address, WfRuntimeError, handleError, noString } from '@whiteflagprotocol/common';
 import { WfAccount, WfOriginator } from '@whiteflagprotocol/core';
 import { EncryptedData, KeyStoreCtrl, generateDEK, encryptData, decryptData, hkdf } from '@whiteflagprotocol/crypto';
 import { ByteArray, CollectionData, DataCollection, DataId, posixtime, Hex, Serializable } from '@whiteflagprotocol/util';
 import { delay, objectHas, getPosixEpoch, hexToU8a, objToU8a, strToU8a, u8aToObj } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { WfBlockchainState } from './blockchain.ts';
 import { WfEvent, WfEventEmitter } from './events.ts';
 
@@ -61,12 +60,13 @@ interface WfStateData extends Serializable {
     secrets: EncryptedData;
 }
 /**
- * The Whiteflag protocol state
+ * The Whiteflag state
  * @remarks This singleton class defines an object that holds the current
  * Whiteflag state. It holds account data, keeps track of other originators
  * and processes incoming messages.
  */
 class WfState {
+    /* CLASS PROPERTIES */
     /** Singleton instantiation token */
     static readonly #sit: Symbol = Symbol('WfState');
     /** Property to keep a single instance of the class */
@@ -74,7 +74,7 @@ class WfState {
 
     /* CONSTRUCTOR AND STATIC FACTORY METHODS */
     /**
-     * Constructs the Whiteflag protocol state
+     * Constructs the Whiteflag state
      * @param sit the singleton instantiation token
      */
     private constructor(sit: Symbol) {
@@ -84,10 +84,10 @@ class WfState {
         Object.freeze(this);
     }
     /**
-     * Initializes the Whiteflag protocol state
+     * Initializes the Whiteflag state
      * @param masterKey the raw master encryption key
      * @param data the Whiteflag state data object
-     * @returns the Whiteflag protocol state singular instance
+     * @returns the Whiteflag state singular instance
      */
     public static async init(masterKey: Hex, data?: WfStateData): Promise<WfState> {
         /* Cannot initialize again */
@@ -113,8 +113,8 @@ class WfState {
         return this.#instance;
     }
     /**
-     * Gets the Whiteflag protocol state
-     * @returns the Whiteflag protocol state singular instance
+     * Gets the Whiteflag state
+     * @returns the Whiteflag state singular instance
      * @throws if the Whiteflag state has not been initialized
      */
     public static getInstance(): WfState {
@@ -124,9 +124,9 @@ class WfState {
         return this.#instance;
     }
     /**
-     * Waits for the initialized Whiteflag protocol state
-     * @returns the Whiteflag protocol state singular instance
-     * @remarks This is a safer method to get the Whiteflag protocol state
+     * Waits for the initialized Whiteflag state
+     * @returns the Whiteflag state singular instance
+     * @remarks This is a safer method to get the Whiteflag state
      * instance, because it waits for the Whiteflag state to have been
      * initialized.
      */
@@ -137,7 +137,7 @@ class WfState {
 
     /* PUBLIC CLASS METHODS */
     /**
-     * Exports the Whiteflag protocol state
+     * Exports the Whiteflag state
      * @param encrypt indicates if the export must be encrypted
      * @returns the Whiteflag state data object
      */
@@ -289,18 +289,18 @@ async function generateMEK(mek: ByteArray): Promise<ByteArray> {
  */
 async function importData(data: WfStateData): Promise<boolean> {
     /* Import collections */
-    if (data?.blockchains) {
+    if (data.blockchains) {
         _blockchains = await importCollection(data.blockchains) as DataCollection<WfBlockchainState>;
     }
-    if (data?.originators) {
+    if (data.originators) {
         _originators = await importCollection(data.originators) as DataCollection<WfOriginator>;
     }
-    if (data?.accounts) {
+    if (data.accounts) {
         _accounts = await importCollection(data.accounts) as DataCollection<WfAccount>;
     }
     /* Import keystore */
-    if (data?.secrets) {
-        const success = await wfKeystore.import(data?.secrets);
+    if (data.secrets) {
+        const success = await wfKeystore.import(data.secrets);
         if (!success) throw new Error('Could not import keystore data')
     }
     /* Done */

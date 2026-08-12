@@ -1,14 +1,12 @@
 'use strict';
 export { WfEvent, WfEventType, WfEventEmitter };
 import { EventEmitter } from 'node:events';
-import { WfRuntimeError, WfLogger, LogLevel, checkLogLevel } from '@whiteflagprotocol/common';
-const wfLogger = WfLogger.getInstance();
-let _logAllEvents = false;
-let _logLevel = LogLevel.DEBUG;
-let _logName = 'event';
+import { WfRuntimeError, LogLevel } from '@whiteflagprotocol/common';
+import { logWfEvents } from "./logger.js";
 var WfEventType;
 (function (WfEventType) {
     WfEventType["STATE"] = "state";
+    WfEventType["PROTOCOL"] = "protocol";
     WfEventType["MESSAGE"] = "message";
     WfEventType["BLOCKCHAIN"] = "blockchain";
     WfEventType["BLOCK"] = "block";
@@ -19,6 +17,7 @@ var WfEventType;
 var WfEvent;
 (function (WfEvent) {
     WfEvent["STATE_INITIALIZED"] = "state:initialized";
+    WfEvent["PROTOCOL_INITIALIZED"] = "protocol:initialized";
     WfEvent["MESSAGE_RECEIVED"] = "message:received";
     WfEvent["MESSAGE_DECODED"] = "message:decoded";
     WfEvent["MESSAGE_VALIDATED"] = "message:validated";
@@ -28,7 +27,7 @@ var WfEvent;
     WfEvent["BLOCKCHAIN_INITIALIZED"] = "blockchain:initialized";
     WfEvent["BLOCKCHAIN_CONNECTED"] = "blockchain:connected";
     WfEvent["BLOCKCHAIN_DISCONNECTED"] = "blockchain:disconnected";
-    WfEvent["BLOCKCHAIN_LISTENING"] = "blockchain:paused";
+    WfEvent["BLOCKCHAIN_LISTENING"] = "blockchain:listening";
     WfEvent["BLOCKCHAIN_PAUSED"] = "blockchain:paused";
     WfEvent["BLOCK_DISCOVERED"] = "block:discovered";
     WfEvent["TRANSACTION_PENDING"] = "transaction:pending";
@@ -48,6 +47,7 @@ class WfEventEmitter extends EventEmitter {
             throw new WfRuntimeError('Cannot directly instantiate Whiteflag event emitter');
         }
         super();
+        Object.freeze(this);
     }
     static getInstance() {
         if (!WfEventEmitter.#instance) {
@@ -67,42 +67,8 @@ class WfEventEmitter extends EventEmitter {
         }
         return this;
     }
-    logAllEvents(level = LogLevel.INFO) {
-        _logLevel = checkLogLevel(level);
-        logAllEvents(this);
+    logEvents(level = LogLevel.INFO) {
+        logWfEvents(this, level);
         return this;
     }
-}
-function logAllEvents(emitter = WfEventEmitter.getInstance()) {
-    if (!_logAllEvents) {
-        emitter.on(WfEvent.STATE_INITIALIZED, state => logEvent(LogLevel.INFO, `Protocol state initialized`, WfEventType.STATE));
-        emitter.on(WfEvent.MESSAGE_RECEIVED, message => logEvent(LogLevel.TRACE, `Incoming ${message.getType()} message: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_DECODED, message => logEvent(LogLevel.DEBUG, `Incoming ${message.getType()} message decoded: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_VALIDATED, message => logEvent(LogLevel.TRACE, `Incoming ${message.getType()} message validated: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_SUBMITTED, message => logEvent(LogLevel.TRACE, `Outbound ${message.getType()} message submitted: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_ENCODED, message => logEvent(LogLevel.TRACE, `Outbound ${message.getType()} message encoded: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.MESSAGE_TRANSMITTED, message => logEvent(LogLevel.DEBUG, `Outbound ${message.getType()} message transmitted: ${JSON.stringify(message.getMetaHeader())}`, WfEventType.MESSAGE));
-        emitter.on(WfEvent.BLOCKCHAIN_INITIALIZED, blockchain => logEvent(LogLevel.INFO, `Initialized blockchain`, blockchain.name));
-        emitter.on(WfEvent.BLOCKCHAIN_CONNECTED, blockchain => logEvent(LogLevel.INFO, `Connected to blockchain`, blockchain.name));
-        emitter.on(WfEvent.BLOCKCHAIN_DISCONNECTED, blockchain => logEvent(LogLevel.INFO, `Disconnected from blockchain`, blockchain.name));
-        emitter.on(WfEvent.BLOCKCHAIN_LISTENING, listener => logEvent(LogLevel.INFO, `Listening for messages on blockchain`, listener.blockchain));
-        emitter.on(WfEvent.BLOCKCHAIN_PAUSED, listener => logEvent(LogLevel.INFO, `Paused listening for messages on blockchain`, listener.blockchain));
-        emitter.on(WfEvent.BLOCK_DISCOVERED, transactions => logEvent(LogLevel.TRACE, `Discovered ${transactions.length} transactions in block ${transactions[0]?.block}`, transactions[0]?.blockchain));
-        emitter.on(WfEvent.TRANSACTION_PENDING, transaction => logEvent(LogLevel.DEBUG, `Transaction has been sent to the chain: ${transaction?.hash}`, transaction?.blockchain));
-        emitter.on(WfEvent.TRANSACTION_INCLUDED, transaction => logEvent(LogLevel.DEBUG, `Transaction is included in block ${transaction?.block}: ${transaction?.hash}`, transaction?.blockchain));
-        emitter.on(WfEvent.TRANSACTION_CONFIRMED, transaction => logEvent(LogLevel.DEBUG, `Transaction has been confirmed: ${transaction?.hash}`, transaction?.blockchain));
-        emitter.on(WfEvent.ACCOUNT_CREATED, account => logEvent(LogLevel.INFO, `Created account: ${account.getAddress()}`, account.getBlockchainName()));
-        emitter.on(WfEvent.ACCOUNT_DISCOVERED, account => logEvent(LogLevel.INFO, `Discovered account: ${account.getAddress()}`, account.getBlockchainName()));
-        emitter.on(WfEvent.ACCOUNT_VALIDATED, account => logEvent(LogLevel.INFO, `Validated account: ${account.getAddress()}`, account.getBlockchainName()));
-        emitter.on(WfEvent.ORIGINATOR_AUTHENTICATED, originator => logEvent(LogLevel.DEBUG, `Originator discovered: ${originator.getName()}`, WfEventType.ORIGINATOR));
-        emitter.on(WfEvent.ORIGINATOR_AUTHENTICATED, originator => logEvent(LogLevel.INFO, `Originator authenticated: ${originator.getName()}`, WfEventType.ORIGINATOR));
-        _logAllEvents = true;
-    }
-}
-function logEvent(level, message, source = _logName) {
-    if (level > LogLevel.TRACE)
-        level = LogLevel.TRACE;
-    if (level < _logLevel)
-        level = _logLevel;
-    wfLogger.log(level, message, source);
 }

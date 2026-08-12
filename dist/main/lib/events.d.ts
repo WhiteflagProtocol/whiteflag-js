@@ -1,25 +1,26 @@
 /**
  * @module main/events
  * @summary Whiteflag JS protocol events module
- * @todo Connect events for full protocol message handling
  */
-export { WfEvent, WfEventType, WfEventData, WfEventEmitter };
+export { WfEvent, WfEventType, WfEvents, WfEventEmitter, WfEventListener, WfEventData };
 import { EventEmitter } from 'node:events';
 import { Blockchain, TransactionData, LogLevel } from '@whiteflagprotocol/common';
 import { WfAccount, WfOriginator } from '@whiteflagprotocol/core';
-import { WfMessage } from './message.ts';
-import { WfBlockListener } from './blockchain.ts';
 import { WfState } from './state.ts';
-/** Function that listens to log events */
-export type EventListener = (data: EventData) => void;
+import { WfBlockListener } from './blockchain.ts';
+import { WfMessage } from './message.ts';
+/** Function that listens to Whiteflag protocol events */
+type WfEventListener = (data: WfEventData) => void;
 /** All data types that can be emitted with an event */
-export type EventData = WfState | WfMessage | WfAccount | WfOriginator | WfBlockListener | Blockchain | TransactionData | TransactionData[];
+type WfEventData = WfState | WfMessage | WfAccount | WfOriginator | WfBlockListener | Blockchain | TransactionData | TransactionData[];
 /**
  * Whiteflag protocol event types
  */
 declare enum WfEventType {
-    /** Events related to the Whiteflag protocol state */
+    /** Events related to the Whiteflag state */
     STATE = "state",
+    /** Events related to the Whiteflag protocol */
+    PROTOCOL = "protocol",
     /** Events related to Whiteflag messages */
     MESSAGE = "message",
     /** Events related to a blockchain */
@@ -37,9 +38,12 @@ declare enum WfEventType {
  * Whiteflag protocol event definitions
  */
 declare enum WfEvent {
-    /** Emitted when the Whiteflag protocol state,
+    /** Emitted when the Whiteflag state
      *  has been initialized */
     STATE_INITIALIZED = "state:initialized",
+    /** Emitted when the Whiteflag protocol
+     *  has been initialized */
+    PROTOCOL_INITIALIZED = "protocol:initialized",
     /** Emitted when a message has been received,
      *  but not yet decrypted, decoded and verified*/
     MESSAGE_RECEIVED = "message:received",
@@ -69,7 +73,7 @@ declare enum WfEvent {
     BLOCKCHAIN_DISCONNECTED = "blockchain:disconnected",
     /** Emitted when the block listener is started,
      *  i.e. when started listening for messages in blocks */
-    BLOCKCHAIN_LISTENING = "blockchain:paused",
+    BLOCKCHAIN_LISTENING = "blockchain:listening",
     /** Emitted when the block listener is paused,
      *  i.e. not listening for messages in blocks */
     BLOCKCHAIN_PAUSED = "blockchain:paused",
@@ -104,7 +108,7 @@ declare enum WfEvent {
 /**
  * Whiteflag protocol events and associated data
  */
-interface WfEventData {
+interface WfEvents {
     [WfEvent.STATE_INITIALIZED]: [state: WfState];
     [WfEvent.MESSAGE_RECEIVED]: [message: WfMessage];
     [WfEvent.MESSAGE_DECODED]: [message: WfMessage];
@@ -135,7 +139,7 @@ interface WfEventData {
  * originator, etc. This allows different parts of a Whiteflag application to
  * notify and transfer data to other parts.
  */
-declare class WfEventEmitter extends EventEmitter<WfEventData> {
+declare class WfEventEmitter extends EventEmitter<WfEvents> {
     #private;
     /**
      * Constructs the Whiteflag event emitter
@@ -152,24 +156,24 @@ declare class WfEventEmitter extends EventEmitter<WfEventData> {
      * @param listener the callback function to be called upon all events
      * @returns this Whiteflag event emitter, for chaining functions
      */
-    onAllEvents(listener: EventListener): this;
+    onAllEvents(listener: WfEventListener): this;
     /**
      * Removes a listener from all Whiteflag protocol events
      * @param listener the callback function to be removed from all events
      * @returns this Whiteflag event emitter, for chaining functions
      */
-    offAllEvents(listener: EventListener): this;
+    offAllEvents(listener: WfEventListener): this;
     /**
-     * Activates the logging of all protocol events
-     * @param level the minimum level of the generated logs, default is `INFO`
+     * Activates the logging of protocol events
+     * @param level the highest level of the generated logs, default is `INFO`
      * @returns this Whiteflag event emitter, for chaining functions
-     * @remarks The logging level determines the minumum level at which the
+     * @remarks The logging level determines the highest level at which the
      * logs are generated, not which events are logged. If set at `INFO` it
      * means that the logs will be at `INFO`, `DEBUG` and `TRACE`, depending
-     * on the event. If set to the highest level `TRACE`, all logs will be at
+     * on the event. If set to the lowest level `TRACE`, all logs will be at
      * level `TRACE`. It does not affect the level at which logs are kept, as
      * that is determined by the logger. Once logging of events is activated,
      * it cannot be deactivated, but the log level can still be changed.
      */
-    logAllEvents(level?: LogLevel): this;
+    logEvents(level?: LogLevel): this;
 }

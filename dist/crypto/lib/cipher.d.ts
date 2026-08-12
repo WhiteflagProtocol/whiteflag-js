@@ -2,11 +2,11 @@
  * @module crypto/cipher
  * @summary Whiteflag JS message encryption module
  */
-export { encryptMsg, decryptMsg, deriveKey };
+export { AesParams, encryptMsg, decryptMsg, deriveKey };
 import { WfCryptoMethod, WfVersion } from '@whiteflagprotocol/common';
 import { ByteArray } from '@whiteflagprotocol/util';
 /** AES Parameters */
-export type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
+type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
 /**
  * Encrypts a Whiteflag message based on the specified encryption method
  * @wfversion v1-draft.7

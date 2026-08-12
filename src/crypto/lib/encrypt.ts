@@ -15,7 +15,7 @@ import { handleError } from '@whiteflagprotocol/common';
 import { ByteArray, Base64, Serializable } from '@whiteflagprotocol/util';
 import { isBase64, objectHas, b64ToU8a, hexToU8a, u8aToB64 } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { hkdf } from './hash.ts';
 import { createAesKey } from './keys.ts';
 import { random } from './random.ts';
@@ -79,8 +79,8 @@ async function encryptData(key: CryptoKey, plain: ByteArray, info?: string): Pro
  */
 async function decryptData(key: CryptoKey, edo: EncryptedData): Promise<ByteArray> {
     /* Check data */
-    if (!objectHas(edo, 'iv') || !isBase64(edo?.iv)) throw new TypeError('Encrypted data object does not contain a base64 encoded initialization vector');
-    if (!objectHas(edo, 'encrypted') || !isBase64(edo?.encrypted)) throw new TypeError('Encrypted data object does not contain base64 encoded encrypted data');
+    if (!objectHas(edo, 'iv') || !isBase64(edo.iv)) throw new TypeError('Encrypted data object does not contain a base64 encoded initialization vector');
+    if (!objectHas(edo, 'encrypted') || !isBase64(edo.encrypted)) throw new TypeError('Encrypted data object does not contain base64 encoded encrypted data');
 
     /* Try to decrypt */
     let decrypted: ArrayBuffer;

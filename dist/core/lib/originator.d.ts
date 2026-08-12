@@ -41,6 +41,10 @@ declare class WfOriginator extends DataItem<WfOriginatorData> {
      */
     constructor(data: WfOriginatorData, id?: DataId);
     /**
+     * Returns the originator name as a property
+     */
+    get name(): string;
+    /**
      * Creates a new originator
      * @param name a human readible name for the originator
      * @returns the originator

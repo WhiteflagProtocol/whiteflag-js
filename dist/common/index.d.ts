@@ -8,7 +8,7 @@
  * implementations of Whiteflag; instead, the `@whiteflagprotocol/main`
  * package should be used.
  */
-export { Address, Block, Blockchain, BlockchainConfigData, BlockchainStatusData, TransactionData } from './lib/blockchain.ts';
+export { Address, Block, Blockchain, BlockchainConfigData, BlockchainStatusData, TransactionData, TransactionHash } from './lib/blockchain.ts';
 export { WfRuntimeError, WfProtocolError, WfErrorCode, handleError, noNumber, noString } from './lib/errors.ts';
 export { WfLogger, LogData, LogEvent, LogEventData, LogLevel, LogListener, checkLogLevel } from './lib/logger.ts';
 export { WfVersion, WfMsgType, WfKeyType, WfAuthMethod, WfCryptoMethod } from './lib/protocol.ts';

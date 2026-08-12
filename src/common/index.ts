@@ -15,7 +15,8 @@ export {
     Blockchain,
     BlockchainConfigData,
     BlockchainStatusData,
-    TransactionData
+    TransactionData,
+    TransactionHash
 } from './lib/blockchain.ts';
 export {
     WfRuntimeError,

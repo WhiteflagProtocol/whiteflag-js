@@ -5,23 +5,24 @@
  */
 export {
     DataItem,
-    DataCollection
+    DataId,
+    DataCollection,
+    CollectionData
 };
 
 /* Dependecies */
 import { createHash, getRandomValues } from 'node:crypto';
 
-/* Module imports */
+/* Package modules */
 import { b64ToStr, hexToB64u } from './encoding.ts';
 import { deepCopy, jsonToObj, objToB64 } from './objects.ts';
-import { ignore } from './processing.ts';
-import { Base64, Json, Serializable } from './types.ts';
+import { Base64, Json, Serializable, isObject } from './types.ts';
 
 /* MODULE DECLARATIONS */
 /** A unique value to identify a data item */
-export type DataId = string;
+type DataId = string;
 /** The data collection object structure */
-export type CollectionData = { [key: DataId]: Serializable; };
+type CollectionData = { [key: DataId]: Serializable; };
 
 /**
  * A generic data item
@@ -37,7 +38,7 @@ class DataItem<D extends Serializable> {
     readonly #ddat: Symbol;
     /** A randomly generated unique id; may be overwritten
      *  by the constructor with a more meaningful unique id */
-    protected _id: DataId;
+    #id: DataId;
 
     /* CONSTRUCTOR */
     /**
@@ -47,13 +48,26 @@ class DataItem<D extends Serializable> {
      * @param ddat a direct data acces stoken for access to the private data property
      */
     constructor(data: D, id?: DataId, ddat = Symbol()) {
-        this.#data = deepCopy(data);
+        /* Check data structure and store data */
+        if (!isObject(data)) throw TypeError('Invalid data: not an object');
+        this.#data = deepCopy(data) as D;
+
+        /* Set identifier */
         if (id) {
-            this._id = id;
+            this.#id = id;
         } else {
-            this._id = hexToB64u(generateId());
+            this.#id = hexToB64u(generateId());
         }
+        /* Set data access token */
         this.#ddat = ddat;
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the unique id as a property
+     */
+    get id(): DataId {
+        return this.#id;
     }
 
     /* SPECIAL METHODS */
@@ -74,8 +88,7 @@ class DataItem<D extends Serializable> {
      * @param id a unique identifier for the data item; automatically generated if not specified
      * @returns a new data item
      */
-    public static deserialize(data: Base64, id: DataId, ...args: any): DataItem<Serializable> {
-        ignore(args);
+    public static deserialize(data: Base64, id: DataId): DataItem<Serializable> {
         return this.fromJson(b64ToStr(data), id);
     }
     /**
@@ -84,8 +97,7 @@ class DataItem<D extends Serializable> {
      * @param id a unique identifier for the data item; automatically generated if not specified
      * @returns a new data item
      */
-    public static fromJson(data: Json, id?: DataId, ...args: any): DataItem<Serializable> {
-        ignore(args);
+    public static fromJson(data: Json, id?: DataId): DataItem<Serializable> {
         return this.fromObject(jsonToObj(data) as Serializable, id);
     }
     /**
@@ -94,8 +106,7 @@ class DataItem<D extends Serializable> {
      * @param id a unique identifier for the data item; automatically generated if not specified
      * @returns a new data item
      */
-    public static fromObject(data: Serializable, id?: DataId, ...args: any): DataItem<Serializable> {
-        ignore(args);
+    public static fromObject(data: Serializable, id?: DataId): DataItem<Serializable> {
         return new this(data, id);
     }
 
@@ -105,7 +116,7 @@ class DataItem<D extends Serializable> {
      * @returns the data item identifier
      */
     public getId(): DataId {
-        return this._id;
+        return this.#id;
     }
     /**
      * Converts the data item into a base64 encoded JSON serialized object
@@ -126,7 +137,7 @@ class DataItem<D extends Serializable> {
      * @returns a plain JavaScript object data item
      */
     public toObject(): D {
-        return deepCopy(this.#data);
+        return deepCopy(this.#data) as D;
     }
 }
 /**
@@ -147,6 +158,14 @@ class DataCollection<I extends DataItem<Serializable>> {
      */
     constructor(collection: Map<DataId,I>) {
         this.#collection = collection;
+    }
+
+    /* PUBLIC PROPERTY GETTERS */
+    /**
+     * Returns the size of the collection
+     */
+    get size(): number {
+        return +this.#collection.size;
     }
 
     /* STATIC FACTORY METHODS */

@@ -2,12 +2,12 @@
  * @module util/data
  * @summary Whiteflag JS data structures utility module
  */
-export { DataItem, DataCollection };
+export { DataItem, DataId, DataCollection, CollectionData };
 import { Base64, Json, Serializable } from './types.ts';
 /** A unique value to identify a data item */
-export type DataId = string;
+type DataId = string;
 /** The data collection object structure */
-export type CollectionData = {
+type CollectionData = {
     [key: DataId]: Serializable;
 };
 /**
@@ -18,9 +18,6 @@ export type CollectionData = {
  */
 declare class DataItem<D extends Serializable> {
     #private;
-    /** A randomly generated unique id; may be overwritten
-     *  by the constructor with a more meaningful unique id */
-    protected _id: DataId;
     /**
      * Constructs a new data item
      * @param data the data to store with the data item
@@ -28,6 +25,10 @@ declare class DataItem<D extends Serializable> {
      * @param ddat a direct data acces stoken for access to the private data property
      */
     constructor(data: D, id?: DataId, ddat?: symbol);
+    /**
+     * Returns the unique id as a property
+     */
+    get id(): DataId;
     /**
      * Returns (the reference to) the private data property
      * @private
@@ -41,21 +42,21 @@ declare class DataItem<D extends Serializable> {
      * @param id a unique identifier for the data item; automatically generated if not specified
      * @returns a new data item
      */
-    static deserialize(data: Base64, id: DataId, ...args: any): DataItem<Serializable>;
+    static deserialize(data: Base64, id: DataId): DataItem<Serializable>;
     /**
      * Creates a data item from a JSON serialized object
      * @param data the JSON serialized object
      * @param id a unique identifier for the data item; automatically generated if not specified
      * @returns a new data item
      */
-    static fromJson(data: Json, id?: DataId, ...args: any): DataItem<Serializable>;
+    static fromJson(data: Json, id?: DataId): DataItem<Serializable>;
     /**
      * Creates a data item from a plain JavaScript object
      * @param data a plain JavaScript object
      * @param id a unique identifier for the data item; automatically generated if not specified
      * @returns a new data item
      */
-    static fromObject(data: Serializable, id?: DataId, ...args: any): DataItem<Serializable>;
+    static fromObject(data: Serializable, id?: DataId): DataItem<Serializable>;
     /**
      * Gives the unique data item identifier
      * @returns the data item identifier
@@ -90,6 +91,10 @@ declare class DataCollection<I extends DataItem<Serializable>> {
      * @param collection a new or existing map with a data collection
      */
     constructor(collection: Map<DataId, I>);
+    /**
+     * Returns the size of the collection
+     */
+    get size(): number;
     /**
      * Creates a data collection from a JSON serialized object
      * @returns a new data collection

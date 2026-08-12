@@ -12,6 +12,9 @@ class WfOriginator extends DataItem {
         super(data, id, ddat);
         this.#data = super.getDataReference(ddat);
     }
+    get name() {
+        return this.#data.name;
+    }
     static create(name) {
         return new this({
             name: name,
@@ -31,7 +34,7 @@ class WfOriginator extends DataItem {
         return this.#data.name = name;
     }
     getName() {
-        return this.#data?.name;
+        return this.#data.name;
     }
     addAccount(address) {
         if (this.ownsAccount(address)) {
@@ -46,7 +49,7 @@ class WfOriginator extends DataItem {
         return this.#data.accounts.includes(address);
     }
     async storePSK(psk) {
-        const secretId = await getWfKeyId(WfKeyType.ENCRYPT_PSK, this._id);
+        const secretId = await getWfKeyId(WfKeyType.ENCRYPT_PSK, this.id);
         this.#data.pskId = await storeSecret(secretId, hexToU8a(psk));
         return !!this.#data.pskId;
     }
@@ -56,7 +59,7 @@ class WfOriginator extends DataItem {
         return false;
     }
     async storePSS(pss) {
-        const secretId = await getWfKeyId(WfKeyType.AUTH_PSS, this._id);
+        const secretId = await getWfKeyId(WfKeyType.AUTH_PSS, this.id);
         this.#data.pssId = await storeSecret(secretId, hexToU8a(pss));
         return !!this.#data.pssId;
     }

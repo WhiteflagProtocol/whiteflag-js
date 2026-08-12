@@ -199,7 +199,7 @@ declare function isValidMessage(message: any): boolean;
  * @param message the message object to validate
  * @returns an array of validation errors
  */
-declare function validateMessage(message: any): string[];
+declare function validateMessage(message: WfCoreMessage | WfCoreMessageData): string[];
 /**
  * Encrypts a binary encoded message
  * @param message a binary buffer with the binary encoded message

@@ -1,19 +1,46 @@
 'use strict';
-export { Failed, Timeout, ignore, delay, retryPromise, timeoutPromise, readStream };
+export { Failed, Timeout, FunctionChain, ignore, delay, retryPromise, timeoutPromise, readStream };
 const DEFAULT_RETRIES = 2;
 const DEFAULT_TIMEOUT = 1000;
 class Failed extends AggregateError {
-    retries;
+    #retries;
     constructor(message, errors, retries) {
         super(errors, message);
         this.name = this.constructor.name;
-        this.retries = retries;
+        this.#retries = retries;
+    }
+    get retries() {
+        return this.#retries;
     }
 }
 class Timeout extends Error {
     constructor(message) {
         super(message);
         this.name = this.constructor.name;
+    }
+}
+class FunctionChain {
+    #functions = new Set();
+    get size() {
+        return +this.#functions.size;
+    }
+    add(func) {
+        this.#functions.add(func);
+        return this;
+    }
+    includes(func) {
+        return this.#functions.has(func);
+    }
+    remove(func) {
+        this.#functions.delete(func);
+        return this;
+    }
+    execute(data, args = []) {
+        let result = data;
+        this.#functions.forEach(func => {
+            result = func(result, ...args);
+        });
+        return result;
     }
 }
 function ignore(...args) { }

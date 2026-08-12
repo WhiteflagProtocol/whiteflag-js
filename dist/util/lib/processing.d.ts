@@ -2,24 +2,29 @@
  * @module util/process
  * @summary Whiteflag JS processing utility module
  */
-export { Failed, Timeout, ignore, delay, retryPromise, timeoutPromise, readStream };
+export { Failed, Timeout, ErrorHandler, StreamConsumer, ChainedFunction, FunctionChain, ignore, delay, retryPromise, timeoutPromise, readStream };
+/** Function that operates on data in a function chain */
+type ChainedFunction<D> = (data: D, ...args: any) => D;
 /** Function that listens for errors */
-export type ErrorHandler = (err: Error, ...args: any) => void;
+type ErrorHandler = (err: Error, ...args: any) => void;
 /** Function that handles the chuncks of a stream */
-export type StreamConsumer = (data: any, ...args: any) => Promise<any>;
+type StreamConsumer = (data: any, ...args: any) => Promise<any>;
 /**
  * Error class to indicate multiple failed attempts
  * @extends Error
  */
 declare class Failed extends AggregateError {
-    /** The number of retries before failure */
-    readonly retries: number;
+    #private;
     /**
      * Constructs a failed aggregate error with the underlying errors
      * @param message a human readable error message
      * @param errors the errors that occured during the failed retries
      */
     constructor(message: string, errors: Error[], retries: number);
+    /**
+     * Returns the number of retries before failure as a property
+     */
+    get retries(): number;
 }
 /**
  * Error class to indicate timeouts
@@ -31,6 +36,50 @@ declare class Timeout extends Error {
      * @param message a human readable error message
      */
     constructor(message: string);
+}
+/**
+ * Class for processing a data element by a chained sequence of functions
+ * @template D the data element processed by the function chain
+ * @remarks A function chain processes a data element by passing sequentally
+ * to the functions added to chain, with the resulting (altered) data element
+ * retruned by each function passed to the next. The result of the chain is the
+ * resulting data element of the last function in the chain. All functions must
+ * accept the same parameters, with the data element processed by the chain
+ * being the first. The chain may hold zero or more functions; if the chain
+ * contains no functions, the execution of the chain returns the data element
+ * unaltered.
+ */
+declare class FunctionChain<D> {
+    #private;
+    /**
+     * Returns the size of the chain, i.e. the number of functions, as a property
+     */
+    get size(): number;
+    /**
+     * Adds a function to the function chain
+     * @param func the function to add to function chain
+     * @returns this function chain
+     */
+    add(func: ChainedFunction<D>): this;
+    /**
+     * Checks if the function chain includes the specifed function
+     * @param func the function to check if included
+     * @returns `true` if the function is included, else `false`
+     */
+    includes(func: ChainedFunction<D>): boolean;
+    /**
+     * Removes a function from the function chain
+     * @param func the function to remove from the function chain
+     * @returns this function chain
+     */
+    remove(func: ChainedFunction<D>): this;
+    /**
+     * Executes the function chain, calling all functions sequentailly in the order added
+     * @param data the data element passed to the first function of the sequence
+     * @param args optional additional arguments passed to each function in the chain
+     * @returns the resulting data after sequential processing by all functions in the chain
+     */
+    execute(data: D, args?: any[]): D;
 }
 /**
  * Ignores its arguments and does nothing else

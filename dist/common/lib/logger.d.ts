@@ -2,13 +2,15 @@
  * @module common/logger
  * @summary Whiteflag JS common logger module
  */
-export { WfLogger, LogEvent, LogEventData, LogLevel, checkLogLevel };
+export { WfLogger, LogEvent, LogEventData, LogLevel, LogListener, LogData, checkLogLevel };
 import { EventEmitter } from 'node:events';
 import { posixtime } from '@whiteflagprotocol/util';
 /** Function that listens to log events */
-export type LogListener = (log: LogData) => void;
-/** The data emitted upon a log event */
-export type LogData = {
+type LogListener = (log: LogData) => void;
+/**
+ * The data emitted upon a log event
+ */
+type LogData = {
     /** The logging level of the event */
     level: LogLevel;
     /** The logging level indicator */
@@ -72,10 +74,10 @@ interface LogEventData {
 /**
  * The Whiteflag logger
  * @extends EventEmitter
- * @remarks This singleton class defines the event emitter for WFJSL modules
- * to emit log event. This allows relevant logs to be  processed by an
- * application's main logger. It can also be used by other software to emit
- * log messages and to log events to the console.
+ * @remarks This singleton class defines an event emitter for WFJSL modules
+ * to emit log events. This allows relevant Whiteflag logs to be passed to an
+ * application's main logger. It may also be used by other software to emit
+ * logs, and to log events to the console.
  */
 declare class WfLogger extends EventEmitter<LogEventData> {
     #private;

@@ -22,9 +22,9 @@ export {
 };
 
 /* Dependencies */
-import { ByteArray } from '@whiteflagprotocol/util';
+import { ByteArray, objectHasNot } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { getSignParams, SignAlgorithm } from './sign.ts';
 import { generateEcdhRawKeyPair } from './ecdh.ts'
 import {
@@ -84,7 +84,7 @@ interface RawKeyPair {
  * currently not supported by the Web Crypto API.
  */
 class ExtCryptoKey implements CryptoKey {
-    /* PROPERTIES */
+    /* CLASS PROPERTIES */
     public readonly algorithm: ExtKeyAlgorithm;
     public readonly extractable: boolean;
     public readonly type: KeyType;
@@ -92,7 +92,7 @@ class ExtCryptoKey implements CryptoKey {
 
     /* CONSTRUCTOR */
     /**
-     * Constructs an obejct that represents a generic cryptographic key
+     * Constructs an object that represents a generic cryptographic key
      * @param type the key type, i.e. private, public, or secret
      * @param algorithm the algorithm for which the key is created
      * @param extractable indicates whether or not the raw key may be extracted using `exportExtKey()`
@@ -200,8 +200,8 @@ async function generateSignKeyPair(algorithm = SignAlgorithm.ES256,
         extractable,
         ['sign','verify']
     );
-    if (!Object.hasOwn(keyPair, 'privateKey')) throw new TypeError('Generated key pair is missing private key');
-    if (!Object.hasOwn(keyPair, 'publicKey')) throw new TypeError('Generated key pair is missing public key');
+    if (objectHasNot(keyPair, 'privateKey')) throw new TypeError('Generated key pair is missing private key');
+    if (objectHasNot(keyPair, 'publicKey')) throw new TypeError('Generated key pair is missing public key');
     return keyPair as CryptoKeyPair;
 }
 /**

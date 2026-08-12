@@ -11,9 +11,9 @@ export {
 import { Address, Blockchain, BlockchainConfigData, BlockchainStatusData, TransactionData, WfLogger } from '@whiteflagprotocol/common';
 import { WfErrorCode, WfProtocolError, WfRuntimeError, handleError } from '@whiteflagprotocol/common';
 import { WfAccount } from '@whiteflagprotocol/core';
-import { isString } from '@whiteflagprotocol/util';
+import { isString, objectHas } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { WfState } from './state.ts';
 import { WfBlockListener } from './blockchain.ts';
 import { WfEvent, WfEventEmitter } from './events.ts';
@@ -36,6 +36,7 @@ let _listeners: Map<string,WfBlockListener> = new Map();
  * @todo Test sending transactions and messages
  */
 class WfNetwork {
+    /* CLASS PROPERTIES */
     /** Singleton instantiation token */
     static readonly #sit: Symbol = Symbol('WfNetwork');
     /** Property to keep a single instance of the class */
@@ -67,7 +68,7 @@ class WfNetwork {
         return this.#instance;
     }
     /**
-     * Waits for the initialized Whiteflag protocol state before instantiating the blockchain layer
+     * Waits for the initialized Whiteflag state before instantiating the blockchain layer
      * @returns the blockchain layer singular instance
      * @remarks This is a safer method to get the blockchain layer instance
      * because it waits for the Whiteflag state to have been initialized.
@@ -294,7 +295,7 @@ class WfNetwork {
      * @returns the data with the transaction result
      */
     #emitTransactionResult(tx: TransactionData): TransactionData {
-        if (Object.hasOwn(tx, 'success')) {
+        if (objectHas(tx, 'success')) {
             if (tx.success) wfEvent.emit(WfEvent.TRANSACTION_INCLUDED, tx);
         } else {
             wfEvent.emit(WfEvent.TRANSACTION_PENDING, tx);

@@ -43,7 +43,7 @@ const BLOCKTIME = 20;
  * hash of the public key as the address.
  */
 export class Blockchain {
-    /* PROPERTIES */
+    /* CLASS PROPERTIES */
     /** Holds the blockchain configuration */
     #config = {};
     /** Boolean simulating if connection is active */
@@ -88,8 +88,8 @@ export class Blockchain {
         /* Determine host */
         const hScheme = config?.rpcProtocol ? `${config.rpcProtocol}://` : 'https://';
         const hHost = config?.hHost ? `${config.hHost}` : 'localhost';
-        const hPort = config?.hPort ? `:${config?.hPort}` : '';
-        const hPath = config?.hPath ? `${config?.hPath}` : '';
+        const hPort = config?.hPort ? `:${config.hPort}` : '';
+        const hPath = config?.hPath ? `${config.hPath}` : '';
         this.#node = `${hScheme}${hHost}${hPort}${hPath}`;
 
         /* All done */

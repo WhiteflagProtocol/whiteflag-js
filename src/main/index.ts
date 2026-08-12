@@ -17,10 +17,10 @@ export {
 } from './lib/blockchain.ts';
 export {
     WfEvent,
-    WfEventData,
+    WfEvents,
     WfEventEmitter,
-    EventListener,
-    EventData
+    WfEventListener,
+    WfEventData
 } from './lib/events.ts';
 export {
     WfMessage,

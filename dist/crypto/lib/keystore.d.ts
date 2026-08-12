@@ -2,12 +2,12 @@
  * @module crypto/keystore
  * @summary Whiteflag JS cryptographic keystore module
  */
-export { KeyStoreCtrl, KeyStoreAccess, getWfKeyId };
+export { KeyId, KeyStoreCtrl, KeyStoreAccess, getWfKeyId };
 import { WfKeyType } from '@whiteflagprotocol/common';
 import { ByteArray, Base64url } from '@whiteflagprotocol/util';
 import { EncryptedData } from './encrypt.ts';
 /** A unique value to identify a key in the keystore */
-export type KeyId = Base64url;
+type KeyId = Base64url;
 /**
  * The keystore access control to import and export cryptographic keys and secrets
  * @remarks The Whiteflag keystore is not directly accessible. This singleton

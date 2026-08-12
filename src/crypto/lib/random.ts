@@ -12,7 +12,7 @@ export {
 import { createHash, getRandomValues } from 'node:crypto';
 import { ByteArray, Hex } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import {
     HEXBYTELENGTH,
     HEXENCODING,

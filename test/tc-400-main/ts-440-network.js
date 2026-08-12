@@ -59,8 +59,8 @@ testCase('Test case 440: Main blockchain overlay network module', function() {
         });
         assertion(' 2g. should be able to retrieve blockchain status data', async function() {
             const status = await wfNetwork.status(BCNAME);
-            strictEqual(status?.name, BCNAME);
-            strictEqual(status?.connected, true);
+            strictEqual(status.name, BCNAME);
+            strictEqual(status.connected, true);
             return;
         });
         assertion(' 2h. should stop blockchain listener when disconnecting from node', async function() {

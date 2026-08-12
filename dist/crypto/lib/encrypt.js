@@ -24,9 +24,9 @@ async function encryptData(key, plain, info) {
     };
 }
 async function decryptData(key, edo) {
-    if (!objectHas(edo, 'iv') || !isBase64(edo?.iv))
+    if (!objectHas(edo, 'iv') || !isBase64(edo.iv))
         throw new TypeError('Encrypted data object does not contain a base64 encoded initialization vector');
-    if (!objectHas(edo, 'encrypted') || !isBase64(edo?.encrypted))
+    if (!objectHas(edo, 'encrypted') || !isBase64(edo.encrypted))
         throw new TypeError('Encrypted data object does not contain base64 encoded encrypted data');
     let decrypted;
     try {

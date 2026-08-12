@@ -4,6 +4,7 @@
  * @summary Whiteflag JS message encryption module
  */
 export {
+    AesParams,
     encryptMsg,
     decryptMsg,
     deriveKey
@@ -13,7 +14,7 @@ export {
 import { WfCryptoMethod, WfVersion, noNumber } from '@whiteflagprotocol/common';
 import { ByteArray, hexToU8a, zeroise } from '@whiteflagprotocol/util';
 
-/* Module imports */
+/* Package modules */
 import { hkdf } from './hash.ts';
 import { createAesKey } from './keys.ts';
 import { BYTELENGTH } from './constants.ts';
@@ -23,7 +24,7 @@ import cryptoSpec_v1 from '../static/v1/wf-crypto-params.json' with { type: 'jso
 
 /* MODULE DECLARATIONS */
 /** AES Parameters */
-export type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
+type AesParams = AesCtrParams | AesCbcParams | AesGcmParams;
 
 /** Whiteflag encryption parameters for each method */
 const PARAMS = compileCryptoParams();

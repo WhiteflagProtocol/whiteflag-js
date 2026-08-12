@@ -38,7 +38,7 @@ export {
 /* Dependencies */
 import { Buffer } from 'node:buffer';
 
-/* Module imports */
+/* Package modules */
 import { ByteArray, Base58, Base64, Base64url, Hex } from './types.ts';
 
 /* Constants */

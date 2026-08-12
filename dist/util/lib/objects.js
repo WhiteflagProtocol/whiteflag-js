@@ -1,34 +1,52 @@
 'use strict';
-export { objectHas, deepCopy, objToJson, objToMap, objToB64, objToB64u, objToU8a, jsonToObj, jsonToMap, mapToObj, mapToJson, mapToU8a, b64ToObj, b64uToObj, u8aToObj, u8aToMap };
+export { deepCopy, objectHas, objectHasNot, objToJson, objToMap, objToB64, objToB64u, objToU8a, jsonToObj, jsonToMap, mapToObj, mapToJson, mapToU8a, b64ToObj, b64uToObj, u8aToObj, u8aToMap };
 import { b64ToStr, b64uToStr, strToB64, strToB64u, strToU8a, u8aToStr } from "./encoding.js";
-import { isObject } from "./types.js";
+import { isArray, isObject } from "./types.js";
 const illegalKeys = new Set(['__proto__', 'constructor', 'prototype']);
 function objectHas(obj, key) {
-    return (isObject(obj) && Object.hasOwn(obj, key));
+    if (!isObject(obj))
+        throw new TypeError('Not an object');
+    return Object.hasOwn(obj, key);
 }
-function deepCopy(entity) {
-    if (!isObject(entity))
-        return entity;
-    switch (entity) {
-        case null:
-        case undefined: {
+function objectHasNot(obj, key) {
+    if (!isObject(obj))
+        throw new TypeError('Not an object');
+    return !Object.hasOwn(obj, key);
+}
+function deepCopy(obj) {
+    if (obj === null)
+        return null;
+    switch (typeof obj) {
+        case 'undefined': {
             return null;
         }
+        case 'boolean':
+        case 'string': {
+            return obj;
+        }
+        case 'number': {
+            if (Number.isFinite(obj))
+                return obj;
+        }
+        case 'object': {
+            if (isArray(obj))
+                return obj.map(deepCopy);
+            if (obj instanceof Set)
+                return deepCopy(Array.from(obj));
+            if (obj instanceof Map)
+                return deepCopy(Object.fromEntries(obj));
+            if (obj instanceof Date)
+                return obj.toISOString();
+            if (obj instanceof RegExp)
+                return obj.toString();
+            const copy = Object.create(null);
+            for (const [k, o] of Object.entries(obj)) {
+                copy[k] = deepCopy(o);
+            }
+            return obj;
+        }
     }
-    switch (true) {
-        case entity instanceof Map: return deepCopy(Object.fromEntries(entity));
-        case entity instanceof Set: return deepCopy(Array.from(entity));
-        case entity instanceof Date: return entity.toISOString();
-        case entity instanceof RegExp: return entity.toString();
-    }
-    if (Array.isArray(entity)) {
-        return entity.map(deepCopy);
-    }
-    const obj = Object.create(null);
-    for (const [key, value] of Object.entries(entity)) {
-        obj[key] = deepCopy(value);
-    }
-    return obj;
+    return String(obj);
 }
 function objToB64(obj) {
     return strToB64(JSON.stringify(obj));
@@ -47,7 +65,7 @@ function objToJson(obj) {
 }
 function objToMap(obj) {
     if (!isObject(obj))
-        throw new TypeError('Argument is not an object');
+        throw new TypeError('Not an object');
     return new Map(Object.entries(obj));
 }
 function jsonToObj(json) {

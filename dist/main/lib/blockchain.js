@@ -1,7 +1,6 @@
 'use strict';
 export { WfBlockchainState, WfBlockListener, extractMessage };
-import { WfLogger } from '@whiteflagprotocol/common';
-import { WfRuntimeError, handleError } from '@whiteflagprotocol/common';
+import { WfLogger, WfRuntimeError, handleError } from '@whiteflagprotocol/common';
 import { WFMSG_PREFIX } from '@whiteflagprotocol/core';
 import { DataItem } from '@whiteflagprotocol/util';
 import { retryPromise, getPosixEpoch, getIso8601, isNumber, jsonToObj, b64ToStr, strToHex } from '@whiteflagprotocol/util';
@@ -53,11 +52,23 @@ class WfBlockchainState extends DataItem {
         }
         return new this(data);
     }
+    get name() {
+        return this.#data.name;
+    }
+    get highestBlock() {
+        return this.#data.state.highestBlock;
+    }
+    get currentBlock() {
+        return this.#data.state.currentBlock;
+    }
+    get processedBlock() {
+        return this.#data.state.processedBlock;
+    }
     getName() {
-        return this.#data?.name;
+        return this.#data.name;
     }
     getCurrentState() {
-        return this.#data?.state;
+        return this.#data.state;
     }
 }
 class WfBlockListener {
@@ -65,7 +76,6 @@ class WfBlockListener {
     #bc;
     #state;
     #config;
-    blockchain;
     #nMessages = 0;
     #cursor = 0;
     #listening = false;
@@ -74,10 +84,9 @@ class WfBlockListener {
         if (cit !== WfBlockListener.#cit) {
             throw new WfRuntimeError('Cannot directly instantiate a blockchain listener');
         }
-        this.blockchain = bc.name;
-        _listeners.add(bc);
         this.#bc = bc;
-        this.#state = getCurrentState(bc.name);
+        _listeners.add(this.#bc);
+        this.#state = getCurrentState(this.#bc.name);
         this.#config = this.#bc.getConfig();
     }
     static init(bc) {
@@ -93,14 +102,26 @@ class WfBlockListener {
         }
         return new this(bc, this.#cit);
     }
+    get blockchain() {
+        return this.#bc.name;
+    }
+    get name() {
+        return this.#bc.name;
+    }
+    active() {
+        return this.#listening;
+    }
+    get cursor() {
+        return +this.#cursor;
+    }
     async start() {
         if (!this.#bc.isConnected()) {
-            throw new WfRuntimeError(`Blockchain ${this.blockchain} is not connected`);
+            throw new WfRuntimeError(`Blockchain ${this.#bc.name} is not connected`);
         }
         if (this.#cursor < 1) {
             await this.getHighestBlock();
             this.#cursor = this.#determineBlockCursor();
-            wfLogger.debug(`Block cursor set to ${this.#cursor}/${this.#state.highestBlock}`, this.blockchain);
+            wfLogger.debug(`Block cursor set to ${this.#cursor}/${this.#state.highestBlock}`, this.#bc.name);
         }
         this.#listening = true;
         this.#scheduleNextIteration(true);
@@ -109,6 +130,9 @@ class WfBlockListener {
     stop() {
         this.#cancelNextIteration();
         return !(this.#listening = false);
+    }
+    isActive() {
+        return this.isListening();
     }
     isListening() {
         return this.#listening;
@@ -129,7 +153,7 @@ class WfBlockListener {
         if (this.#listening) {
             if (immediate)
                 return this.#executeIteration();
-            wfLogger.trace(`Scheduling next block iteration in ${this.#config.blockIntervalTime} ms`, this.blockchain);
+            wfLogger.trace(`Scheduling next block iteration in ${this.#config.blockIntervalTime} ms`, this.#bc.name);
             this.#iid = setTimeout(this.#executeIteration.bind(this), this.#config.blockIntervalTime);
         }
         return;
@@ -156,20 +180,20 @@ class WfBlockListener {
     async #processBlocks() {
         const batchSize = this.#determineBlockBatchSize(this.#cursor, this.#state.highestBlock);
         if (batchSize === 0) {
-            wfLogger.trace(`No blocks to retrieve at block ${this.#cursor}/${this.#state.highestBlock}`, this.blockchain);
+            wfLogger.trace(`No blocks to retrieve at block ${this.#cursor}/${this.#state.highestBlock}`, this.#bc.name);
             return;
         }
         else {
-            wfLogger.trace(`Retrieving ${batchSize} blocks starting at block ${this.#cursor}/${this.#state.highestBlock}`, this.blockchain);
+            wfLogger.trace(`Retrieving ${batchSize} blocks starting at block ${this.#cursor}/${this.#state.highestBlock}`, this.#bc.name);
         }
         const blockStream = this.#bc.getTransactions(this.#cursor, this.#cursor + batchSize - 1);
         try {
             for await (const block of blockStream) {
                 this.#state.currentBlock = this.#cursor;
                 const [nMessages, nErrors] = await this.#processBlock(block);
-                wfLogger.debug(`Found ${nMessages} messages in block ${this.#state.currentBlock}/${this.#state.highestBlock}`, this.blockchain);
+                wfLogger.debug(`Found ${nMessages} messages in block ${this.#state.currentBlock}/${this.#state.highestBlock}`, this.#bc.name);
                 if (nErrors > 0) {
-                    wfLogger.warn(`Encountered ${nErrors} transaction errors while processing block ${this.#state.currentBlock}/${this.#state.highestBlock}`, this.blockchain);
+                    wfLogger.warn(`Encountered ${nErrors} transaction errors while processing block ${this.#state.currentBlock}/${this.#state.highestBlock}`, this.#bc.name);
                 }
                 this.#state.processedBlock = this.#state.currentBlock;
                 this.#cursor++;
@@ -187,8 +211,8 @@ class WfBlockListener {
         return [nMessages, nErrors];
     }
     async #processTransactionBatch(transactions) {
-        const processTransaction = this.#processTransaction.bind(this);
-        return Promise.allSettled(transactions.map(processTransaction));
+        const fnProcessTransaction = this.#processTransaction.bind(this);
+        return Promise.allSettled(transactions.map(fnProcessTransaction));
     }
     async #processTransaction(transaction) {
         const message = extractMessage(transaction);
@@ -201,32 +225,32 @@ class WfBlockListener {
     }
     #determineBlockCursor() {
         checkCurrentState(this.#state);
-        if (this.#config?.blockRetrievalStart > 0) {
-            wfLogger.trace(`Setting block cursor to configured starting block, unless already processed block is higher`, this.blockchain);
+        if (this.#config.blockRetrievalStart > 0) {
+            wfLogger.trace(`Setting block cursor to configured starting block, unless already processed block is higher`, this.#bc.name);
             return Math.max(this.#config.blockRetrievalStart, (this.#state.processedBlock + 1));
         }
-        if (this.#config?.blockRetrievalRestart > 0) {
-            wfLogger.trace(`Setting block cursor to configured number of blocks before highest block, unless already processed block is higher`, this.blockchain);
+        if (this.#config.blockRetrievalRestart > 0) {
+            wfLogger.trace(`Setting block cursor to configured number of blocks before highest block, unless already processed block is higher`, this.#bc.name);
             return Math.max((this.#state.highestBlock - this.#config.blockRetrievalRestart), (this.#state.processedBlock + 1));
         }
-        if (this.#state?.processedBlock > 0) {
-            wfLogger.trace(`Setting block cursor to one block after highest processed block`, this.blockchain);
+        if (this.#state.processedBlock > 0) {
+            wfLogger.trace(`Setting block cursor to one block after highest processed block`, this.#bc.name);
             return Number(this.#state.processedBlock + 1);
         }
-        if (this.#state?.currentBlock > 0) {
-            wfLogger.trace(`Setting block cursor to block that is currently processed`, this.blockchain);
+        if (this.#state.currentBlock > 0) {
+            wfLogger.trace(`Setting block cursor to block that is currently processed`, this.#bc.name);
             return Number(this.#state.currentBlock);
         }
-        if (this.#state?.highestBlock > 1) {
-            wfLogger.trace(`Setting block cursor to highest knwon block onm the chain`, this.blockchain);
+        if (this.#state.highestBlock > 1) {
+            wfLogger.trace(`Setting block cursor to highest knwon block onm the chain`, this.#bc.name);
             return Number(this.#state.highestBlock - 1);
         }
-        wfLogger.trace(`Setting block cursor to first block`, this.blockchain);
+        wfLogger.trace(`Setting block cursor to first block`, this.#bc.name);
         return 1;
     }
     #determineBlockBatchSize(firstBlock, lastBlock) {
         const nBlocks = lastBlock - firstBlock + 1;
-        if (nBlocks > this.#config?.blockBatchSize)
+        if (nBlocks > this.#config.blockBatchSize)
             return this.#config.blockBatchSize;
         if (nBlocks < 0)
             return 0;
@@ -234,32 +258,30 @@ class WfBlockListener {
     }
     #logWarning(err, skippedBlock) {
         if (skippedBlock) {
-            wfLogger.warn(`Skipping block ${skippedBlock}: ${err.message}`, this.blockchain);
+            wfLogger.warn(`Skipping block ${skippedBlock}: ${err.message}`, this.#bc.name);
         }
         else {
-            wfLogger.warn(err.message, this.blockchain);
+            wfLogger.warn(err.message, this.#bc.name);
         }
     }
 }
 function extractMessage(transaction) {
-    if (!transaction?.data)
-        return null;
-    if (!transaction?.data.startsWith(WFMSG_HEXPREFIX))
+    if (!transaction?.data?.startsWith(WFMSG_HEXPREFIX))
         return null;
     const message = WfMessage.fromHex(transaction.data);
-    if (transaction?.blockchain)
+    if (transaction.blockchain)
         message.setMeta(WfMetaField.BLOCKCHAIN, transaction.blockchain);
-    if (transaction?.block)
+    if (transaction.block)
         message.setMeta(WfMetaField.BLOCK_NR, transaction.block);
-    if (transaction?.index)
+    if (transaction.index)
         message.setMeta(WfMetaField.TX_INDEX, transaction.index);
-    if (transaction?.hash)
+    if (transaction.hash)
         message.setMeta(WfMetaField.TX_HASH, transaction.hash);
-    if (transaction?.time)
+    if (transaction.time)
         message.setMeta(WfMetaField.TX_TIME, getIso8601(transaction.time));
-    if (transaction?.sender)
+    if (transaction.sender)
         message.setMeta(WfMetaField.ORIGINATOR_ADDR, transaction.sender);
-    if (transaction?.receiver)
+    if (transaction.receiver)
         message.setMeta(WfMetaField.RECIPIENT_ADDR, transaction.receiver);
     return message;
 }
@@ -280,7 +302,7 @@ function checkCurrentState(state) {
 }
 function checkListenerConfig(config) {
     let errors = [];
-    if (isNumber(config?.blockIntervalTime)) {
+    if (isNumber(config.blockIntervalTime)) {
         if (config.blockIntervalTime < MINBLOCKINTERVAL)
             config.blockIntervalTime = MINBLOCKINTERVAL;
         if (config.blockIntervalTime > MAXBLOCKINTERVAL)
@@ -289,13 +311,13 @@ function checkListenerConfig(config) {
     else {
         errors.push('Missing or invalid block retrieval interval');
     }
-    if (!isNumber(config?.blockRetrievalStart) || config.blockRetrievalStart < 0) {
+    if (!isNumber(config.blockRetrievalStart) || config.blockRetrievalStart < 0) {
         config.blockRetrievalStart = 0;
     }
-    if (!isNumber(config?.blockRetrievalRestart) || config.blockRetrievalRestart < 0) {
+    if (!isNumber(config.blockRetrievalRestart) || config.blockRetrievalRestart < 0) {
         config.blockRetrievalRestart = 0;
     }
-    if (isNumber(config?.blockMaxRetries)) {
+    if (isNumber(config.blockMaxRetries)) {
         if (config.blockMaxRetries < MINBLOCKRETRIES)
             config.blockMaxRetries = MINBLOCKRETRIES;
         if (config.blockMaxRetries > MAXBLOCKRETRIES)
@@ -304,7 +326,7 @@ function checkListenerConfig(config) {
     else {
         config.blockMaxRetries = DEFAULTBLOCKRETRIES;
     }
-    if (isNumber(config?.transactionBatchSize)) {
+    if (isNumber(config.transactionBatchSize)) {
         if (config.transactionBatchSize < MINTXBATCH)
             config.transactionBatchSize = MINTXBATCH;
         if (config.transactionBatchSize > MAXTXBATCH)

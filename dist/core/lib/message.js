@@ -2,7 +2,7 @@
 var _a;
 export { WfCoreMessage, isValidMessage, validateMessage, encryptMessage, decryptMessage };
 import { WfVersion, WfMsgType, WfCryptoMethod, WfProtocolError, WfErrorCode, WfRuntimeError } from '@whiteflagprotocol/common';
-import { BinaryBuffer, DataItem, isString, deepCopy } from '@whiteflagprotocol/util';
+import { BinaryBuffer, DataItem, isObject, isString, objectHasNot, deepCopy } from '@whiteflagprotocol/util';
 import { encryptMsg, decryptMsg, deriveKey } from '@whiteflagprotocol/crypto';
 import { decodeField, encodeField, isValidValue } from "./codec.js";
 import msgSpec_v1 from '../static/v1/wf-msg-structure.json' with { type: 'json' };
@@ -23,10 +23,10 @@ class WfCoreMessage extends DataItem {
         this.#data = super.getDataReference(ddat);
         if (binary)
             this.#binary = binary;
-        this.#header = this.#data?.MessageHeader;
-        this.#body = this.#data?.MessageBody;
-        this.#type = this.#data?.MessageHeader['MessageCode'];
-        this.#version = this.#data?.MessageHeader['Version'];
+        this.#header = this.#data.MessageHeader;
+        this.#body = this.#data.MessageBody;
+        this.#type = this.#data.MessageHeader['MessageCode'];
+        this.#version = this.#data.MessageHeader['Version'];
     }
     static create(msgType, version = WfVersion.v1) {
         const data = {
@@ -329,15 +329,15 @@ function isValidMessage(message) {
     return true;
 }
 function validateMessage(message) {
-    if (!(message instanceof Object))
-        throw new TypeError('Not an object');
+    if (!isObject(message))
+        throw new TypeError('Invalid message object');
     if (message instanceof WfCoreMessage)
         return message.validate();
     let errors = [];
-    if (!message?.MessageHeader || !(message?.MessageHeader instanceof Object)) {
+    if (!isObject(message.MessageHeader)) {
         errors.push('Missing or invalid message header');
     }
-    if (!message?.MessageBody || !(message?.MessageBody instanceof Object)) {
+    if (!isObject(message.MessageBody)) {
         errors.push('Missing or invalid message body');
     }
     if (errors.length > 0)
@@ -380,7 +380,7 @@ function compileMsgSpec() {
 }
 function compileMsgSpecRegex(segSpec) {
     for (const field of Object.keys(segSpec)) {
-        if (segSpec[field]?.pattern) {
+        if (segSpec[field].pattern) {
             segSpec[field].regex = new RegExp(segSpec[field].pattern);
         }
     }
@@ -388,11 +388,11 @@ function compileMsgSpecRegex(segSpec) {
 }
 function decodeHeaderField(message, field, msgType, version = WfVersion.v1) {
     const msgSpec = MSGSPEC[msgType][version];
-    return decodeField(message.extract(msgSpec.header[field]?.startBit, msgSpec.header[field]?.endBit), msgSpec.header[field]?.encoding);
+    return decodeField(message.extract(msgSpec.header[field].startBit, msgSpec.header[field].endBit), msgSpec.header[field].encoding);
 }
 function decodeBodyField(message, field, msgType, bitOffset = 0, version = WfVersion.v1) {
     const msgSpec = MSGSPEC[msgType][version];
-    return decodeField(message.extract(msgSpec.body[field]?.startBit + bitOffset, msgSpec.body[field]?.endBit + bitOffset), msgSpec.body[field]?.encoding);
+    return decodeField(message.extract(msgSpec.body[field].startBit + bitOffset, msgSpec.body[field].endBit + bitOffset), msgSpec.body[field].encoding);
 }
 function checkMsgSegments(header, body) {
     let errors = [];
@@ -415,7 +415,7 @@ function checkMsgBody(body, msgType, version = WfVersion.v1) {
 function checkFields(segment, segSpec, version = WfVersion.v1) {
     let errors = [];
     for (const field of Object.keys(segSpec)) {
-        if (!Object.hasOwn(segment, field)) {
+        if (objectHasNot(segment, field)) {
             errors.push(`Missing ${field} field`);
             continue;
         }
@@ -426,7 +426,7 @@ function checkFields(segment, segSpec, version = WfVersion.v1) {
             errors.push(`${field} field has no value`);
             continue;
         }
-        if (segSpec[field]?.regex instanceof RegExp) {
+        if (segSpec[field].regex instanceof RegExp) {
             if (!segSpec[field].regex.test(segment[field])) {
                 errors.push(`Value of ${field} field does not match ${segSpec[field].pattern} pattern`);
             }

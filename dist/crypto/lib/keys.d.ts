@@ -48,7 +48,7 @@ declare class ExtCryptoKey implements CryptoKey {
     readonly type: KeyType;
     readonly usages: KeyUsage[];
     /**
-     * Constructs an obejct that represents a generic cryptographic key
+     * Constructs an object that represents a generic cryptographic key
      * @param type the key type, i.e. private, public, or secret
      * @param algorithm the algorithm for which the key is created
      * @param extractable indicates whether or not the raw key may be extracted using `exportExtKey()`

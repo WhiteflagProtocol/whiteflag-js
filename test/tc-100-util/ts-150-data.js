@@ -35,6 +35,7 @@ testCase('Test case 150: Util data module', function() {
         assertion(' 2a. should correctly create data collection', function(done) {
             const id1 = collection1.upsert(item1);
             const id2 = collection1.upsert(item2);
+            deepEqual(collection1.size, 2);
             deepEqual(collection1.retrieve(id1).toObject(), testVector['1'].data);
             deepEqual(collection1.retrieve(item2.getId()).toObject(), testVector['2'].data);
             return done();
@@ -43,6 +44,7 @@ testCase('Test case 150: Util data module', function() {
             const id2 = collection1.upsert(item2);
             const serialized = collection1.serialize();
             const collection2 = DataCollection.deserialize(serialized);
+            deepEqual(collection2.size, 2);
             deepEqual(collection2.retrieve(item1.getId()).toObject(), testVector['1'].data);
             deepEqual(collection2.retrieve(id2).toObject(), testVector['2'].data);
             return done();
